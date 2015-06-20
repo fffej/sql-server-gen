@@ -4,6 +4,7 @@
 module Database.SqlServer.Types.Grammar where
 
 import Database.SqlServer.Types.Reserved (isReserved)
+import Database.SqlServer.Types.Collations (collations, Collation)
 
 import Test.QuickCheck
 import Test.QuickCheck.Gen
@@ -11,8 +12,6 @@ import Control.Monad
 import Data.List (nub,intersperse)
 
 import Data.DeriveTH
-
-
 
 -- https://msdn.microsoft.com/en-us/subscriptions/downloads/ms175874
 newtype RegularIdentifier = RegularIdentifier String deriving Eq
@@ -35,9 +34,16 @@ newtype Keyword = Keyword String
 -- Size of arbitrary data (>= 1 && <= 8000)
 newtype FixedRange = FixedRange Int
 
+instance Show FixedRange where
+  show (FixedRange x) = "(" ++ show x ++ ")"
+
 -- See for example https://msdn.microsoft.com/en-us/library/ms176089.aspx
 data Range = Sized FixedRange
            | Max
+
+instance Show Range where
+  show Max       = "(max)"
+  show (Sized r) = show r
 
 -- https://msdn.microsoft.com/en-us/library/ms187752.aspx
 data Type = BigInt
@@ -74,7 +80,7 @@ data Type = BigInt
           | Xml
           | Table
           | Geography
-          | Geometry
+          | Geometry deriving (Show)
 
 newtype ColumnDefinitions = ColumnDefinitions [ColumnDefinition]
 
@@ -118,16 +124,6 @@ derive makeArbitrary ''Range
 instance Show RegularIdentifier where
   show (RegularIdentifier s) = s
 
-instance Show FixedRange where
-  show (FixedRange x) = "(" ++ show x ++ ")"
-
-instance Show Range where
-  show Max       = "(max)"
-  show (Sized r) = show r
-
-instance Show Type where
-  show _ = "type"
-
 instance Show ColumnDefinitions where
   show (ColumnDefinitions xs) = concat $ intersperse ",\n" $ map show xs
 
@@ -139,4 +135,4 @@ instance Show ColumnDefinition where
 
 instance Show TableDefinition where
   show t = "CREATE TABLE " ++ show (table_name t) ++
-           "(" ++ show (column_definitions t) ++  ")"
+           "(\n" ++ show (column_definitions t) ++  "\n)"
