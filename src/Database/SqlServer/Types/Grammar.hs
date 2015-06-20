@@ -82,6 +82,16 @@ data Type = BigInt
           | Geography
           | Geometry deriving (Show)
 
+-- collation_name is applicable only for columns of the char, varchar, text, nchar, nvarchar, and ntext data types
+isCollatable :: Type -> Bool
+isCollatable (Char    _) = True
+isCollatable (VarChar _) = True
+isCollatable Text        = True
+isCollatable NChar       = True
+isCollatable NVarChar    = True
+isCollatable NText       = True
+isCollatable _           = False
+
 newtype ColumnDefinitions = ColumnDefinitions [ColumnDefinition]
 
 -- https://msdn.microsoft.com/en-us/library/ms174979.aspx
@@ -98,6 +108,7 @@ data ColumnDefinition = ColumnDefinition
                         {
                           column_name :: RegularIdentifier
                         , data_type   :: Type
+                        , collation :: Maybe Collation
                         , null_constraint :: Maybe Bool
                         }
 
@@ -128,10 +139,11 @@ instance Show ColumnDefinitions where
   show (ColumnDefinitions xs) = concat $ intersperse ",\n" $ map show xs
 
 instance Show ColumnDefinition where
-  show c = show (column_name c) ++ " " ++ show (data_type c) ++
+  show c = show (column_name c) ++ " " ++ show (data_type c) ++ collationShow ++
            nullConstraint
     where
       nullConstraint = maybe "" (\x -> if x then " NULL" else " NOT NULL") $ null_constraint c
+      collationShow  = if isCollatable (data_type c) then maybe "" (\x -> " " ++ show x) $ (collation c) else ""
 
 instance Show TableDefinition where
   show t = "CREATE TABLE " ++ show (table_name t) ++

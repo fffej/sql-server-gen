@@ -1,6 +1,18 @@
+{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE TemplateHaskell #-}
+
 module Database.SqlServer.Types.Collations where
 
+import Test.QuickCheck
+import Control.Monad
+
 newtype Collation = Collation String
+
+instance Arbitrary Collation where
+  arbitrary = elements collations
+
+instance Show Collation where
+  show (Collation x) = "COLLATE " ++ x
 
 collations :: [Collation]
 collations = map Collation  [
