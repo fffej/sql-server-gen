@@ -3,14 +3,25 @@
 
 module Database.SqlServer.Types.Grammar where
 
+import Database.SqlServer.Types.Reserved (isReserved)
+
 import Test.QuickCheck
 import Test.QuickCheck.Gen
 import Control.Monad
-
 import Data.DeriveTH
 
+
 -- https://msdn.microsoft.com/en-us/subscriptions/downloads/ms175874
-newtype SymbolName = SymbolName String 
+newtype RegularIdentifier = RegularIdentifier String 
+
+firstChars :: String
+firstChars = ['a'..'z'] ++ ['A'..'Z'] ++ "_@#"
+
+subsequentChars :: String
+subsequentChars = firstChars ++ ['0'..'9']
+
+maximumLengthOfRegularIdentifier :: Int
+maximumLengthOfRegularIdentifier = 128
 
 -- https://msdn.microsoft.com/en-us/library/ms189822.aspx
 newtype Keyword = Keyword String
@@ -58,32 +69,53 @@ data Type = BigInt
           | Table
           | Geography
           | Geometry
-            deriving (Show)
 
 -- https://msdn.microsoft.com/en-us/library/ms174979.aspx
 data TableDefinition = TableDefinition
              {
-               table_name    :: SymbolName
+               table_name    :: RegularIdentifier
              , column_definitions :: [ColumnDefinition]
              }
 
 data ColumnDefinition = ColumnDefinition
                         {
-                          column_name :: SymbolName
+                          column_name :: RegularIdentifier
                         , data_type   :: Type
+                        , null_constraint :: Maybe Bool
                         }
 
 instance Arbitrary FixedRange where
   arbitrary = liftM FixedRange (choose (1,8000))
 
+instance Arbitrary RegularIdentifier where
+  arbitrary = do
+    x <- elements firstChars
+    y <- listOf (elements subsequentChars) `suchThat` (\q -> length q < maximumLengthOfRegularIdentifier)
+    return (RegularIdentifier $ x : y)
+    
+derive makeArbitrary ''Type
+
+derive makeArbitrary ''TableDefinition
+
+derive makeArbitrary ''ColumnDefinition
+
+derive makeArbitrary ''Range
+
+instance Show RegularIdentifier where
+  show (RegularIdentifier s) = s
+
 instance Show FixedRange where
   show (FixedRange x) = "(" ++ show x ++ ")"
-
-instance Arbitrary Range where
-  arbitrary = oneof [return Max,liftM Sized arbitrary]
 
 instance Show Range where
   show Max       = "(max)"
   show (Sized r) = show r
 
-derive makeArbitrary ''Type
+instance Show Type where
+  show _ = "type"
+
+instance Show ColumnDefinition where
+  show c = show (column_name c) ++ " " ++ show (data_type c) ++
+           nullConstraint
+    where
+      nullConstraint = maybe "" (\x -> if x then " NULL" else " NOT NULL") $ null_constraint c
