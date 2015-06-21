@@ -70,14 +70,14 @@ data Type = BigInt
           | Geometry 
 
 
-render_collation :: Type -> String
-render_collation (Char _ mc)    = maybe "" show mc
-render_collation (VarChar _ mc) = maybe "" show mc
-render_collation (Text mc)      = maybe "" show mc
-render_collation (NChar mc)     = maybe "" show mc
-render_collation (NVarChar mc)  = maybe "" show mc
-render_collation (NText mc)     = maybe "" show mc
-render_collation _              = ""
+collation :: Type -> Maybe Collation
+collation (Char _ mc)    = mc
+collation (VarChar _ mc) = mc
+collation (Text mc)      = mc
+collation (NChar mc)     = mc
+collation (NVarChar mc)  = mc
+collation (NText mc)     = mc
+collation _              = Nothing
 
 render_data_type :: Type -> String
 render_data_type BigInt = "bigint"

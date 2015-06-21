@@ -6,13 +6,15 @@ module Database.SqlServer.Types.Collations where
 import Test.QuickCheck
 import Control.Monad
 
+import Text.PrettyPrint
+
 newtype Collation = Collation String
 
 instance Arbitrary Collation where
   arbitrary = elements collations
 
-instance Show Collation where
-  show (Collation x) = "COLLATE " ++ x
+render_collation :: Collation -> Doc
+render_collation (Collation x) = (text "COLLATE") <+> (text x)
 
 collations :: [Collation]
 collations = map Collation  [

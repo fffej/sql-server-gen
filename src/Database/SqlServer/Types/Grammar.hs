@@ -5,7 +5,7 @@ module Database.SqlServer.Types.Grammar where
 
 import Database.SqlServer.Types.Identifiers
 import Database.SqlServer.Types.DataTypes
-import Database.SqlServer.Types.Collations (collations, Collation)
+import Database.SqlServer.Types.Collations (collations, Collation, render_collation)
 
 import Test.QuickCheck
 import Test.QuickCheck.Gen
@@ -46,7 +46,6 @@ data ColumnDefinition = ColumnDefinition
                         {
                           column_name :: RegularIdentifier
                         , data_type   :: Type
-                        , collation :: Maybe Collation
                         , storage_options :: Maybe StorageOptions
                         }
 
@@ -63,16 +62,23 @@ instance Show ColumnDefinitions where
   show (ColumnDefinitions xs) = concat $ intersperse ",\n" $ map show xs
 
 instance Show ColumnDefinition where
-  show c = show (column_name c) ++ " " ++ render_data_type (data_type c) ++ " "
-           ++ render_collation (data_type c)
-           ++ maybe "" render_sparse (storage_options c) ++ " "
-           ++ maybe "" render_null_constraint (storage_options c)
+  show c = render (renderColumnDefinition c)
+
+renderColumnDefinition :: ColumnDefinition -> Doc
+renderColumnDefinition c = columnName <+> columnType <+> collationD <+>
+                           sparse <+> nullConstraint
+  where
+    columnName     = text (show $ column_name c)
+    columnType     = text (render_data_type $ data_type c)
+    collationD     = maybe empty render_collation (collation (data_type c))
+    sparse         = maybe empty (text . render_sparse) (storage_options c)
+    nullConstraint = maybe empty (text . render_null_constraint)  (storage_options c)
 
 instance Show TableDefinition where
-  show t = render $ doc <+> tableName <+>
-           (parens $ text (show (column_definitions t)))
+  show t = render doc 
     where
-      doc = text "CREATE TABLE"
+      doc = text "CREATE TABLE" <+> tableName <+>
+           (parens $ text (show (column_definitions t)))
       tableName = text (show $ table_name t)
 
 
