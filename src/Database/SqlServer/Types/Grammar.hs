@@ -131,7 +131,45 @@ instance Arbitrary RegularIdentifier where
 instance Arbitrary ColumnDefinitions where
   arbitrary = liftM ColumnDefinitions $ listOf1 arbitrary
     
-derive makeArbitrary ''Type
+instance Arbitrary Type where
+  arbitrary = do
+    let possibilities = [ \f m r -> BigInt
+                        , \f m r -> Bit
+                        , \f m r -> Numeric
+                        , \f m r -> SmallInt
+                        , \f m r -> Decimal
+                        , \f m r -> SmallMoney
+                        , \f m r -> Int
+                        , \f m r -> TinyInt
+                        , \f m r -> Money
+                        , \f m r -> Float
+                        , \f m r -> Real
+                        , \f m r -> Date
+                        , \f m r -> DataTimeOffset
+                        , \f m r -> DateTime2
+                        , \f m r -> SmallDateTime
+                        , \f m r -> DateTime
+                        , \f m r -> Time
+                        , \f m r -> Char f m
+                        , \f m r -> VarChar r m
+                        , \f m r -> Text m
+                        , \f m r -> NChar m
+                        , \f m r -> NVarChar m
+                        , \f m r -> NText m
+                        , \f m r -> Binary f
+                        , \f m r -> VarBinary r -- FILESTREAM valid only for varbinary(max)
+                        , \f m r -> Image
+                        , \f m r -> Cursor
+                        , \f m r -> Timestamp
+                        , \f m r -> HierarchyId
+                        , \f m r -> UniqueIdentifier
+                        , \f m r -> SqlVariant
+                        , \f m r -> Xml
+                        , \f m r -> Table
+                        , \f m r -> Geography
+                        , \f m r -> Geometry ]
+    constructor <- elements possibilities
+    liftM3 constructor arbitrary arbitrary arbitrary 
 
 derive makeArbitrary ''TableDefinition
 
