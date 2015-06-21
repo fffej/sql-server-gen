@@ -41,6 +41,9 @@ instance Show FixedRange where
 data Range = Sized FixedRange
            | Max
 
+-- Only valid for var binary max
+data FileStream = FileStream
+
 instance Show Range where
   show Max       = "(max)"
   show (Sized r) = show r
@@ -63,12 +66,12 @@ data Type = BigInt
           | SmallDateTime
           | DateTime
           | Time
-          | Char FixedRange
-          | VarChar Range
-          | Text
-          | NChar
-          | NVarChar
-          | NText
+          | Char FixedRange (Maybe Collation)
+          | VarChar Range (Maybe Collation)
+          | Text (Maybe Collation)
+          | NChar (Maybe Collation)
+          | NVarChar (Maybe Collation)
+          | NText (Maybe Collation)
           | Binary FixedRange
           | VarBinary Range -- FILESTREAM valid only for varbinary(max)
           | Image
@@ -81,16 +84,6 @@ data Type = BigInt
           | Table
           | Geography
           | Geometry deriving (Show)
-
--- collation_name is applicable only for columns of the char, varchar, text, nchar, nvarchar, and ntext data types
-isCollatable :: Type -> Bool
-isCollatable (Char    _) = True
-isCollatable (VarChar _) = True
-isCollatable Text        = True
-isCollatable NChar       = True
-isCollatable NVarChar    = True
-isCollatable NText       = True
-isCollatable _           = False
 
 newtype ColumnDefinitions = ColumnDefinitions [ColumnDefinition]
 
@@ -107,6 +100,16 @@ uniqueNames xs = length xs == length (nub $ map column_name xs)
 data StorageOptions = Sparse
                     | SparseNull
                     | NotNull
+                    | Null
+
+render_sparse :: StorageOptions -> String
+render_sparse Sparse = "SPARSE"
+render_sparse _      = ""
+
+render_null_constraint :: StorageOptions -> String
+render_null_constraint NotNull = "NOT NULL"
+render_null_constraint Null    = "NULL"
+render_null_constraint _       = ""
 
 data ColumnDefinition = ColumnDefinition
                         {
@@ -145,7 +148,9 @@ instance Show ColumnDefinitions where
   show (ColumnDefinitions xs) = concat $ intersperse ",\n" $ map show xs
 
 instance Show ColumnDefinition where
-  show c = show (column_name c) ++ " " ++ show (data_type c)
+  show c = show (column_name c) ++ " " ++ show (data_type c) ++ " "
+           ++ maybe "" render_sparse (storage_options c) ++ " "
+           ++ maybe "" render_null_constraint (storage_options c) 
 
 instance Show TableDefinition where
   show t = "CREATE TABLE " ++ show (table_name t) ++
