@@ -3,8 +3,8 @@
 
 module Database.SqlServer.Types.Grammar where
 
-import Database.SqlServer.Types.Reserved (isReserved)
 import Database.SqlServer.Types.Collations (collations, Collation)
+import Database.SqlServer.Types.Identifiers
 
 import Test.QuickCheck
 import Test.QuickCheck.Gen
@@ -13,23 +13,6 @@ import Data.List (nub,intersperse)
 
 import Data.DeriveTH
 
--- https://msdn.microsoft.com/en-us/subscriptions/downloads/ms175874
-newtype RegularIdentifier = RegularIdentifier String deriving Eq
-
-firstChars :: String
-firstChars = ['a'..'z'] ++ ['A'..'Z'] ++ "_@#"
-
-subsequentChars :: String
-subsequentChars = firstChars ++ ['0'..'9']
-
-maximumLengthOfRegularIdentifier :: Int
-maximumLengthOfRegularIdentifier = 128
-
-validLength :: String -> Bool
-validLength x = length x < maximumLengthOfRegularIdentifier
-
--- https://msdn.microsoft.com/en-us/library/ms189822.aspx
-newtype Keyword = Keyword String
 
 -- Size of arbitrary data (>= 1 && <= 8000)
 newtype FixedRange = FixedRange Int
@@ -122,11 +105,6 @@ data ColumnDefinition = ColumnDefinition
 instance Arbitrary FixedRange where
   arbitrary = liftM FixedRange (choose (1,8000))
 
-instance Arbitrary RegularIdentifier where
-  arbitrary = do
-    x <- elements firstChars
-    y <- listOf (elements subsequentChars) `suchThat` validLength
-    return (RegularIdentifier $ x : y)
 
 instance Arbitrary ColumnDefinitions where
   arbitrary = liftM ColumnDefinitions $ listOf1 arbitrary
@@ -178,9 +156,6 @@ derive makeArbitrary ''ColumnDefinition
 derive makeArbitrary ''Range
 
 derive makeArbitrary ''StorageOptions
-
-instance Show RegularIdentifier where
-  show (RegularIdentifier s) = s
 
 instance Show ColumnDefinitions where
   show (ColumnDefinitions xs) = concat $ intersperse ",\n" $ map show xs
