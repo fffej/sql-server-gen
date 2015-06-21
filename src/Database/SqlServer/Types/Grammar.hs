@@ -104,12 +104,16 @@ data TableDefinition = TableDefinition
 uniqueNames :: [ColumnDefinition] -> Bool
 uniqueNames xs = length xs == length (nub $ map column_name xs)
 
+data StorageOptions = Sparse
+                    | SparseNull
+                    | NotNull
+
 data ColumnDefinition = ColumnDefinition
                         {
                           column_name :: RegularIdentifier
                         , data_type   :: Type
                         , collation :: Maybe Collation
-                        , null_constraint :: Maybe Bool
+                        , storage_options :: Maybe StorageOptions
                         }
 
 instance Arbitrary FixedRange where
@@ -132,6 +136,8 @@ derive makeArbitrary ''ColumnDefinition
 
 derive makeArbitrary ''Range
 
+derive makeArbitrary ''StorageOptions
+
 instance Show RegularIdentifier where
   show (RegularIdentifier s) = s
 
@@ -139,11 +145,7 @@ instance Show ColumnDefinitions where
   show (ColumnDefinitions xs) = concat $ intersperse ",\n" $ map show xs
 
 instance Show ColumnDefinition where
-  show c = show (column_name c) ++ " " ++ show (data_type c) ++ collationShow ++
-           nullConstraint
-    where
-      nullConstraint = maybe "" (\x -> if x then " NULL" else " NOT NULL") $ null_constraint c
-      collationShow  = if isCollatable (data_type c) then maybe "" (\x -> " " ++ show x) $ (collation c) else ""
+  show c = show (column_name c) ++ " " ++ show (data_type c)
 
 instance Show TableDefinition where
   show t = "CREATE TABLE " ++ show (table_name t) ++
