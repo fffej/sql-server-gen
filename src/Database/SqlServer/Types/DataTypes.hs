@@ -5,6 +5,8 @@ module Database.SqlServer.Types.DataTypes where
 
 import Database.SqlServer.Types.Collations (collations, Collation)
 
+import Text.PrettyPrint
+
 import Test.QuickCheck
 import Control.Monad 
 import Data.DeriveTH
@@ -13,8 +15,8 @@ import Data.DeriveTH
 -- Size of arbitrary data (>= 1 && <= 8000)
 newtype FixedRange = FixedRange Int
 
-instance Show FixedRange where
-  show (FixedRange x) = "(" ++ show x ++ ")"
+render_fixed_range :: FixedRange -> Doc
+render_fixed_range (FixedRange n) = lparen <+> int n <+> rparen
 
 instance Arbitrary FixedRange where
   arbitrary = liftM FixedRange (choose (1,8000))
@@ -23,14 +25,14 @@ instance Arbitrary FixedRange where
 data Range = Sized FixedRange
            | Max
 
+render_range :: Range -> Doc
+render_range Max = text "(max)"
+render_range (Sized r) = render_fixed_range r
+
 derive makeArbitrary ''Range
 
 -- Only valid for var binary max
 data FileStream = FileStream
-
-instance Show Range where
-  show Max       = "(max)"
-  show (Sized r) = show r
 
 -- https://msdn.microsoft.com/en-us/library/ms187752.aspx
 data Type = BigInt
@@ -79,42 +81,42 @@ collation (NVarChar mc)  = mc
 collation (NText mc)     = mc
 collation _              = Nothing
 
-render_data_type :: Type -> String
-render_data_type BigInt = "bigint"
-render_data_type Bit = "bit"
-render_data_type Numeric = "numeric"
-render_data_type SmallInt = "smallint"
-render_data_type Decimal = "decimal"
-render_data_type SmallMoney = "smallmoney"
-render_data_type Int = "int"
-render_data_type TinyInt = "tinyint"
-render_data_type Money = "money"
-render_data_type Float = "float"
-render_data_type Real = "real"
-render_data_type Date = "date"
-render_data_type DateTimeOffset = "datetimeoffset"
-render_data_type DateTime2 = "datetime2"
-render_data_type SmallDateTime = "smalldatetime"
-render_data_type DateTime = "datetime"
-render_data_type Time = "time"
-render_data_type (Char fixedRange _)  = "char" ++ show fixedRange
-render_data_type (VarChar range _) = "varchar" ++ show range
-render_data_type (Text _) = "text"
-render_data_type (NChar _) = "nchar"
-render_data_type (NVarChar _) = "nvarchar"
-render_data_type (NText _) = "ntext"
-render_data_type (Binary fixedRange)  = "binary" ++ show fixedRange
-render_data_type (VarBinary range) = "varbinary" ++ show range
-render_data_type Image = "image"
-render_data_type Cursor = "cursor"
-render_data_type Timestamp = "timestamp"
-render_data_type HierarchyId = "hierarchyid"
-render_data_type UniqueIdentifier = "uniqueidentifier"
-render_data_type SqlVariant = "sqlvariant"
-render_data_type Xml = "xml"
-render_data_type Table = "table"
-render_data_type Geography = "geography"
-render_data_type Geometry = "geometry"
+render_data_type :: Type -> Doc
+render_data_type BigInt = text "bigint"
+render_data_type Bit = text "bit"
+render_data_type Numeric = text "numeric"
+render_data_type SmallInt = text "smallint"
+render_data_type Decimal = text "decimal"
+render_data_type SmallMoney = text "smallmoney"
+render_data_type Int = text "int"
+render_data_type TinyInt = text "tinyint"
+render_data_type Money = text "money"
+render_data_type Float = text "float"
+render_data_type Real = text "real"
+render_data_type Date = text "date"
+render_data_type DateTimeOffset = text "datetimeoffset"
+render_data_type DateTime2 = text "datetime2"
+render_data_type SmallDateTime = text "smalldatetime"
+render_data_type DateTime = text "datetime"
+render_data_type Time = text "time"
+render_data_type (Char fixedRange _)  = text "char" <+> render_fixed_range fixedRange
+render_data_type (VarChar range _) = text "varchar" <+> render_range range
+render_data_type (Text _) = text "text"
+render_data_type (NChar _) = text "nchar"
+render_data_type (NVarChar _) = text "nvarchar"
+render_data_type (NText _) = text "ntext"
+render_data_type (Binary fixedRange)  = text "binary" <+> render_fixed_range fixedRange
+render_data_type (VarBinary range) = text "varbinary" <+> render_range range
+render_data_type Image = text "image"
+render_data_type Cursor = text "cursor"
+render_data_type Timestamp = text "timestamp"
+render_data_type HierarchyId = text "hierarchyid"
+render_data_type UniqueIdentifier = text "uniqueidentifier"
+render_data_type SqlVariant = text "sqlvariant"
+render_data_type Xml = text "xml"
+render_data_type Table = text "table"
+render_data_type Geography = text "geography"
+render_data_type Geometry = text "geometry"
 
 
 instance Arbitrary Type where

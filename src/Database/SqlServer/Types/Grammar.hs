@@ -33,14 +33,14 @@ data StorageOptions = Sparse
                     | NotNull
                     | Null
 
-render_sparse :: StorageOptions -> String
-render_sparse Sparse = "SPARSE"
-render_sparse _      = ""
+render_sparse :: StorageOptions -> Doc
+render_sparse Sparse = text "SPARSE"
+render_sparse _      = empty
 
-render_null_constraint :: StorageOptions -> String
-render_null_constraint NotNull = "NOT NULL"
-render_null_constraint Null    = "NULL"
-render_null_constraint _       = ""
+render_null_constraint :: StorageOptions -> Doc
+render_null_constraint NotNull = text "NOT NULL"
+render_null_constraint Null    = text "NULL"
+render_null_constraint _       = empty
 
 data ColumnDefinition = ColumnDefinition
                         {
@@ -58,27 +58,26 @@ derive makeArbitrary ''ColumnDefinition
 
 derive makeArbitrary ''StorageOptions
 
-instance Show ColumnDefinitions where
-  show (ColumnDefinitions xs) = concat $ intersperse ",\n" $ map show xs
-
-instance Show ColumnDefinition where
-  show c = render (renderColumnDefinition c)
+renderColumnDefinitions :: ColumnDefinitions -> Doc
+renderColumnDefinitions (ColumnDefinitions xs) = vcat (punctuate comma cols)
+  where
+    cols = map renderColumnDefinition xs
 
 renderColumnDefinition :: ColumnDefinition -> Doc
 renderColumnDefinition c = columnName <+> columnType <+> collationD <+>
                            sparse <+> nullConstraint
   where
     columnName     = text (show $ column_name c)
-    columnType     = text (render_data_type $ data_type c)
+    columnType     = render_data_type $ data_type c
     collationD     = maybe empty render_collation (collation (data_type c))
-    sparse         = maybe empty (text . render_sparse) (storage_options c)
-    nullConstraint = maybe empty (text . render_null_constraint)  (storage_options c)
+    sparse         = maybe empty render_sparse (storage_options c)
+    nullConstraint = maybe empty render_null_constraint (storage_options c)
 
 instance Show TableDefinition where
   show t = render doc 
     where
-      doc = text "CREATE TABLE" <+> tableName <+>
-           (parens $ text (show (column_definitions t)))
+      doc = text "CREATE TABLE" <+> tableName $$
+           (parens $ renderColumnDefinitions (column_definitions t))
       tableName = text (show $ table_name t)
 
 
