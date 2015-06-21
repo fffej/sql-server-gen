@@ -73,11 +73,13 @@ renderColumnDefinition c = columnName' <+> columnType' <+> collation' <+>
     sparse          = maybe empty renderSparse (storageOptions c)
     nullConstraint  = maybe empty renderNullConstraint (storageOptions c)
 
-instance Show TableDefinition where
-  show t = render doc 
-    where
-      doc = text "CREATE TABLE" <+> tableName' $$
-            (parens $ renderColumnDefinitions (columnDefinitions t))
-      tableName' = text (show $ tableName t)
+renderTable :: TableDefinition -> Doc
+renderTable t = text "CREATE TABLE" <+> tableName' $$
+                (parens $ renderColumnDefinitions (columnDefinitions t))
+  where
+    tableName' = text (show $ tableName t)
 
+
+instance Show TableDefinition where
+  show = render . renderTable
 
