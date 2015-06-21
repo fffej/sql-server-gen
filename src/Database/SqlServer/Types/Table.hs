@@ -1,7 +1,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE TemplateHaskell #-}
 
-module Database.SqlServer.Types.Grammar where
+module Database.SqlServer.Types.Table where
 
 import Database.SqlServer.Types.Identifiers
 import Database.SqlServer.Types.DataTypes

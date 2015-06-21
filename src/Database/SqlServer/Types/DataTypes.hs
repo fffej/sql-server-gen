@@ -31,8 +31,20 @@ renderRange (Sized r) = renderFixedRange r
 
 derive makeArbitrary ''Range
 
--- Only valid for var binary max
-data FileStream = FileStream
+data VarBinaryStorage = SizedRange Range
+                      | MaxNoFileStream
+                      | MaxFileStream
+
+derive makeArbitrary ''VarBinaryStorage
+
+renderFileStream :: VarBinaryStorage -> Doc
+renderFileStream MaxFileStream = text "FILESTREAM"
+renderFileStream _             = empty
+
+renderVarBinaryStorage :: VarBinaryStorage -> Doc
+renderVarBinaryStorage (SizedRange r)   = renderRange r
+renderVarBinaryStorage MaxFileStream    = text "(max)"
+renderVarBinaryStorage MaxNoFileStream  = text "(max)"
 
 -- https://msdn.microsoft.com/en-us/library/ms187752.aspx
 data Type = BigInt
@@ -59,7 +71,7 @@ data Type = BigInt
           | NVarChar (Maybe Collation)
           | NText (Maybe Collation)
           | Binary FixedRange
-          | VarBinary Range -- FILESTREAM valid only for varbinary(max)
+          | VarBinary VarBinaryStorage
           | Image
           | Cursor
           | Timestamp
@@ -107,7 +119,7 @@ renderDataType (NChar _) = text "nchar"
 renderDataType (NVarChar _) = text "nvarchar"
 renderDataType (NText _) = text "ntext"
 renderDataType (Binary fixedRange)  = text "binary" <+> renderFixedRange fixedRange
-renderDataType (VarBinary range) = text "varbinary" <+> renderRange range
+renderDataType (VarBinary range) = text "varbinary" <+> renderVarBinaryStorage range
 renderDataType Image = text "image"
 renderDataType Cursor = text "cursor"
 renderDataType Timestamp = text "timestamp"
