@@ -32,9 +32,6 @@ instance Show Range where
   show Max       = "(max)"
   show (Sized r) = show r
 
-
-
-
 -- https://msdn.microsoft.com/en-us/library/ms187752.aspx
 data Type = BigInt
           | Bit
@@ -48,7 +45,7 @@ data Type = BigInt
           | Float
           | Real
           | Date
-          | DataTimeOffset
+          | DateTimeOffset
           | DateTime2
           | SmallDateTime
           | DateTime
@@ -70,7 +67,55 @@ data Type = BigInt
           | Xml
           | Table
           | Geography
-          | Geometry deriving (Show)
+          | Geometry 
+
+
+render_collation :: Type -> String
+render_collation (Char _ mc)    = maybe "" show mc
+render_collation (VarChar _ mc) = maybe "" show mc
+render_collation (Text mc)      = maybe "" show mc
+render_collation (NChar mc)     = maybe "" show mc
+render_collation (NVarChar mc)  = maybe "" show mc
+render_collation (NText mc)     = maybe "" show mc
+render_collation _              = ""
+
+render_data_type :: Type -> String
+render_data_type BigInt = "bigint"
+render_data_type Bit = "bit"
+render_data_type Numeric = "numeric"
+render_data_type SmallInt = "smallint"
+render_data_type Decimal = "decimal"
+render_data_type SmallMoney = "smallmoney"
+render_data_type Int = "int"
+render_data_type TinyInt = "tinyint"
+render_data_type Money = "money"
+render_data_type Float = "float"
+render_data_type Real = "real"
+render_data_type Date = "date"
+render_data_type DateTimeOffset = "datetimeoffset"
+render_data_type DateTime2 = "datetime2"
+render_data_type SmallDateTime = "smalldatetime"
+render_data_type DateTime = "datetime"
+render_data_type Time = "time"
+render_data_type (Char fixedRange _)  = "char" ++ show fixedRange
+render_data_type (VarChar range _) = "varchar" ++ show range
+render_data_type (Text _) = "text"
+render_data_type (NChar _) = "nchar"
+render_data_type (NVarChar _) = "nvarchar"
+render_data_type (NText _) = "ntext"
+render_data_type (Binary fixedRange)  = "binary" ++ show fixedRange
+render_data_type (VarBinary range) = "varbinary" ++ show range
+render_data_type Image = "image"
+render_data_type Cursor = "cursor"
+render_data_type Timestamp = "timestamp"
+render_data_type HierarchyId = "hierarchyid"
+render_data_type UniqueIdentifier = "uniqueidentifier"
+render_data_type SqlVariant = "sqlvariant"
+render_data_type Xml = "xml"
+render_data_type Table = "table"
+render_data_type Geography = "geography"
+render_data_type Geometry = "geometry"
+
 
 instance Arbitrary Type where
   arbitrary = do
@@ -86,7 +131,7 @@ instance Arbitrary Type where
                         , \f m r -> Float
                         , \f m r -> Real
                         , \f m r -> Date
-                        , \f m r -> DataTimeOffset
+                        , \f m r -> DateTimeOffset
                         , \f m r -> DateTime2
                         , \f m r -> SmallDateTime
                         , \f m r -> DateTime

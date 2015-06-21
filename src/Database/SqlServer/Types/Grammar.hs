@@ -14,8 +14,6 @@ import Data.List (nub,intersperse)
 
 import Data.DeriveTH
 
-
-
 newtype ColumnDefinitions = ColumnDefinitions [ColumnDefinition]
 
 -- https://msdn.microsoft.com/en-us/library/ms174979.aspx
@@ -51,8 +49,7 @@ data ColumnDefinition = ColumnDefinition
                         }
 
 instance Arbitrary ColumnDefinitions where
-  arbitrary = liftM ColumnDefinitions $ listOf1 arbitrary
-    
+  arbitrary = liftM ColumnDefinitions $ listOf1 arbitrary   
 
 derive makeArbitrary ''TableDefinition
 
@@ -64,9 +61,10 @@ instance Show ColumnDefinitions where
   show (ColumnDefinitions xs) = concat $ intersperse ",\n" $ map show xs
 
 instance Show ColumnDefinition where
-  show c = show (column_name c) ++ " " ++ show (data_type c) ++ " "
+  show c = show (column_name c) ++ " " ++ render_data_type (data_type c) ++ " "
+           ++ render_collation (data_type c)
            ++ maybe "" render_sparse (storage_options c) ++ " "
-           ++ maybe "" render_null_constraint (storage_options c) 
+           ++ maybe "" render_null_constraint (storage_options c)
 
 instance Show TableDefinition where
   show t = "CREATE TABLE " ++ show (table_name t) ++
