@@ -12,6 +12,8 @@ import Test.QuickCheck.Gen
 import Control.Monad
 import Data.List (nub,intersperse)
 
+import Text.PrettyPrint
+
 import Data.DeriveTH
 
 newtype ColumnDefinitions = ColumnDefinitions [ColumnDefinition]
@@ -67,6 +69,10 @@ instance Show ColumnDefinition where
            ++ maybe "" render_null_constraint (storage_options c)
 
 instance Show TableDefinition where
-  show t = "CREATE TABLE " ++ show (table_name t) ++
-           "(\n" ++ show (column_definitions t) ++  "\n)"
+  show t = render $ doc <+> tableName <+>
+           (parens $ text (show (column_definitions t)))
+    where
+      doc = text "CREATE TABLE"
+      tableName = text (show $ table_name t)
+
 
