@@ -4,7 +4,7 @@ import qualified Data.Set as S (fromList, Set, member)
 import Data.Char (toUpper)
 
 isReserved :: String -> Bool
-isReserved xs = (map toUpper xs) `S.member` reservedWords
+isReserved xs = map toUpper xs `S.member` reservedWords
 
 reservedWords :: S.Set String
 reservedWords = S.fromList [

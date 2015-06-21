@@ -5,7 +5,7 @@ module Database.SqlServer.Types.Grammar where
 
 import Database.SqlServer.Types.Identifiers
 import Database.SqlServer.Types.DataTypes
-import Database.SqlServer.Types.Collations (collations, Collation, render_collation)
+import Database.SqlServer.Types.Collations (collations, Collation, renderCollation)
 
 import Test.QuickCheck
 import Test.QuickCheck.Gen
@@ -21,32 +21,32 @@ newtype ColumnDefinitions = ColumnDefinitions [ColumnDefinition]
 -- https://msdn.microsoft.com/en-us/library/ms174979.aspx
 data TableDefinition = TableDefinition
              {
-               table_name    :: RegularIdentifier
-             , column_definitions :: ColumnDefinitions
+               tableName    :: RegularIdentifier
+             , columnDefinitions :: ColumnDefinitions
              }
 
 uniqueNames :: [ColumnDefinition] -> Bool
-uniqueNames xs = length xs == length (nub $ map column_name xs)
+uniqueNames xs = length xs == length (nub $ map columnName xs)
 
 data StorageOptions = Sparse
                     | SparseNull
                     | NotNull
                     | Null
 
-render_sparse :: StorageOptions -> Doc
-render_sparse Sparse = text "SPARSE"
-render_sparse _      = empty
+renderSparse :: StorageOptions -> Doc
+renderSparse Sparse = text "SPARSE"
+renderSparse _      = empty
 
-render_null_constraint :: StorageOptions -> Doc
-render_null_constraint NotNull = text "NOT NULL"
-render_null_constraint Null    = text "NULL"
-render_null_constraint _       = empty
+renderNullConstraint :: StorageOptions -> Doc
+renderNullConstraint NotNull = text "NOT NULL"
+renderNullConstraint Null    = text "NULL"
+renderNullConstraint _       = empty
 
 data ColumnDefinition = ColumnDefinition
                         {
-                          column_name :: RegularIdentifier
-                        , data_type   :: Type
-                        , storage_options :: Maybe StorageOptions
+                          columnName :: RegularIdentifier
+                        , dataType   :: Type
+                        , storageOptions :: Maybe StorageOptions
                         }
 
 instance Arbitrary ColumnDefinitions where
@@ -64,20 +64,20 @@ renderColumnDefinitions (ColumnDefinitions xs) = vcat (punctuate comma cols)
     cols = map renderColumnDefinition xs
 
 renderColumnDefinition :: ColumnDefinition -> Doc
-renderColumnDefinition c = columnName <+> columnType <+> collationD <+>
+renderColumnDefinition c = columnName' <+> columnType' <+> collation' <+>
                            sparse <+> nullConstraint
   where
-    columnName     = text (show $ column_name c)
-    columnType     = render_data_type $ data_type c
-    collationD     = maybe empty render_collation (collation (data_type c))
-    sparse         = maybe empty render_sparse (storage_options c)
-    nullConstraint = maybe empty render_null_constraint (storage_options c)
+    columnName'     = text (show $ columnName c)
+    columnType'     = renderDataType $ dataType c
+    collation'      = maybe empty renderCollation (collation (dataType c))
+    sparse          = maybe empty renderSparse (storageOptions c)
+    nullConstraint  = maybe empty renderNullConstraint (storageOptions c)
 
 instance Show TableDefinition where
   show t = render doc 
     where
-      doc = text "CREATE TABLE" <+> tableName $$
-           (parens $ renderColumnDefinitions (column_definitions t))
-      tableName = text (show $ table_name t)
+      doc = text "CREATE TABLE" <+> tableName' $$
+            (parens $ renderColumnDefinitions (columnDefinitions t))
+      tableName' = text (show $ tableName t)
 
 

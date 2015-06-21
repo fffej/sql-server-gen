@@ -1,6 +1,3 @@
-{-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE TemplateHaskell #-}
-
 module Database.SqlServer.Types.Identifiers where
 
 import Database.SqlServer.Types.Reserved (isReserved)

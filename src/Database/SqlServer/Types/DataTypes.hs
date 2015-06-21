@@ -15,8 +15,8 @@ import Data.DeriveTH
 -- Size of arbitrary data (>= 1 && <= 8000)
 newtype FixedRange = FixedRange Int
 
-render_fixed_range :: FixedRange -> Doc
-render_fixed_range (FixedRange n) = lparen <+> int n <+> rparen
+renderFixedRange :: FixedRange -> Doc
+renderFixedRange (FixedRange n) = lparen <+> int n <+> rparen
 
 instance Arbitrary FixedRange where
   arbitrary = liftM FixedRange (choose (1,8000))
@@ -25,9 +25,9 @@ instance Arbitrary FixedRange where
 data Range = Sized FixedRange
            | Max
 
-render_range :: Range -> Doc
-render_range Max = text "(max)"
-render_range (Sized r) = render_fixed_range r
+renderRange :: Range -> Doc
+renderRange Max = text "(max)"
+renderRange (Sized r) = renderFixedRange r
 
 derive makeArbitrary ''Range
 
@@ -81,42 +81,42 @@ collation (NVarChar mc)  = mc
 collation (NText mc)     = mc
 collation _              = Nothing
 
-render_data_type :: Type -> Doc
-render_data_type BigInt = text "bigint"
-render_data_type Bit = text "bit"
-render_data_type Numeric = text "numeric"
-render_data_type SmallInt = text "smallint"
-render_data_type Decimal = text "decimal"
-render_data_type SmallMoney = text "smallmoney"
-render_data_type Int = text "int"
-render_data_type TinyInt = text "tinyint"
-render_data_type Money = text "money"
-render_data_type Float = text "float"
-render_data_type Real = text "real"
-render_data_type Date = text "date"
-render_data_type DateTimeOffset = text "datetimeoffset"
-render_data_type DateTime2 = text "datetime2"
-render_data_type SmallDateTime = text "smalldatetime"
-render_data_type DateTime = text "datetime"
-render_data_type Time = text "time"
-render_data_type (Char fixedRange _)  = text "char" <+> render_fixed_range fixedRange
-render_data_type (VarChar range _) = text "varchar" <+> render_range range
-render_data_type (Text _) = text "text"
-render_data_type (NChar _) = text "nchar"
-render_data_type (NVarChar _) = text "nvarchar"
-render_data_type (NText _) = text "ntext"
-render_data_type (Binary fixedRange)  = text "binary" <+> render_fixed_range fixedRange
-render_data_type (VarBinary range) = text "varbinary" <+> render_range range
-render_data_type Image = text "image"
-render_data_type Cursor = text "cursor"
-render_data_type Timestamp = text "timestamp"
-render_data_type HierarchyId = text "hierarchyid"
-render_data_type UniqueIdentifier = text "uniqueidentifier"
-render_data_type SqlVariant = text "sqlvariant"
-render_data_type Xml = text "xml"
-render_data_type Table = text "table"
-render_data_type Geography = text "geography"
-render_data_type Geometry = text "geometry"
+renderDataType :: Type -> Doc
+renderDataType BigInt = text "bigint"
+renderDataType Bit = text "bit"
+renderDataType Numeric = text "numeric"
+renderDataType SmallInt = text "smallint"
+renderDataType Decimal = text "decimal"
+renderDataType SmallMoney = text "smallmoney"
+renderDataType Int = text "int"
+renderDataType TinyInt = text "tinyint"
+renderDataType Money = text "money"
+renderDataType Float = text "float"
+renderDataType Real = text "real"
+renderDataType Date = text "date"
+renderDataType DateTimeOffset = text "datetimeoffset"
+renderDataType DateTime2 = text "datetime2"
+renderDataType SmallDateTime = text "smalldatetime"
+renderDataType DateTime = text "datetime"
+renderDataType Time = text "time"
+renderDataType (Char fixedRange _)  = text "char" <+> renderFixedRange fixedRange
+renderDataType (VarChar range _) = text "varchar" <+> renderRange range
+renderDataType (Text _) = text "text"
+renderDataType (NChar _) = text "nchar"
+renderDataType (NVarChar _) = text "nvarchar"
+renderDataType (NText _) = text "ntext"
+renderDataType (Binary fixedRange)  = text "binary" <+> renderFixedRange fixedRange
+renderDataType (VarBinary range) = text "varbinary" <+> renderRange range
+renderDataType Image = text "image"
+renderDataType Cursor = text "cursor"
+renderDataType Timestamp = text "timestamp"
+renderDataType HierarchyId = text "hierarchyid"
+renderDataType UniqueIdentifier = text "uniqueidentifier"
+renderDataType SqlVariant = text "sqlvariant"
+renderDataType Xml = text "xml"
+renderDataType Table = text "table"
+renderDataType Geography = text "geography"
+renderDataType Geometry = text "geometry"
 
 
 instance Arbitrary Type where
