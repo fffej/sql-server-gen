@@ -5,8 +5,13 @@ import Database.SqlServer.Types.Reserved (isReserved)
 import Test.QuickCheck
 import Test.QuickCheck.Gen
 
+import Text.PrettyPrint
+
 -- https://msdn.microsoft.com/en-us/subscriptions/downloads/ms175874
 newtype RegularIdentifier = RegularIdentifier String deriving Eq
+
+renderRegularIdentifier :: RegularIdentifier -> Doc
+renderRegularIdentifier (RegularIdentifier x) = text x
 
 firstChars :: String
 firstChars = ['a'..'z'] ++ ['A'..'Z'] ++ "_@#"
@@ -28,6 +33,3 @@ instance Arbitrary RegularIdentifier where
     x <- elements firstChars
     y <- listOf (elements subsequentChars) `suchThat` validLength
     return (RegularIdentifier $ x : y)
-
-instance Show RegularIdentifier where
-  show (RegularIdentifier s) = s

@@ -3,6 +3,7 @@
 
 module Database.SqlServer.Types.Table where
 
+import Database.SqlServer.Types.Properties
 import Database.SqlServer.Types.Identifiers
 import Database.SqlServer.Types.DataTypes
 import Database.SqlServer.Types.Collations (collations, Collation, renderCollation)
@@ -25,9 +26,9 @@ data TableDefinition = TableDefinition
              , columnDefinitions :: ColumnDefinitions
              }
 
-uniqueNames :: [ColumnDefinition] -> Bool
-uniqueNames xs = length xs == length (nub $ map columnName xs)
-
+instance NamedEntity TableDefinition where
+  name = tableName
+  
 data StorageOptions = Sparse
                     | SparseNull
                     | NotNull
@@ -49,8 +50,11 @@ data ColumnDefinition = ColumnDefinition
                         , storageOptions :: Maybe StorageOptions
                         }
 
+instance NamedEntity ColumnDefinition where
+  name = columnName
+
 instance Arbitrary ColumnDefinitions where
-  arbitrary = liftM ColumnDefinitions $ listOf1 arbitrary   
+  arbitrary = liftM ColumnDefinitions $ (listOf1 arbitrary `suchThat` uniqueNames)
 
 derive makeArbitrary ''TableDefinition
 
@@ -67,19 +71,19 @@ renderColumnDefinition :: ColumnDefinition -> Doc
 renderColumnDefinition c = columnName' <+> columnType' <+> collation' <+>
                            sparse <+> nullConstraint
   where
-    columnName'     = text (show $ columnName c)
+    columnName'     = renderRegularIdentifier (columnName c)
     columnType'     = renderDataType $ dataType c
     collation'      = maybe empty renderCollation (collation (dataType c))
     sparse          = maybe empty renderSparse (storageOptions c)
     nullConstraint  = maybe empty renderNullConstraint (storageOptions c)
 
-renderTable :: TableDefinition -> Doc
-renderTable t = text "CREATE TABLE" <+> tableName' $$
+renderTableDefinition :: TableDefinition -> Doc
+renderTableDefinition t = text "CREATE TABLE" <+> tableName' $$
                 (parens $ renderColumnDefinitions (columnDefinitions t))
   where
-    tableName' = text (show $ tableName t)
+    tableName' = renderRegularIdentifier (tableName t)
 
 
 instance Show TableDefinition where
-  show = render . renderTable
+  show = render . renderTableDefinition
 
