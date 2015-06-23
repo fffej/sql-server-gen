@@ -35,6 +35,11 @@ data ColumnDefinition = ColumnDefinition
                         , dataType   :: Type
                         }
 
+{-
+
+Creating or altering table 'diDsDhXF3In' failed because the minimum row size would be 12387, including 14 bytes of internal overhead. This exceeds the maximum allowable table row size of 8060 bytes.
+
+-}
 columnConstraintsSatisfied :: [ColumnDefinition] -> Bool
 columnConstraintsSatisfied xs = allValidIdentifiers && maxOneTimeStamp
   where

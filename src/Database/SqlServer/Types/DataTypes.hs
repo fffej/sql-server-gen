@@ -7,7 +7,7 @@ import Database.SqlServer.Types.Collations (collations, Collation)
 
 import Text.PrettyPrint
 
-import Test.QuickCheck
+import Test.QuickCheck hiding (scale)
 import Control.Monad 
 import Data.DeriveTH
 
@@ -66,12 +66,30 @@ renderNullStorageOptions :: NullStorageOptions -> Doc
 renderNullStorageOptions NotNull = text "NOT NULL"
 renderNullStorageOptions Null    = text "NULL"
 
+data NumericStorage = NumericStorage
+                      {
+                        precision :: Int
+                      , scale :: Maybe Int 
+                      }
+
+renderNumericStorage :: NumericStorage -> Doc
+renderNumericStorage ns = lparen <+> int (precision ns) <+> scale' <+> rparen
+  where
+    scale' = maybe empty (\x -> comma <+> int x) (scale ns)
+
+instance Arbitrary NumericStorage where                      
+  arbitrary = do
+    precision <- choose(1,38)
+    scale     <- elements (Nothing : map Just [1..38])
+    return $ NumericStorage precision scale
+
+    
 -- https://msdn.microsoft.com/en-us/library/ms187752.aspx
 data Type = BigInt (Maybe StorageOptions) 
           | Bit (Maybe StorageOptions)
-          | Numeric (Maybe StorageOptions)
-          | SmallInt (Maybe StorageOptions)
-          | Decimal (Maybe StorageOptions)
+          | Numeric (Maybe StorageOptions) (Maybe NumericStorage)
+          | SmallInt (Maybe StorageOptions) 
+          | Decimal (Maybe StorageOptions) (Maybe NumericStorage)
           | SmallMoney (Maybe StorageOptions)
           | Int (Maybe StorageOptions)
           | TinyInt (Maybe StorageOptions)
@@ -99,7 +117,7 @@ data Type = BigInt (Maybe StorageOptions)
           | SqlVariant (Maybe StorageOptions)
           | Xml (Maybe StorageOptions)
           | Geography (Maybe NullStorageOptions)
-          | Geometry  (Maybe NullStorageOptions)
+          | Geometry  (Maybe NullStorageOptions)          
 
 derive makeArbitrary ''StorageOptions
 derive makeArbitrary ''Type
@@ -116,15 +134,24 @@ collation (NVarChar mc _)  = mc
 collation (NText mc _)     = mc
 collation s              = Nothing
 
+-- storage size in bits
+storageSize :: Type -> Int
+storageSize (BigInt _) = 8 * 8
+storageSize (Int _)  = 4 * 8
+storageSize (SmallInt _) = 2 * 8
+storageSize (TinyInt _) = 1 * 8
+storageSize (Bit _)     = 1
+storageSize _           = undefined
+
 nullOptions :: Type -> Maybe NullStorageOptions
 nullOptions t = maybe Nothing nullStorageFromStorageOptions (storageOptions t)
 
 storageOptions :: Type -> Maybe StorageOptions
 storageOptions (BigInt s) = s
 storageOptions (Bit s) = s
-storageOptions (Numeric s) = s
+storageOptions (Numeric s _) = s
 storageOptions (SmallInt s) = s
-storageOptions (Decimal s) = s
+storageOptions (Decimal s _) = s
 storageOptions (SmallMoney s) = s
 storageOptions (Int s) = s
 storageOptions (TinyInt s) = s
@@ -158,9 +185,9 @@ storageOptions (Geometry _) = Nothing
 renderDataType :: Type -> Doc
 renderDataType (BigInt _) = text "bigint"
 renderDataType (Bit _) = text "bit"
-renderDataType (Numeric _) = text "numeric"
+renderDataType (Numeric _ ns) = text "numeric" <+> maybe empty renderNumericStorage ns
 renderDataType (SmallInt _) = text "smallint"
-renderDataType (Decimal _) = text "decimal"
+renderDataType (Decimal _ ns) = text "decimal" <+> maybe empty renderNumericStorage ns
 renderDataType (SmallMoney _) = text "smallmoney"
 renderDataType (Int _) = text "int"
 renderDataType (TinyInt _) = text "tinyint"
