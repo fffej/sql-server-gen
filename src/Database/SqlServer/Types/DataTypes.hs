@@ -39,6 +39,10 @@ instance Arbitrary NFixedRange where
 data Range = Sized FixedRange
            | Max
 
+rangeStorageSize :: Range -> Int
+rangeStorageSize (Sized x) = fixedRangeStorage x
+rangeStorageSize _         = 0 
+
 renderRange :: Range -> Doc
 renderRange Max = text "(max)"
 renderRange (Sized r) = renderFixedRange r
@@ -46,10 +50,13 @@ renderRange (Sized r) = renderFixedRange r
 data NRange = NSized NFixedRange
             | NMax
 
+nRangeStorageSize :: NRange -> Int
+nRangeStorageSize (NSized x) = nfixedRangeStorage x
+nRangeStorageSize _          = 0
+
 renderNRange :: NRange -> Doc
 renderNRange NMax = text "(max)"
 renderNRange (NSized r) = renderNFixedRange r
-
 
 data VarBinaryStorage = SizedRange Range
                       | MaxNoFileStream
@@ -63,6 +70,10 @@ renderVarBinaryStorage :: VarBinaryStorage -> Doc
 renderVarBinaryStorage (SizedRange r)   = renderRange r
 renderVarBinaryStorage MaxFileStream    = text "(max)"
 renderVarBinaryStorage MaxNoFileStream  = text "(max)"
+
+varBinarySize :: VarBinaryStorage -> Int
+varBinarySize (SizedRange r) = rangeStorageSize r
+varBinarySize _              = 0 
 
 {- A sparse column must be nullable and cannot have the ROWGUIDCOL, IDENTITY, or FILESTREAM properties.
    A sparse column cannot be of the following data types: text, ntext, image, geometry, geography, or user-defined type. -}
@@ -234,9 +245,9 @@ storageSize (Char fr _ _) = maybe 8 fixedRangeStorage fr
 storageSize (NChar fr _ _) = maybe 8 nfixedRangeStorage fr
 storageSize (Binary p _) = maybe (1 * 8) fixedRangeStorage p
 storageSize (UniqueIdentifier _) = 16 * 8
-storageSize (VarBinary _ _) = 0 -- assumption 
-storageSize (VarChar _ _ _) = 0 -- assumption
-storageSize (NVarChar _ _ _) = 0 -- assumption
+storageSize (VarBinary r _) = maybe (1 * 8) varBinarySize r
+storageSize (VarChar r _ _) = rangeStorageSize r 
+storageSize (NVarChar r _ _) = maybe (1 * 8) nRangeStorageSize r
 storageSize (Text _ _) = 0 -- assumption
 storageSize (NText _ _) = 0 -- assumption
 storageSize (Image _) = 0 -- assumption
