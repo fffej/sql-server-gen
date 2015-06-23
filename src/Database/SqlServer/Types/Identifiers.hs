@@ -28,11 +28,14 @@ maximumLengthOfRegularIdentifier = 128
 validLength :: String -> Bool
 validLength x = length x < maximumLengthOfRegularIdentifier
 
+validIdentifier :: String -> Bool
+validIdentifier x = validLength x && not (isReserved x)
+
 -- https://msdn.microsoft.com/en-us/library/ms189822.aspx
 newtype Keyword = Keyword String
 
 instance Arbitrary RegularIdentifier where
   arbitrary = do
     x <- elements firstChars
-    y <- listOf (elements subsequentChars) `suchThat` validLength
+    y <- listOf (elements subsequentChars) `suchThat` validIdentifier
     return (RegularIdentifier $ x : y)

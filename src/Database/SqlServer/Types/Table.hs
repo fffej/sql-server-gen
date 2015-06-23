@@ -5,7 +5,7 @@ module Database.SqlServer.Types.Table where
 
 import Database.SqlServer.Types.Properties (NamedEntity,name,validIdentifiers)
 import Database.SqlServer.Types.Identifiers (RegularIdentifier, renderRegularIdentifier)
-import Database.SqlServer.Types.DataTypes (Type, renderDataType, collation, renderSparse, storageOptions, renderNullConstraint, nullOptions)
+import Database.SqlServer.Types.DataTypes (Type(..), renderDataType, collation, renderSparse, storageOptions, renderNullConstraint, nullOptions)
 import Database.SqlServer.Types.Collations (collations, Collation, renderCollation)
 
 import Test.QuickCheck
@@ -35,11 +35,21 @@ data ColumnDefinition = ColumnDefinition
                         , dataType   :: Type
                         }
 
+columnConstraintsSatisfied :: [ColumnDefinition] -> Bool
+columnConstraintsSatisfied xs = allValidIdentifiers && maxOneTimeStamp
+  where
+    allValidIdentifiers = validIdentifiers xs
+    maxOneTimeStamp = length (filter isTimeStamp xs) <= 1
+    isTimeStamp c = case dataType c of
+      (Timestamp _) -> True
+      _             -> False
+
+
 instance NamedEntity ColumnDefinition where
   name = columnName
 
 instance Arbitrary ColumnDefinitions where
-  arbitrary = liftM ColumnDefinitions $ (listOf1 arbitrary `suchThat` validIdentifiers)
+  arbitrary = liftM ColumnDefinitions $ (listOf1 arbitrary `suchThat` columnConstraintsSatisfied)
 
 derive makeArbitrary ''TableDefinition
 

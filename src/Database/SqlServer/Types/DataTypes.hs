@@ -93,7 +93,7 @@ data Type = BigInt (Maybe StorageOptions)
           | Binary FixedRange (Maybe StorageOptions)
           | VarBinary VarBinaryStorage (Maybe StorageOptions)
           | Image (Maybe NullStorageOptions)
-          | Timestamp (Maybe StorageOptions)
+          | Timestamp (Maybe NullStorageOptions)
           | HierarchyId (Maybe StorageOptions)
           | UniqueIdentifier (Maybe StorageOptions)
           | SqlVariant (Maybe StorageOptions)
@@ -143,16 +143,16 @@ storageOptions (NChar _ s) = s
 storageOptions (NVarChar _ s) = s
 storageOptions (Binary _ s)  = s 
 storageOptions (VarBinary _ s) = s
-storageOptions (Timestamp s) = s 
 storageOptions (HierarchyId s) = s
 storageOptions (UniqueIdentifier s) = s
 storageOptions (SqlVariant s) = s
 storageOptions (Xml s) = s
-storageOptions (Text _ s) = Nothing
+storageOptions (Timestamp _) = Nothing
+storageOptions (Text _ _) = Nothing
 storageOptions (NText _ _) = Nothing
 storageOptions (Image _) = Nothing
-storageOptions (Geography s) = Nothing
-storageOptions (Geometry s) = Nothing
+storageOptions (Geography _) = Nothing
+storageOptions (Geometry _) = Nothing
 
 
 renderDataType :: Type -> Doc
