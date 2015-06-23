@@ -93,7 +93,24 @@ instance Arbitrary PrecisionStorage where
 
 renderPrecisionStorage :: PrecisionStorage -> Doc
 renderPrecisionStorage (PrecisionStorage n) = lparen <+> int n <+> rparen
-    
+
+data FractionalSecondsPrecision = FractionalSecondsPrecision Int
+
+instance Arbitrary FractionalSecondsPrecision where
+  arbitrary = do
+    precision <- choose (0,7)
+    return (FractionalSecondsPrecision precision)
+
+renderFractionalSecondsPrecision :: FractionalSecondsPrecision -> Doc
+renderFractionalSecondsPrecision (FractionalSecondsPrecision n) = lparen <+> int n <+> rparen
+
+-- https://msdn.microsoft.com/en-us/library/bb677335.aspx
+fractionalSecondsStorageSize :: FractionalSecondsPrecision -> Int
+fractionalSecondsStorageSize (FractionalSecondsPrecision p)
+  | p < 3            = 6 * 8
+  | p == 3 || p == 4 = 7 * 8
+  | otherwise        = 8
+                       
 -- https://msdn.microsoft.com/en-us/library/ms187752.aspx
 data Type = BigInt (Maybe StorageOptions) 
           | Bit (Maybe StorageOptions)
@@ -108,7 +125,7 @@ data Type = BigInt (Maybe StorageOptions)
           | Real (Maybe StorageOptions)
           | Date (Maybe StorageOptions)
           | DateTimeOffset (Maybe StorageOptions)
-          | DateTime2 (Maybe StorageOptions)
+          | DateTime2 (Maybe StorageOptions) (Maybe FractionalSecondsPrecision)
           | SmallDateTime (Maybe StorageOptions)
           | DateTime (Maybe StorageOptions)
           | Time (Maybe StorageOptions)
@@ -171,6 +188,8 @@ storageSize (Numeric _ ns) = maybe (9 * 8) numericStorageSize ns -- default prec
 storageSize (Decimal _ ns) = maybe (9 * 8) numericStorageSize ns -- default precision is 18
 storageSize (Float _ ps) = maybe (8 * 8) precisionStorageSize ps -- default precision is 53
 storageSize (Real _) = 4 * 8
+storageSize (Date _) = 3
+storageSize (DateTime2 _ p) = maybe (8 * 8) fractionalSecondsStorageSize p -- default is 8 bytes
 
 
 nullOptions :: Type -> Maybe NullStorageOptions
@@ -190,7 +209,7 @@ storageOptions (Float s _) = s
 storageOptions (Real s) = s
 storageOptions (Date s) = s
 storageOptions (DateTimeOffset s) = s
-storageOptions (DateTime2 s) = s
+storageOptions (DateTime2 s _) = s
 storageOptions (SmallDateTime s) = s
 storageOptions (DateTime s) = s
 storageOptions (Time s) = s
@@ -226,7 +245,7 @@ renderDataType (Float _ ps) = text "float" <+> maybe empty renderPrecisionStorag
 renderDataType (Real _) = text "real"
 renderDataType (Date _) = text "date"
 renderDataType (DateTimeOffset _) = text "datetimeoffset"
-renderDataType (DateTime2 _) = text "datetime2"
+renderDataType (DateTime2 _ p) = text "datetime2" <+> maybe empty renderFractionalSecondsPrecision p
 renderDataType (SmallDateTime _) = text "smalldatetime"
 renderDataType (DateTime _) = text "datetime"
 renderDataType (Time _)= text "time"
