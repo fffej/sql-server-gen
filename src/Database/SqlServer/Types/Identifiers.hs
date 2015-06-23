@@ -17,7 +17,7 @@ renderRegularIdentifier :: RegularIdentifier -> Doc
 renderRegularIdentifier (RegularIdentifier x) = text x
 
 firstChars :: String
-firstChars = ['a'..'z'] ++ ['A'..'Z'] ++ "_@#"
+firstChars = ['a'..'z'] ++ ['A'..'Z'] ++ "_#"
 
 subsequentChars :: String
 subsequentChars = firstChars ++ ['0'..'9']
