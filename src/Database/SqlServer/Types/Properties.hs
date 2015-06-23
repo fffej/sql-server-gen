@@ -4,6 +4,7 @@
 module Database.SqlServer.Types.Properties where
 
 import Database.SqlServer.Types.Identifiers
+import Database.SqlServer.Types.Reserved
 
 import Data.List (nub)
 
@@ -12,3 +13,9 @@ class NamedEntity a where
 
 uniqueNames :: NamedEntity a => [a] -> Bool
 uniqueNames xs = length xs == length (nub $ map name xs)
+
+reserved :: NamedEntity a => a -> Bool
+reserved a = isReserved $ unwrap (name a)
+
+unReserved :: NamedEntity a => a -> Bool
+unReserved = not . reserved

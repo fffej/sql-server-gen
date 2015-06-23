@@ -8,7 +8,10 @@ import Test.QuickCheck.Gen
 import Text.PrettyPrint
 
 -- https://msdn.microsoft.com/en-us/subscriptions/downloads/ms175874
-newtype RegularIdentifier = RegularIdentifier String deriving Eq
+newtype RegularIdentifier = RegularIdentifier
+                            {
+                              unwrap :: String
+                            } deriving Eq
 
 renderRegularIdentifier :: RegularIdentifier -> Doc
 renderRegularIdentifier (RegularIdentifier x) = text x
