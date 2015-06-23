@@ -3,7 +3,6 @@ module Database.SqlServer.Types.Identifiers where
 import Database.SqlServer.Types.Reserved (isReserved)
 
 import Test.QuickCheck
-import Test.QuickCheck.Gen
 
 import Text.PrettyPrint
 

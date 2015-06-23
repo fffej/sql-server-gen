@@ -5,13 +5,11 @@ module Database.SqlServer.Types.Table where
 
 import Database.SqlServer.Types.Properties (NamedEntity,name,validIdentifiers)
 import Database.SqlServer.Types.Identifiers (RegularIdentifier, renderRegularIdentifier)
-import Database.SqlServer.Types.DataTypes (Type(..), renderDataType, collation, renderSparse, storageOptions, renderNullConstraint, nullOptions)
-import Database.SqlServer.Types.Collations (collations, Collation, renderCollation)
+import Database.SqlServer.Types.DataTypes (Type(..), renderDataType, collation, renderSparse, storageOptions, renderNullConstraint, nullOptions, storageSize)
+import Database.SqlServer.Types.Collations (renderCollation)
 
 import Test.QuickCheck
-import Test.QuickCheck.Gen
 import Control.Monad
-import Data.List (nub,intersperse)
 
 import Text.PrettyPrint
 
@@ -41,8 +39,10 @@ Creating or altering table 'diDsDhXF3In' failed because the minimum row size wou
 
 -}
 columnConstraintsSatisfied :: [ColumnDefinition] -> Bool
-columnConstraintsSatisfied xs = allValidIdentifiers && maxOneTimeStamp
+columnConstraintsSatisfied xs = allValidIdentifiers && maxOneTimeStamp && totalColumnSizeBytes <= 8060
   where
+    totalColumnSizeBits = sum $ map (storageSize . dataType) xs
+    totalColumnSizeBytes = totalColumnSizeBits `div` 8 + (if totalColumnSizeBits `rem` 8 /= 0 then 1 else 0)
     allValidIdentifiers = validIdentifiers xs
     maxOneTimeStamp = length (filter isTimeStamp xs) <= 1
     isTimeStamp c = case dataType c of

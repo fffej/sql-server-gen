@@ -3,7 +3,7 @@
 
 module Database.SqlServer.Types.DataTypes where
 
-import Database.SqlServer.Types.Collations (collations, Collation)
+import Database.SqlServer.Types.Collations (Collation)
 
 import Text.PrettyPrint
 
@@ -18,8 +18,22 @@ newtype FixedRange = FixedRange Int
 renderFixedRange :: FixedRange -> Doc
 renderFixedRange (FixedRange n) = lparen <+> int n <+> rparen
 
+fixedRangeStorage :: FixedRange -> Int
+fixedRangeStorage (FixedRange n) = n * 8
+
 instance Arbitrary FixedRange where
   arbitrary = liftM FixedRange (choose (1,8000))
+
+newtype NFixedRange = NFixedRange Int
+
+renderNFixedRange :: NFixedRange -> Doc
+renderNFixedRange (NFixedRange n) = lparen <+> int n <+> rparen
+
+nfixedRangeStorage :: NFixedRange -> Int
+nfixedRangeStorage (NFixedRange n) = n * 8
+
+instance Arbitrary NFixedRange where
+  arbitrary = liftM NFixedRange (choose (1,4000))
 
 -- See for example https://msdn.microsoft.com/en-us/library/ms176089.aspx
 data Range = Sized FixedRange
@@ -28,6 +42,13 @@ data Range = Sized FixedRange
 renderRange :: Range -> Doc
 renderRange Max = text "(max)"
 renderRange (Sized r) = renderFixedRange r
+
+data NRange = NSized NFixedRange
+            | NMax
+
+renderNRange :: NRange -> Doc
+renderNRange NMax = text "(max)"
+renderNRange (NSized r) = renderNFixedRange r
 
 
 data VarBinaryStorage = SizedRange Range
@@ -80,9 +101,9 @@ renderNumericStorage ns = lparen <+> int (precision ns) <+> scale' <+> rparen
 {- The scale must be less than or equal to the precision -}
 instance Arbitrary NumericStorage where                      
   arbitrary = do
-    precision <- choose(1,38)
-    scale     <- elements (Nothing : map Just [1..precision])
-    return $ NumericStorage precision scale
+    p <- choose(1,38)
+    s     <- elements (Nothing : map Just [1..p])
+    return $ NumericStorage p s
 
 data PrecisionStorage = PrecisionStorage Int
 
@@ -105,12 +126,24 @@ renderFractionalSecondsPrecision :: FractionalSecondsPrecision -> Doc
 renderFractionalSecondsPrecision (FractionalSecondsPrecision n) = lparen <+> int n <+> rparen
 
 -- https://msdn.microsoft.com/en-us/library/bb677335.aspx
-fractionalSecondsStorageSize :: FractionalSecondsPrecision -> Int
-fractionalSecondsStorageSize (FractionalSecondsPrecision p)
+datetime2StorageSize :: FractionalSecondsPrecision -> Int
+datetime2StorageSize (FractionalSecondsPrecision p)
   | p < 3            = 6 * 8
   | p == 3 || p == 4 = 7 * 8
   | otherwise        = 8
-                       
+
+dateTimeOffsetStorageSize :: FractionalSecondsPrecision -> Int
+dateTimeOffsetStorageSize (FractionalSecondsPrecision n)
+  | n < 3     = 8 * 8
+  | n < 5     = 9 * 8
+  | otherwise = 10 * 8
+
+timeStorageSize :: FractionalSecondsPrecision -> Int
+timeStorageSize (FractionalSecondsPrecision n)
+  | n < 3 = 3 * 8
+  | n < 5 = 4 * 8
+  | otherwise = 5
+
 -- https://msdn.microsoft.com/en-us/library/ms187752.aspx
 data Type = BigInt (Maybe StorageOptions) 
           | Bit (Maybe StorageOptions)
@@ -124,19 +157,19 @@ data Type = BigInt (Maybe StorageOptions)
           | Float (Maybe StorageOptions) (Maybe PrecisionStorage)
           | Real (Maybe StorageOptions)
           | Date (Maybe StorageOptions)
-          | DateTimeOffset (Maybe StorageOptions)
+          | DateTimeOffset (Maybe StorageOptions) (Maybe FractionalSecondsPrecision)
           | DateTime2 (Maybe StorageOptions) (Maybe FractionalSecondsPrecision)
           | SmallDateTime (Maybe StorageOptions)
           | DateTime (Maybe StorageOptions)
-          | Time (Maybe StorageOptions)
-          | Char FixedRange (Maybe Collation) (Maybe StorageOptions)
+          | Time (Maybe StorageOptions) (Maybe FractionalSecondsPrecision)
+          | Char (Maybe FixedRange) (Maybe Collation) (Maybe StorageOptions)
           | VarChar Range (Maybe Collation) (Maybe StorageOptions)
           | Text (Maybe Collation) (Maybe NullStorageOptions)
-          | NChar (Maybe Collation) (Maybe StorageOptions)
-          | NVarChar (Maybe Collation) (Maybe StorageOptions)
+          | NChar (Maybe NFixedRange) (Maybe Collation) (Maybe StorageOptions)
+          | NVarChar (Maybe NRange) (Maybe Collation) (Maybe StorageOptions)
           | NText (Maybe Collation) (Maybe NullStorageOptions)
-          | Binary FixedRange (Maybe StorageOptions)
-          | VarBinary VarBinaryStorage (Maybe StorageOptions)
+          | Binary (Maybe FixedRange) (Maybe StorageOptions)
+          | VarBinary (Maybe VarBinaryStorage) (Maybe StorageOptions)
           | Image (Maybe NullStorageOptions)
           | Timestamp (Maybe NullStorageOptions)
           | HierarchyId (Maybe StorageOptions)
@@ -149,6 +182,7 @@ data Type = BigInt (Maybe StorageOptions)
 derive makeArbitrary ''StorageOptions
 derive makeArbitrary ''Type
 derive makeArbitrary ''Range
+derive makeArbitrary ''NRange
 derive makeArbitrary ''VarBinaryStorage
 derive makeArbitrary ''NullStorageOptions
 
@@ -156,10 +190,10 @@ collation :: Type -> Maybe Collation
 collation (Char _ mc _)    = mc
 collation (VarChar _ mc _) = mc
 collation (Text mc _)      = mc
-collation (NChar mc _)     = mc
-collation (NVarChar mc _)  = mc
+collation (NChar _ mc _)   = mc
+collation (NVarChar _ mc _)= mc
 collation (NText mc _)     = mc
-collation s              = Nothing
+collation _                = Nothing
 
 numericStorageSize :: NumericStorage -> Int
 numericStorageSize x 
@@ -189,7 +223,27 @@ storageSize (Decimal _ ns) = maybe (9 * 8) numericStorageSize ns -- default prec
 storageSize (Float _ ps) = maybe (8 * 8) precisionStorageSize ps -- default precision is 53
 storageSize (Real _) = 4 * 8
 storageSize (Date _) = 3
-storageSize (DateTime2 _ p) = maybe (8 * 8) fractionalSecondsStorageSize p -- default is 8 bytes
+storageSize (DateTime _ ) = 8 * 8
+storageSize (DateTime2 _ p) = maybe (8 * 8) datetime2StorageSize p -- default is 8 bytes
+storageSize (DateTimeOffset _ p) = maybe (10 * 8) dateTimeOffsetStorageSize p
+storageSize (SmallDateTime _) = 4 * 8
+storageSize (Time _ p) = maybe (5 * 8) timeStorageSize p
+storageSize (Char fr _ _) = maybe 8 fixedRangeStorage fr
+storageSize (NChar fr _ _) = maybe 8 nfixedRangeStorage fr
+storageSize (Binary p _) = maybe (1 * 8) fixedRangeStorage p
+storageSize (UniqueIdentifier _) = 16 * 8
+storageSize (VarBinary _ _) = 0 -- assumption 
+storageSize (VarChar _ _ _) = 0 -- assumption
+storageSize (NVarChar _ _ _) = 0 -- assumption
+storageSize (Text _ _) = 0 -- assumption
+storageSize (NText _ _) = 0 -- assumption
+storageSize (Image _) = 0 -- assumption
+storageSize (Timestamp _) = 0 -- assumption
+storageSize (HierarchyId _) = 0 -- assumption
+storageSize (Geometry _) = 0
+storageSize (Geography _) = 0
+storageSize (SqlVariant _) = 0
+storageSize (Xml _) = 0
 
 
 nullOptions :: Type -> Maybe NullStorageOptions
@@ -208,15 +262,15 @@ storageOptions (Money s) = s
 storageOptions (Float s _) = s
 storageOptions (Real s) = s
 storageOptions (Date s) = s
-storageOptions (DateTimeOffset s) = s
+storageOptions (DateTimeOffset s _) = s
 storageOptions (DateTime2 s _) = s
 storageOptions (SmallDateTime s) = s
 storageOptions (DateTime s) = s
-storageOptions (Time s) = s
+storageOptions (Time s _) = s
 storageOptions (Char _ _ s)  = s
 storageOptions (VarChar _ _ s) = s
-storageOptions (NChar _ s) = s
-storageOptions (NVarChar _ s) = s
+storageOptions (NChar _ _ s) = s
+storageOptions (NVarChar _ _ s) = s
 storageOptions (Binary _ s)  = s 
 storageOptions (VarBinary _ s) = s
 storageOptions (HierarchyId s) = s
@@ -244,19 +298,19 @@ renderDataType (Money _) = text "money"
 renderDataType (Float _ ps) = text "float" <+> maybe empty renderPrecisionStorage ps
 renderDataType (Real _) = text "real"
 renderDataType (Date _) = text "date"
-renderDataType (DateTimeOffset _) = text "datetimeoffset"
+renderDataType (DateTimeOffset _ p) = text "datetimeoffset" <+> maybe empty renderFractionalSecondsPrecision p
 renderDataType (DateTime2 _ p) = text "datetime2" <+> maybe empty renderFractionalSecondsPrecision p
 renderDataType (SmallDateTime _) = text "smalldatetime"
 renderDataType (DateTime _) = text "datetime"
-renderDataType (Time _)= text "time"
-renderDataType (Char fixedRange _ _)  = text "char" <+> renderFixedRange fixedRange
+renderDataType (Time _ p)= text "time" <+> maybe empty renderFractionalSecondsPrecision p
+renderDataType (Char fixedRange _ _)  = text "char" <+> maybe empty renderFixedRange fixedRange
 renderDataType (VarChar range _ _) = text "varchar" <+> renderRange range
 renderDataType (Text _ _) = text "text"
-renderDataType (NChar _ _) = text "nchar"
-renderDataType (NVarChar _ _) = text "nvarchar"
+renderDataType (NChar p _ _) = text "nchar" <+> maybe empty renderNFixedRange p
+renderDataType (NVarChar p _ _) = text "nvarchar" <+> maybe empty renderNRange p
 renderDataType (NText _ _) = text "ntext"
-renderDataType (Binary fixedRange _)  = text "binary" <+> renderFixedRange fixedRange
-renderDataType (VarBinary range _) = text "varbinary" <+> renderVarBinaryStorage range
+renderDataType (Binary fixedRange _)  = text "binary" <+> maybe empty renderFixedRange fixedRange
+renderDataType (VarBinary range _) = text "varbinary" <+> maybe empty renderVarBinaryStorage range
 renderDataType (Image _) = text "image"
 renderDataType (Timestamp _) = text "timestamp"
 renderDataType (HierarchyId _) = text "hierarchyid"

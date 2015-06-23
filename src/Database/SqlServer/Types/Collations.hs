@@ -1,8 +1,6 @@
 module Database.SqlServer.Types.Collations where
 
 import Test.QuickCheck
-import Control.Monad
-
 import Text.PrettyPrint
 
 newtype Collation = Collation String
