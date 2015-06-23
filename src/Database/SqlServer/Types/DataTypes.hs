@@ -29,13 +29,10 @@ renderRange :: Range -> Doc
 renderRange Max = text "(max)"
 renderRange (Sized r) = renderFixedRange r
 
-derive makeArbitrary ''Range
 
 data VarBinaryStorage = SizedRange Range
                       | MaxNoFileStream
                       | MaxFileStream
-
-derive makeArbitrary ''VarBinaryStorage
 
 renderFileStream :: VarBinaryStorage -> Doc
 renderFileStream MaxFileStream = text "FILESTREAM"
@@ -48,57 +45,67 @@ renderVarBinaryStorage MaxNoFileStream  = text "(max)"
 
 {- A sparse column must be nullable and cannot have the ROWGUIDCOL, IDENTITY, or FILESTREAM properties.
    A sparse column cannot be of the following data types: text, ntext, image, geometry, geography, or user-defined type. -}
-data SparseStorageOptions = Sparse
+data StorageOptions = Sparse
                     | SparseNull
-                    | NotNull
-                    | Null
+                    | StorageOptions NullStorageOptions
 
-renderSparse :: SparseStorageOptions -> Doc
+data NullStorageOptions = NotNull | Null
+
+nullStorageFromStorageOptions :: StorageOptions -> Maybe NullStorageOptions
+nullStorageFromStorageOptions (StorageOptions x) = Just x
+nullStorageFromStorageOptions _                  = Nothing
+
+renderSparse :: StorageOptions -> Doc
 renderSparse Sparse = text "SPARSE"
 renderSparse _      = empty
 
-renderNullConstraint :: SparseStorageOptions -> Doc
-renderNullConstraint NotNull = text "NOT NULL"
-renderNullConstraint Null    = text "NULL"
-renderNullConstraint _       = empty
+renderNullConstraint ::  NullStorageOptions -> Doc
+renderNullConstraint x = renderNullStorageOptions x
+
+renderNullStorageOptions :: NullStorageOptions -> Doc
+renderNullStorageOptions NotNull = text "NOT NULL"
+renderNullStorageOptions Null    = text "NULL"
 
 -- https://msdn.microsoft.com/en-us/library/ms187752.aspx
-data Type = BigInt (Maybe SparseStorageOptions) 
-          | Bit (Maybe SparseStorageOptions)
-          | Numeric (Maybe SparseStorageOptions)
-          | SmallInt (Maybe SparseStorageOptions)
-          | Decimal (Maybe SparseStorageOptions)
-          | SmallMoney (Maybe SparseStorageOptions)
-          | Int (Maybe SparseStorageOptions)
-          | TinyInt (Maybe SparseStorageOptions)
-          | Money (Maybe SparseStorageOptions)
-          | Float (Maybe SparseStorageOptions)
-          | Real (Maybe SparseStorageOptions)
-          | Date (Maybe SparseStorageOptions)
-          | DateTimeOffset (Maybe SparseStorageOptions)
-          | DateTime2 (Maybe SparseStorageOptions)
-          | SmallDateTime (Maybe SparseStorageOptions)
-          | DateTime (Maybe SparseStorageOptions)
-          | Time (Maybe SparseStorageOptions)
-          | Char FixedRange (Maybe Collation) (Maybe SparseStorageOptions)
-          | VarChar Range (Maybe Collation) (Maybe SparseStorageOptions)
-          | Text (Maybe Collation) (Maybe SparseStorageOptions)
-          | NChar (Maybe Collation) (Maybe SparseStorageOptions)
-          | NVarChar (Maybe Collation) (Maybe SparseStorageOptions)
-          | NText (Maybe Collation) (Maybe SparseStorageOptions)
-          | Binary FixedRange (Maybe SparseStorageOptions)
-          | VarBinary VarBinaryStorage (Maybe SparseStorageOptions)
-          | Image (Maybe SparseStorageOptions)
-          | Timestamp (Maybe SparseStorageOptions)
-          | HierarchyId (Maybe SparseStorageOptions)
-          | UniqueIdentifier (Maybe SparseStorageOptions)
-          | SqlVariant (Maybe SparseStorageOptions)
-          | Xml (Maybe SparseStorageOptions)
-          | Geography (Maybe SparseStorageOptions)
-          | Geometry  (Maybe SparseStorageOptions)
+data Type = BigInt (Maybe StorageOptions) 
+          | Bit (Maybe StorageOptions)
+          | Numeric (Maybe StorageOptions)
+          | SmallInt (Maybe StorageOptions)
+          | Decimal (Maybe StorageOptions)
+          | SmallMoney (Maybe StorageOptions)
+          | Int (Maybe StorageOptions)
+          | TinyInt (Maybe StorageOptions)
+          | Money (Maybe StorageOptions)
+          | Float (Maybe StorageOptions)
+          | Real (Maybe StorageOptions)
+          | Date (Maybe StorageOptions)
+          | DateTimeOffset (Maybe StorageOptions)
+          | DateTime2 (Maybe StorageOptions)
+          | SmallDateTime (Maybe StorageOptions)
+          | DateTime (Maybe StorageOptions)
+          | Time (Maybe StorageOptions)
+          | Char FixedRange (Maybe Collation) (Maybe StorageOptions)
+          | VarChar Range (Maybe Collation) (Maybe StorageOptions)
+          | Text (Maybe Collation) (Maybe NullStorageOptions)
+          | NChar (Maybe Collation) (Maybe StorageOptions)
+          | NVarChar (Maybe Collation) (Maybe StorageOptions)
+          | NText (Maybe Collation) (Maybe NullStorageOptions)
+          | Binary FixedRange (Maybe StorageOptions)
+          | VarBinary VarBinaryStorage (Maybe StorageOptions)
+          | Image (Maybe NullStorageOptions)
+          | Timestamp (Maybe StorageOptions)
+          | HierarchyId (Maybe StorageOptions)
+          | UniqueIdentifier (Maybe StorageOptions)
+          | SqlVariant (Maybe StorageOptions)
+          | Xml (Maybe StorageOptions)
+          | Geography (Maybe NullStorageOptions)
+          | Geometry  (Maybe NullStorageOptions)
 
-derive makeArbitrary ''SparseStorageOptions
+derive makeArbitrary ''StorageOptions
 derive makeArbitrary ''Type
+derive makeArbitrary ''Range
+derive makeArbitrary ''VarBinaryStorage
+derive makeArbitrary ''NullStorageOptions
 
 collation :: Type -> Maybe Collation
 collation (Char _ mc _)    = mc
@@ -109,7 +116,10 @@ collation (NVarChar mc _)  = mc
 collation (NText mc _)     = mc
 collation s              = Nothing
 
-storageOptions :: Type -> Maybe SparseStorageOptions
+nullOptions :: Type -> Maybe NullStorageOptions
+nullOptions t = maybe Nothing nullStorageFromStorageOptions (storageOptions t)
+
+storageOptions :: Type -> Maybe StorageOptions
 storageOptions (BigInt s) = s
 storageOptions (Bit s) = s
 storageOptions (Numeric s) = s
@@ -129,20 +139,20 @@ storageOptions (DateTime s) = s
 storageOptions (Time s) = s
 storageOptions (Char _ _ s)  = s
 storageOptions (VarChar _ _ s) = s
-storageOptions (Text _ s) = s
 storageOptions (NChar _ s) = s
 storageOptions (NVarChar _ s) = s
-storageOptions (NText _ s) = s 
 storageOptions (Binary _ s)  = s 
 storageOptions (VarBinary _ s) = s
-storageOptions (Image s) = s
 storageOptions (Timestamp s) = s 
 storageOptions (HierarchyId s) = s
 storageOptions (UniqueIdentifier s) = s
 storageOptions (SqlVariant s) = s
 storageOptions (Xml s) = s
-storageOptions (Geography s) = s
-storageOptions (Geometry s) = s
+storageOptions (Text _ s) = Nothing
+storageOptions (NText _ _) = Nothing
+storageOptions (Image _) = Nothing
+storageOptions (Geography s) = Nothing
+storageOptions (Geometry s) = Nothing
 
 
 renderDataType :: Type -> Doc
