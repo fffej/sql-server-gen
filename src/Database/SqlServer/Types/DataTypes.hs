@@ -141,7 +141,7 @@ datetime2StorageSize :: FractionalSecondsPrecision -> Int
 datetime2StorageSize (FractionalSecondsPrecision p)
   | p < 3            = 6 * 8
   | p == 3 || p == 4 = 7 * 8
-  | otherwise        = 8
+  | otherwise        = 8 * 8
 
 dateTimeOffsetStorageSize :: FractionalSecondsPrecision -> Int
 dateTimeOffsetStorageSize (FractionalSecondsPrecision n)
@@ -151,9 +151,9 @@ dateTimeOffsetStorageSize (FractionalSecondsPrecision n)
 
 timeStorageSize :: FractionalSecondsPrecision -> Int
 timeStorageSize (FractionalSecondsPrecision n)
-  | n < 3 = 3 * 8
-  | n < 5 = 4 * 8
-  | otherwise = 5
+  | n < 3     = 3 * 8
+  | n < 5     = 4 * 8
+  | otherwise = 5 * 8
 
 -- https://msdn.microsoft.com/en-us/library/ms187752.aspx
 data Type = BigInt (Maybe StorageOptions) 
@@ -235,7 +235,7 @@ storageSize (Numeric _ ns) = maybe (9 * 8) numericStorageSize ns -- default prec
 storageSize (Decimal _ ns) = maybe (9 * 8) numericStorageSize ns -- default precision is 18
 storageSize (Float _ ps) = maybe (8 * 8) precisionStorageSize ps -- default precision is 53
 storageSize (Real _) = 4 * 8
-storageSize (Date _) = 3
+storageSize (Date _) = 3 * 8
 storageSize (DateTime _ ) = 8 * 8
 storageSize (DateTime2 _ p) = maybe (8 * 8) datetime2StorageSize p -- default is 8 bytes
 storageSize (DateTimeOffset _ p) = maybe (10 * 8) dateTimeOffsetStorageSize p
