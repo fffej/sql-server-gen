@@ -30,7 +30,7 @@ renderNFixedRange :: NFixedRange -> Doc
 renderNFixedRange (NFixedRange n) = lparen <> int n <> rparen
 
 nfixedRangeStorage :: NFixedRange -> Int
-nfixedRangeStorage (NFixedRange n) = n * 8
+nfixedRangeStorage (NFixedRange n) = n * 8 * 2
 
 instance Arbitrary NFixedRange where
   arbitrary = liftM NFixedRange (choose (1,4000))
