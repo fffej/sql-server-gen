@@ -37,11 +37,13 @@ data ColumnDefinition = ColumnDefinition
 
 Creating or altering table 'diDsDhXF3In' failed because the minimum row size would be 12387, including 14 bytes of internal overhead. This exceeds the maximum allowable table row size of 8060 bytes.
 
+Calculating the internal overhead for column size looks a little impossible (alignment issues).
+
 -}
 columnConstraintsSatisfied :: [ColumnDefinition] -> Bool
 columnConstraintsSatisfied xs = allValidIdentifiers && maxOneTimeStamp && totalColumnSizeBytes <= 8060
   where
-    totalColumnSizeBits = sum $ map (storageSize . dataType) xs
+    totalColumnSizeBits = 32 + (sum $ map (storageSize . dataType) xs)
     totalColumnSizeBytes = totalColumnSizeBits `div` 8 + (if totalColumnSizeBits `rem` 8 /= 0 then 1 else 0)
     allValidIdentifiers = validIdentifiers xs
     maxOneTimeStamp = length (filter isTimeStamp xs) <= 1

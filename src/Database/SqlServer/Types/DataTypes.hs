@@ -210,6 +210,8 @@ precisionStorageSize (PrecisionStorage x)
   | otherwise = error $ "Failed to calculate precision storage size (" ++ show x ++ ")"
 
 -- storage size in bits
+-- Based on http://dba.stackexchange.com/questions/66471/script-to-estimate-row-sizes-for-any-table
+-- and MSDN documentation
 storageSize :: Type -> Int
 storageSize (BigInt _) = 8 * 8
 storageSize (Int _)  = 4 * 8
@@ -238,7 +240,7 @@ storageSize (NVarChar _ _ _) = 0 -- assumption
 storageSize (Text _ _) = 0 -- assumption
 storageSize (NText _ _) = 0 -- assumption
 storageSize (Image _) = 0 -- assumption
-storageSize (Timestamp _) = 0 -- assumption
+storageSize (Timestamp _) = 5 * 8
 storageSize (HierarchyId _) = 0 -- assumption
 storageSize (Geometry _) = 0
 storageSize (Geography _) = 0
