@@ -3,9 +3,9 @@
 
 module Database.SqlServer.Types.Table where
 
-import Database.SqlServer.Types.Properties
-import Database.SqlServer.Types.Identifiers
-import Database.SqlServer.Types.DataTypes
+import Database.SqlServer.Types.Properties (NamedEntity,name,validIdentifiers)
+import Database.SqlServer.Types.Identifiers (RegularIdentifier, renderRegularIdentifier)
+import Database.SqlServer.Types.DataTypes (Type, renderDataType, collation)
 import Database.SqlServer.Types.Collations (collations, Collation, renderCollation)
 
 import Test.QuickCheck

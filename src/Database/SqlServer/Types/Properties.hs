@@ -3,8 +3,8 @@
 
 module Database.SqlServer.Types.Properties where
 
-import Database.SqlServer.Types.Identifiers
-import Database.SqlServer.Types.Reserved
+import Database.SqlServer.Types.Identifiers (RegularIdentifier, unwrap)
+import Database.SqlServer.Types.Reserved (isReserved)
 
 import Data.List (nub)
 
