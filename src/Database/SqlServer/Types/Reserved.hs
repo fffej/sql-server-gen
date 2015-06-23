@@ -193,4 +193,5 @@ reservedWords = S.fromList [
   , "WRITETEXT"
   , "EXIT"
   , "PROC"
+  , "GO" -- for some reason GO isn't specified as a reserved word?
   ]

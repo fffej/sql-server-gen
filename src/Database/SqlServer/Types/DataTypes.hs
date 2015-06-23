@@ -77,12 +77,22 @@ renderNumericStorage ns = lparen <+> int (precision ns) <+> scale' <+> rparen
   where
     scale' = maybe empty (\x -> comma <+> int x) (scale ns)
 
+{- The scale must be less than or equal to the precision -}
 instance Arbitrary NumericStorage where                      
   arbitrary = do
     precision <- choose(1,38)
-    scale     <- elements (Nothing : map Just [1..38])
+    scale     <- elements (Nothing : map Just [1..precision])
     return $ NumericStorage precision scale
 
+data PrecisionStorage = PrecisionStorage Int
+
+instance Arbitrary PrecisionStorage where
+  arbitrary = do
+    precision <- choose(1,53)
+    return (PrecisionStorage precision)
+
+renderPrecisionStorage :: PrecisionStorage -> Doc
+renderPrecisionStorage (PrecisionStorage n) = lparen <+> int n <+> rparen
     
 -- https://msdn.microsoft.com/en-us/library/ms187752.aspx
 data Type = BigInt (Maybe StorageOptions) 
@@ -94,7 +104,7 @@ data Type = BigInt (Maybe StorageOptions)
           | Int (Maybe StorageOptions)
           | TinyInt (Maybe StorageOptions)
           | Money (Maybe StorageOptions)
-          | Float (Maybe StorageOptions)
+          | Float (Maybe StorageOptions) (Maybe PrecisionStorage)
           | Real (Maybe StorageOptions)
           | Date (Maybe StorageOptions)
           | DateTimeOffset (Maybe StorageOptions)
@@ -134,6 +144,20 @@ collation (NVarChar mc _)  = mc
 collation (NText mc _)     = mc
 collation s              = Nothing
 
+numericStorageSize :: NumericStorage -> Int
+numericStorageSize x 
+  | precision x <= 9 = 5 * 8
+  | precision x <= 19 = 9 * 8 
+  | precision x <= 28 = 13 * 8
+  | precision x <= 38 = 17 * 8
+  | otherwise   = error $ "Failed to calculate numeric storage size (" ++ show (precision x) ++ ")"
+
+precisionStorageSize :: PrecisionStorage -> Int
+precisionStorageSize (PrecisionStorage x)
+  | x <= 24 = 4 * 8
+  | x<= 53 = 8 * 8
+  | otherwise = error $ "Failed to calculate precision storage size (" ++ show x ++ ")"
+
 -- storage size in bits
 storageSize :: Type -> Int
 storageSize (BigInt _) = 8 * 8
@@ -141,7 +165,13 @@ storageSize (Int _)  = 4 * 8
 storageSize (SmallInt _) = 2 * 8
 storageSize (TinyInt _) = 1 * 8
 storageSize (Bit _)     = 1
-storageSize _           = undefined
+storageSize (SmallMoney _) = 4 * 8
+storageSize (Money _) = 8 * 8
+storageSize (Numeric _ ns) = maybe (9 * 8) numericStorageSize ns -- default precision is 18
+storageSize (Decimal _ ns) = maybe (9 * 8) numericStorageSize ns -- default precision is 18
+storageSize (Float _ ps) = maybe (8 * 8) precisionStorageSize ps -- default precision is 53
+storageSize (Real _) = 4 * 8
+
 
 nullOptions :: Type -> Maybe NullStorageOptions
 nullOptions t = maybe Nothing nullStorageFromStorageOptions (storageOptions t)
@@ -156,7 +186,7 @@ storageOptions (SmallMoney s) = s
 storageOptions (Int s) = s
 storageOptions (TinyInt s) = s
 storageOptions (Money s) = s
-storageOptions (Float s) = s
+storageOptions (Float s _) = s
 storageOptions (Real s) = s
 storageOptions (Date s) = s
 storageOptions (DateTimeOffset s) = s
@@ -192,7 +222,7 @@ renderDataType (SmallMoney _) = text "smallmoney"
 renderDataType (Int _) = text "int"
 renderDataType (TinyInt _) = text "tinyint"
 renderDataType (Money _) = text "money"
-renderDataType (Float _) = text "float"
+renderDataType (Float _ ps) = text "float" <+> maybe empty renderPrecisionStorage ps
 renderDataType (Real _) = text "real"
 renderDataType (Date _) = text "date"
 renderDataType (DateTimeOffset _) = text "datetimeoffset"
