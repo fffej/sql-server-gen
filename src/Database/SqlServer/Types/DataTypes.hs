@@ -16,7 +16,7 @@ import Data.DeriveTH
 newtype FixedRange = FixedRange Int
 
 renderFixedRange :: FixedRange -> Doc
-renderFixedRange (FixedRange n) = lparen <+> int n <+> rparen
+renderFixedRange (FixedRange n) = lparen <> int n <> rparen
 
 fixedRangeStorage :: FixedRange -> Int
 fixedRangeStorage (FixedRange n) = n * 8
@@ -27,7 +27,7 @@ instance Arbitrary FixedRange where
 newtype NFixedRange = NFixedRange Int
 
 renderNFixedRange :: NFixedRange -> Doc
-renderNFixedRange (NFixedRange n) = lparen <+> int n <+> rparen
+renderNFixedRange (NFixedRange n) = lparen <> int n <> rparen
 
 nfixedRangeStorage :: NFixedRange -> Int
 nfixedRangeStorage (NFixedRange n) = n * 8
@@ -94,7 +94,7 @@ data NumericStorage = NumericStorage
                       }
 
 renderNumericStorage :: NumericStorage -> Doc
-renderNumericStorage ns = lparen <+> int (precision ns) <+> scale' <+> rparen
+renderNumericStorage ns = lparen <> int (precision ns) <> scale' <> rparen
   where
     scale' = maybe empty (\x -> comma <+> int x) (scale ns)
 
@@ -113,7 +113,7 @@ instance Arbitrary PrecisionStorage where
     return (PrecisionStorage precision)
 
 renderPrecisionStorage :: PrecisionStorage -> Doc
-renderPrecisionStorage (PrecisionStorage n) = lparen <+> int n <+> rparen
+renderPrecisionStorage (PrecisionStorage n) = lparen <> int n <> rparen
 
 data FractionalSecondsPrecision = FractionalSecondsPrecision Int
 
@@ -123,7 +123,7 @@ instance Arbitrary FractionalSecondsPrecision where
     return (FractionalSecondsPrecision precision)
 
 renderFractionalSecondsPrecision :: FractionalSecondsPrecision -> Doc
-renderFractionalSecondsPrecision (FractionalSecondsPrecision n) = lparen <+> int n <+> rparen
+renderFractionalSecondsPrecision (FractionalSecondsPrecision n) = lparen <> int n <> rparen
 
 -- https://msdn.microsoft.com/en-us/library/bb677335.aspx
 datetime2StorageSize :: FractionalSecondsPrecision -> Int
