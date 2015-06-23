@@ -21,8 +21,10 @@ firstChars = ['a'..'z'] ++ ['A'..'Z'] ++ "_#"
 subsequentChars :: String
 subsequentChars = firstChars ++ ['0'..'9']
 
+-- The MSDN documentation lies
+-- The object or column name starting with '#IDZf39RtgmgnZgRrcVHc3d4nFsY9#UirNPVM6nICl8lubBsJfXjnV_yIPpagTXeYjN_2JrQwkUnPsBJ7OTqUtRn1E4xe65djU8WB#u7rM#MPdHVmi3QYk2gontf' is too long. The maximum length is 116 characters.
 maximumLengthOfRegularIdentifier :: Int
-maximumLengthOfRegularIdentifier = 128
+maximumLengthOfRegularIdentifier = 116
 
 validLength :: String -> Bool
 validLength x = length x < maximumLengthOfRegularIdentifier
