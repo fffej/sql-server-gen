@@ -19,3 +19,6 @@ reserved a = isReserved $ unwrap (name a)
 
 unReserved :: NamedEntity a => a -> Bool
 unReserved = not . reserved
+
+validIdentifiers :: NamedEntity a => [a] -> Bool
+validIdentifiers xs = all unReserved xs && uniqueNames xs

@@ -54,7 +54,7 @@ instance NamedEntity ColumnDefinition where
   name = columnName
 
 instance Arbitrary ColumnDefinitions where
-  arbitrary = liftM ColumnDefinitions $ (listOf1 arbitrary `suchThat` uniqueNames)
+  arbitrary = liftM ColumnDefinitions $ (listOf1 arbitrary `suchThat` validIdentifiers)
 
 derive makeArbitrary ''TableDefinition
 
