@@ -5,7 +5,7 @@ module Database.SqlServer.Types.Table where
 
 import Database.SqlServer.Types.Properties (NamedEntity,name,validIdentifiers)
 import Database.SqlServer.Types.Identifiers (RegularIdentifier, renderRegularIdentifier)
-import Database.SqlServer.Types.DataTypes (Type, renderDataType, collation)
+import Database.SqlServer.Types.DataTypes (Type, renderDataType, collation, renderSparse, storageOptions, renderNullConstraint)
 import Database.SqlServer.Types.Collations (collations, Collation, renderCollation)
 
 import Test.QuickCheck
@@ -29,25 +29,10 @@ data TableDefinition = TableDefinition
 instance NamedEntity TableDefinition where
   name = tableName
   
-data StorageOptions = Sparse
-                    | SparseNull
-                    | NotNull
-                    | Null
-
-renderSparse :: StorageOptions -> Doc
-renderSparse Sparse = text "SPARSE"
-renderSparse _      = empty
-
-renderNullConstraint :: StorageOptions -> Doc
-renderNullConstraint NotNull = text "NOT NULL"
-renderNullConstraint Null    = text "NULL"
-renderNullConstraint _       = empty
-
 data ColumnDefinition = ColumnDefinition
                         {
                           columnName :: RegularIdentifier
                         , dataType   :: Type
-                        , storageOptions :: Maybe StorageOptions
                         }
 
 instance NamedEntity ColumnDefinition where
@@ -59,8 +44,6 @@ instance Arbitrary ColumnDefinitions where
 derive makeArbitrary ''TableDefinition
 
 derive makeArbitrary ''ColumnDefinition
-
-derive makeArbitrary ''StorageOptions
 
 renderColumnDefinitions :: ColumnDefinitions -> Doc
 renderColumnDefinitions (ColumnDefinitions xs) = vcat (punctuate comma cols)
@@ -74,8 +57,8 @@ renderColumnDefinition c = columnName' <+> columnType' <+> collation' <+>
     columnName'     = renderRegularIdentifier (columnName c)
     columnType'     = renderDataType $ dataType c
     collation'      = maybe empty renderCollation (collation (dataType c))
-    sparse          = maybe empty renderSparse (storageOptions c)
-    nullConstraint  = maybe empty renderNullConstraint (storageOptions c)
+    sparse          = maybe empty renderSparse (storageOptions (dataType c))
+    nullConstraint  = maybe empty renderNullConstraint (storageOptions (dataType c))
 
 renderTableDefinition :: TableDefinition -> Doc
 renderTableDefinition t = text "CREATE TABLE" <+> tableName' $$

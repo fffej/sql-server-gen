@@ -46,88 +46,135 @@ renderVarBinaryStorage (SizedRange r)   = renderRange r
 renderVarBinaryStorage MaxFileStream    = text "(max)"
 renderVarBinaryStorage MaxNoFileStream  = text "(max)"
 
--- https://msdn.microsoft.com/en-us/library/ms187752.aspx
-data Type = BigInt
-          | Bit
-          | Numeric
-          | SmallInt
-          | Decimal
-          | SmallMoney
-          | Int
-          | TinyInt
-          | Money
-          | Float
-          | Real
-          | Date
-          | DateTimeOffset
-          | DateTime2
-          | SmallDateTime
-          | DateTime
-          | Time
-          | Char FixedRange (Maybe Collation)
-          | VarChar Range (Maybe Collation)
-          | Text (Maybe Collation)
-          | NChar (Maybe Collation)
-          | NVarChar (Maybe Collation)
-          | NText (Maybe Collation)
-          | Binary FixedRange
-          | VarBinary VarBinaryStorage
-          | Image
-          | Cursor
-          | Timestamp
-          | HierarchyId
-          | UniqueIdentifier
-          | SqlVariant
-          | Xml
-          | Table
-          | Geography
-          | Geometry 
+data StorageOptions = Sparse
+                    | SparseNull
+                    | NotNull
+                    | Null
 
+renderSparse :: StorageOptions -> Doc
+renderSparse Sparse = text "SPARSE"
+renderSparse _      = empty
+
+renderNullConstraint :: StorageOptions -> Doc
+renderNullConstraint NotNull = text "NOT NULL"
+renderNullConstraint Null    = text "NULL"
+renderNullConstraint _       = empty
+
+-- https://msdn.microsoft.com/en-us/library/ms187752.aspx
+data Type = BigInt (Maybe StorageOptions) 
+          | Bit (Maybe StorageOptions)
+          | Numeric (Maybe StorageOptions)
+          | SmallInt (Maybe StorageOptions)
+          | Decimal (Maybe StorageOptions)
+          | SmallMoney (Maybe StorageOptions)
+          | Int (Maybe StorageOptions)
+          | TinyInt (Maybe StorageOptions)
+          | Money (Maybe StorageOptions)
+          | Float (Maybe StorageOptions)
+          | Real (Maybe StorageOptions)
+          | Date (Maybe StorageOptions)
+          | DateTimeOffset (Maybe StorageOptions)
+          | DateTime2 (Maybe StorageOptions)
+          | SmallDateTime (Maybe StorageOptions)
+          | DateTime (Maybe StorageOptions)
+          | Time (Maybe StorageOptions)
+          | Char FixedRange (Maybe Collation) (Maybe StorageOptions)
+          | VarChar Range (Maybe Collation) (Maybe StorageOptions)
+          | Text (Maybe Collation) (Maybe StorageOptions)
+          | NChar (Maybe Collation) (Maybe StorageOptions)
+          | NVarChar (Maybe Collation) (Maybe StorageOptions)
+          | NText (Maybe Collation) (Maybe StorageOptions)
+          | Binary FixedRange (Maybe StorageOptions)
+          | VarBinary VarBinaryStorage (Maybe StorageOptions)
+          | Image (Maybe StorageOptions)
+          | Timestamp (Maybe StorageOptions)
+          | HierarchyId (Maybe StorageOptions)
+          | UniqueIdentifier (Maybe StorageOptions)
+          | SqlVariant (Maybe StorageOptions)
+          | Xml (Maybe StorageOptions)
+          | Geography (Maybe StorageOptions)
+          | Geometry  (Maybe StorageOptions)
+
+derive makeArbitrary ''StorageOptions
 derive makeArbitrary ''Type
 
 collation :: Type -> Maybe Collation
-collation (Char _ mc)    = mc
-collation (VarChar _ mc) = mc
-collation (Text mc)      = mc
-collation (NChar mc)     = mc
-collation (NVarChar mc)  = mc
-collation (NText mc)     = mc
-collation _              = Nothing
+collation (Char _ mc _)    = mc
+collation (VarChar _ mc _) = mc
+collation (Text mc _)      = mc
+collation (NChar mc _)     = mc
+collation (NVarChar mc _)  = mc
+collation (NText mc _)     = mc
+collation s              = Nothing
+
+storageOptions :: Type -> Maybe StorageOptions
+storageOptions (BigInt s) = s
+storageOptions (Bit s) = s
+storageOptions (Numeric s) = s
+storageOptions (SmallInt s) = s
+storageOptions (Decimal s) = s
+storageOptions (SmallMoney s) = s
+storageOptions (Int s) = s
+storageOptions (TinyInt s) = s
+storageOptions (Money s) = s
+storageOptions (Float s) = s
+storageOptions (Real s) = s
+storageOptions (Date s) = s
+storageOptions (DateTimeOffset s) = s
+storageOptions (DateTime2 s) = s
+storageOptions (SmallDateTime s) = s
+storageOptions (DateTime s) = s
+storageOptions (Time s) = s
+storageOptions (Char _ _ s)  = s
+storageOptions (VarChar _ _ s) = s
+storageOptions (Text _ s) = s
+storageOptions (NChar _ s) = s
+storageOptions (NVarChar _ s) = s
+storageOptions (NText _ s) = s 
+storageOptions (Binary _ s)  = s 
+storageOptions (VarBinary _ s) = s
+storageOptions (Image s) = s
+storageOptions (Timestamp s) = s 
+storageOptions (HierarchyId s) = s
+storageOptions (UniqueIdentifier s) = s
+storageOptions (SqlVariant s) = s
+storageOptions (Xml s) = s
+storageOptions (Geography s) = s
+storageOptions (Geometry s) = s
+
 
 renderDataType :: Type -> Doc
-renderDataType BigInt = text "bigint"
-renderDataType Bit = text "bit"
-renderDataType Numeric = text "numeric"
-renderDataType SmallInt = text "smallint"
-renderDataType Decimal = text "decimal"
-renderDataType SmallMoney = text "smallmoney"
-renderDataType Int = text "int"
-renderDataType TinyInt = text "tinyint"
-renderDataType Money = text "money"
-renderDataType Float = text "float"
-renderDataType Real = text "real"
-renderDataType Date = text "date"
-renderDataType DateTimeOffset = text "datetimeoffset"
-renderDataType DateTime2 = text "datetime2"
-renderDataType SmallDateTime = text "smalldatetime"
-renderDataType DateTime = text "datetime"
-renderDataType Time = text "time"
-renderDataType (Char fixedRange _)  = text "char" <+> renderFixedRange fixedRange
-renderDataType (VarChar range _) = text "varchar" <+> renderRange range
-renderDataType (Text _) = text "text"
-renderDataType (NChar _) = text "nchar"
-renderDataType (NVarChar _) = text "nvarchar"
-renderDataType (NText _) = text "ntext"
-renderDataType (Binary fixedRange)  = text "binary" <+> renderFixedRange fixedRange
-renderDataType (VarBinary range) = text "varbinary" <+> renderVarBinaryStorage range
-renderDataType Image = text "image"
-renderDataType Cursor = text "cursor"
-renderDataType Timestamp = text "timestamp"
-renderDataType HierarchyId = text "hierarchyid"
-renderDataType UniqueIdentifier = text "uniqueidentifier"
-renderDataType SqlVariant = text "sql_variant"
-renderDataType Xml = text "xml"
-renderDataType Table = text "table"
-renderDataType Geography = text "geography"
-renderDataType Geometry = text "geometry"
+renderDataType (BigInt _) = text "bigint"
+renderDataType (Bit _) = text "bit"
+renderDataType (Numeric _) = text "numeric"
+renderDataType (SmallInt _) = text "smallint"
+renderDataType (Decimal _) = text "decimal"
+renderDataType (SmallMoney _) = text "smallmoney"
+renderDataType (Int _) = text "int"
+renderDataType (TinyInt _) = text "tinyint"
+renderDataType (Money _) = text "money"
+renderDataType (Float _) = text "float"
+renderDataType (Real _) = text "real"
+renderDataType (Date _) = text "date"
+renderDataType (DateTimeOffset _) = text "datetimeoffset"
+renderDataType (DateTime2 _) = text "datetime2"
+renderDataType (SmallDateTime _) = text "smalldatetime"
+renderDataType (DateTime _) = text "datetime"
+renderDataType (Time _)= text "time"
+renderDataType (Char fixedRange _ _)  = text "char" <+> renderFixedRange fixedRange
+renderDataType (VarChar range _ _) = text "varchar" <+> renderRange range
+renderDataType (Text _ _) = text "text"
+renderDataType (NChar _ _) = text "nchar"
+renderDataType (NVarChar _ _) = text "nvarchar"
+renderDataType (NText _ _) = text "ntext"
+renderDataType (Binary fixedRange _)  = text "binary" <+> renderFixedRange fixedRange
+renderDataType (VarBinary range _) = text "varbinary" <+> renderVarBinaryStorage range
+renderDataType (Image _) = text "image"
+renderDataType (Timestamp _) = text "timestamp"
+renderDataType (HierarchyId _) = text "hierarchyid"
+renderDataType (UniqueIdentifier _) = text "uniqueidentifier"
+renderDataType (SqlVariant _) = text "sql_variant"
+renderDataType (Xml _) = text "xml"
+renderDataType (Geography _) = text "geography"
+renderDataType (Geometry _) =  text "geometry"
 
