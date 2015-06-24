@@ -10,6 +10,7 @@ import Database.SqlServer.Types.Collations (renderCollation)
 
 import Test.QuickCheck
 import Control.Monad
+import Data.Maybe (isJust)
 
 import Text.PrettyPrint
 
@@ -41,15 +42,21 @@ Calculating the internal overhead for column size looks a little impossible (ali
 
 -}
 columnConstraintsSatisfied :: [ColumnDefinition] -> Bool
-columnConstraintsSatisfied xs = allValidIdentifiers && maxOneTimeStamp && totalColumnSizeBytes <= 8060
+columnConstraintsSatisfied xs = allValidIdentifiers &&
+                                length (filter isTimeStamp xs) <= 1 && -- only a single time stamp column is allowed
+                                totalColumnSizeBytes <= 8060 &&
+                                length (filter oneGuidCol xs) <= 1 -- only one row guid col allowed
+                                
   where
     totalColumnSizeBits = 32 + (sum $ map (storageSize . dataType) xs)
     totalColumnSizeBytes = totalColumnSizeBits `div` 8 + (if totalColumnSizeBits `rem` 8 /= 0 then 1 else 0)
     allValidIdentifiers = validIdentifiers xs
-    maxOneTimeStamp = length (filter isTimeStamp xs) <= 1
     isTimeStamp c = case dataType c of
       (Timestamp _) -> True
       _             -> False
+    oneGuidCol c = case dataType c of
+      (UniqueIdentifier _ s) -> isJust s
+      _                      -> False
 
 
 instance NamedEntity ColumnDefinition where
