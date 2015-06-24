@@ -12,9 +12,6 @@ import Control.Monad
 import Data.DeriveTH
 
 
--- Row Guid Col
-data RowGuidCol = RowGuidCol
-
 -- Size of arbitrary data (>= 1 && <= 8000)
 newtype FixedRange = FixedRange Int
 
@@ -86,6 +83,7 @@ data StorageOptions = Sparse
 
 data NullStorageOptions = NotNull | Null
 
+
 nullStorageFromStorageOptions :: StorageOptions -> Maybe NullStorageOptions
 nullStorageFromStorageOptions (StorageOptions x) = Just x
 nullStorageFromStorageOptions _                  = Nothing
@@ -100,6 +98,22 @@ renderNullConstraint = renderNullStorageOptions
 renderNullStorageOptions :: NullStorageOptions -> Doc
 renderNullStorageOptions NotNull = text "NOT NULL"
 renderNullStorageOptions Null    = text "NULL"
+
+-- Row Guid Col (cannot be sparse)
+data UniqueIdentifierOptions = RowGuidCol (Maybe NullStorageOptions)
+                             | UniqueIdentifierOptions (Maybe StorageOptions)
+
+uniqueIdentifierstorageOptions :: UniqueIdentifierOptions -> Maybe StorageOptions
+uniqueIdentifierstorageOptions (UniqueIdentifierOptions x) = x
+uniqueIdentifierstorageOptions (RowGuidCol x) = maybe Nothing (Just . StorageOptions) x
+
+isRowGuidCol :: UniqueIdentifierOptions -> Bool
+isRowGuidCol (RowGuidCol _) = True
+isRowGuidCol _              = False
+
+renderRowGuidConstraint :: Bool -> Doc
+renderRowGuidConstraint True  = text "ROWGUIDCOL"
+renderRowGuidConstraint False = empty
 
 data NumericStorage = NumericStorage
                       {
@@ -187,7 +201,7 @@ data Type = BigInt (Maybe StorageOptions)
           | Image (Maybe NullStorageOptions)
           | Timestamp (Maybe NullStorageOptions)
           | HierarchyId (Maybe StorageOptions)
-          | UniqueIdentifier (Maybe StorageOptions) (Maybe RowGuidCol)
+          | UniqueIdentifier (Maybe UniqueIdentifierOptions)
           | SqlVariant (Maybe StorageOptions)
           | Xml (Maybe StorageOptions)
           | Geography (Maybe NullStorageOptions)
@@ -199,7 +213,7 @@ derive makeArbitrary ''Range
 derive makeArbitrary ''NRange
 derive makeArbitrary ''VarBinaryStorage
 derive makeArbitrary ''NullStorageOptions
-derive makeArbitrary ''RowGuidCol
+derive makeArbitrary ''UniqueIdentifierOptions
 
 collation :: Type -> Maybe Collation
 collation (Char _ mc _)    = mc
@@ -248,7 +262,7 @@ storageSize (Time _ p) = maybe (5 * 8) timeStorageSize p
 storageSize (Char fr _ _) = maybe 8 fixedRangeStorage fr
 storageSize (NChar fr _ _) = maybe 8 nfixedRangeStorage fr
 storageSize (Binary p _) = maybe (1 * 8) fixedRangeStorage p
-storageSize (UniqueIdentifier _ _) = 16 * 8
+storageSize (UniqueIdentifier _) = 16 * 8
 storageSize (VarBinary r _) = maybe (1 * 8) varBinarySize r
 storageSize (VarChar r _ _) = rangeStorageSize r 
 storageSize (NVarChar r _ _) = maybe (1 * 8) nRangeStorageSize r
@@ -265,6 +279,10 @@ storageSize (Xml _) = 0
 
 nullOptions :: Type -> Maybe NullStorageOptions
 nullOptions t = maybe Nothing nullStorageFromStorageOptions (storageOptions t)
+
+rowGuidOptions :: Type -> Bool
+rowGuidOptions (UniqueIdentifier a)  = maybe False isRowGuidCol a
+rowGuidOptions _                     = False
 
 storageOptions :: Type -> Maybe StorageOptions
 storageOptions (BigInt s) = s
@@ -291,7 +309,7 @@ storageOptions (NVarChar _ _ s) = s
 storageOptions (Binary _ s)  = s 
 storageOptions (VarBinary _ s) = s
 storageOptions (HierarchyId s) = s
-storageOptions (UniqueIdentifier s _) = s
+storageOptions (UniqueIdentifier s) = maybe Nothing uniqueIdentifierstorageOptions s
 storageOptions (SqlVariant s) = s
 storageOptions (Xml s) = s
 storageOptions (Timestamp _) = Nothing
@@ -331,7 +349,7 @@ renderDataType (VarBinary range _) = text "varbinary" <+> maybe empty renderVarB
 renderDataType (Image _) = text "image"
 renderDataType (Timestamp _) = text "timestamp"
 renderDataType (HierarchyId _) = text "hierarchyid"
-renderDataType (UniqueIdentifier _ _) = text "uniqueidentifier"
+renderDataType (UniqueIdentifier _) = text "uniqueidentifier"
 renderDataType (SqlVariant _) = text "sql_variant"
 renderDataType (Xml _) = text "xml"
 renderDataType (Geography _) = text "geography"
