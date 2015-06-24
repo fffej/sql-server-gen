@@ -1,6 +1,3 @@
-{-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE TemplateHaskell #-}
-
 module Database.SqlServer.Types.Properties where
 
 import Database.SqlServer.Types.Identifiers (RegularIdentifier, unwrap)

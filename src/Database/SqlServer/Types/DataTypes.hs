@@ -92,7 +92,7 @@ renderSparse Sparse = text "SPARSE"
 renderSparse _      = empty
 
 renderNullConstraint ::  NullStorageOptions -> Doc
-renderNullConstraint x = renderNullStorageOptions x
+renderNullConstraint = renderNullStorageOptions
 
 renderNullStorageOptions :: NullStorageOptions -> Doc
 renderNullStorageOptions NotNull = text "NOT NULL"
