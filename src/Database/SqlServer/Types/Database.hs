@@ -6,6 +6,7 @@ module Database.SqlServer.Types.Database where
 import Database.SqlServer.Types.Identifiers (RegularIdentifier,renderRegularIdentifier)
 import Database.SqlServer.Types.Table (TableDefinition,renderTableDefinition)
 import Database.SqlServer.Types.Properties (validIdentifiers)
+import Database.SqlServer.Types.Sequence (SequenceDefinition)
 
 import Test.QuickCheck
 import Control.Monad
@@ -15,6 +16,8 @@ import Text.PrettyPrint
 import Data.DeriveTH
 
 newtype TableDefinitions = TableDefinitions [TableDefinition]
+
+newtype SequenceDefinitions = SequenceDefinitions [SequenceDefinition]
 
 data DatabaseDefinition = DatabaseDefinition
                           {
