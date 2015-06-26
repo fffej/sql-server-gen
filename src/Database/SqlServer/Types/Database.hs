@@ -54,5 +54,5 @@ derive makeArbitrary ''DatabaseDefinition
 
 dumpExamples :: Int -> FilePath -> IO ()
 dumpExamples m p = do
-  x <- generate (sequence [resize n (arbitrary :: Gen TableDefinition) | n <- [0..m] ])
-  writeFile p (unlines $ map show x)
+  x <- generate (sequence [resize n (arbitrary :: Gen SequenceDefinition) | n <- [0..m] ])
+  writeFile p (unlines $ map (render . renderSequenceDefinition) x)
