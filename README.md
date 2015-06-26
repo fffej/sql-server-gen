@@ -1,6 +1,6 @@
 # sql-server-gen
 
-The goal of this package is to generate arbitrary SQL Server databases (in the form of create statements).  Current goal is just to produce full table definitions.  Currently it does this:
+The goal of this package is to generate arbitrary SQL Server databases (in the form of create statements).  Current goal is just to produce full table definitions.  Currently supported objects types are tables (partial) and sequences (full).
 
     > sample (arbitrary :: Gen TableDefinition )
     CREATE TABLE @M
