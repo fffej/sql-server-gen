@@ -82,18 +82,22 @@ arbitraryValue (Just Decimal)  = oneof [liftM Just $ arbitrary,return Nothing]
 greaterThanMin :: Maybe Integer -> Maybe Integer -> Bool
 greaterThanMin mx my = maybe True id $ liftM2 (>) mx my
 
+lessThanMax :: Maybe Integer -> Maybe Integer -> Bool
+lessThanMax mx my = maybe True id $ liftM2 (<) mx my
+
+
 instance Arbitrary SequenceDefinition where
   arbitrary = do
     nm <- arbitrary
     dataType <- arbitrary
-    minV <- arbitraryValue dataType 
-    start <- arbitraryValue dataType `suchThat` (greaterThanMin minV)
+    minV <- arbitraryValue dataType
+    maxV <- arbitraryValue dataType `suchThat` (greaterThanMin minV)
+    start <- arbitraryValue dataType `suchThat` (greaterThanMin minV) `suchThat` (lessThanMax maxV)
     increment <- arbitraryValue dataType `suchThat` (\x -> maybe True (/= 0) x)
     cyc <- arbitrary
     hasMinValue <- elements [Just, \_ -> Nothing]
     hasMaxValue <- elements [Just, \_ -> Nothing]
-    hasChcValue <- elements [Just, \_ -> Nothing]
-    maxV <- arbitraryValue dataType `suchThat` (greaterThanMin minV)
+    hasChcValue <- elements [Just, \_ -> Nothing]    
     chc <- arbitraryValue dataType
     return $ SequenceDefinition {
         sequenceName = nm
