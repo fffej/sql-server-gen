@@ -51,7 +51,8 @@ cabal-version:       >=1.10
 
 library
   -- Modules exported by the library.
-  exposed-modules:     Database.SqlServer.Types.Database
+  exposed-modules:     Database.SqlServer.Types.Database,
+                       Database.SqlServer.Types.Sequence               
 
   ghc-options:         -Wall
   
@@ -74,3 +75,13 @@ library
   -- Base language which the package is written in.
   default-language:    Haskell2010
   
+Test-Suite tests
+  ghc-options:          -Wall
+  type:                 exitcode-stdio-1.0
+  hs-source-dirs:       test
+  main-is:              Main.hs
+  default-language:     Haskell2010
+  build-depends:        base >=4.8 && <4.9,
+                        sql-server-gen,
+                        hspec >= 2.1.7
+                                    
