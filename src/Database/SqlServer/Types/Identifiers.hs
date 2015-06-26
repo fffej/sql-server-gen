@@ -3,7 +3,7 @@ module Database.SqlServer.Types.Identifiers where
 import Database.SqlServer.Types.Reserved (isReserved)
 
 import Test.QuickCheck
-
+import Control.Monad (liftM2)
 import Text.PrettyPrint
 
 -- https://msdn.microsoft.com/en-us/subscriptions/downloads/ms175874
@@ -37,6 +37,8 @@ newtype Keyword = Keyword String
 
 instance Arbitrary RegularIdentifier where
   arbitrary = do
-    x <- elements firstChars
-    y <- listOf (elements subsequentChars) `suchThat` validIdentifier
-    return (RegularIdentifier $ x : y)
+    y <- liftM2
+         (:)
+         (elements firstChars)
+         (listOf (elements subsequentChars)) `suchThat` validIdentifier
+    return (RegularIdentifier y)
