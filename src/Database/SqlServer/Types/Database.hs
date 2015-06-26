@@ -23,10 +23,15 @@ data DatabaseDefinition = DatabaseDefinition
                           {
                             databaseName :: RegularIdentifier
                           , tableDefinitions :: TableDefinitions
+                          , sequenceDefinitions :: SequenceDefinitions
                           }
 
 renderTableDefinitions :: TableDefinitions -> Doc
 renderTableDefinitions (TableDefinitions xs) = vcat (map renderTableDefinition xs)
+
+renderSequenceDefinitions :: SequenceDefinitions -> Doc
+renderSequenceDefinitions (SequenceDefinitions xs) = vcat (map renderSequenceDefinition xs)
+
 
 renderDatabaseDefinition :: DatabaseDefinition -> Doc
 renderDatabaseDefinition  dd = text "USE master" $+$
@@ -34,12 +39,19 @@ renderDatabaseDefinition  dd = text "USE master" $+$
                                text "CREATE DATABASE" <+> dbName $+$
                                text "GO" $+$
                                text "USE" <+> dbName $+$
-                               renderTableDefinitions (tableDefinitions dd)
+                               renderTableDefinitions (tableDefinitions dd) $+$
+                               renderSequenceDefinitions (sequenceDefinitions dd)
   where
     dbName = renderRegularIdentifier (databaseName dd)
 
 instance Arbitrary TableDefinitions where
   arbitrary = liftM TableDefinitions $ (listOf1 arbitrary `suchThat` validIdentifiers)
+
+instance Arbitrary SequenceDefinitions where
+  arbitrary = liftM SequenceDefinitions $ (listOf1 arbitrary `suchThat` validIdentifiers)
+  
+
+
 
 derive makeArbitrary ''DatabaseDefinition
 
