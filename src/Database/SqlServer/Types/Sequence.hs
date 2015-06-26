@@ -18,12 +18,12 @@ import Control.Monad
 data NumericType = TinyInt | SmallInt | Int | BigInt | Decimal | Numeric
 
 renderNumericType :: NumericType -> Doc
-renderNumericType TinyInt = text "tinyint"
-renderNumericType SmallInt = text "smallint"
-renderNumericType Int = text "int"
-renderNumericType BigInt = text "bigint"
-renderNumericType Decimal = text "decimal"
-renderNumericType Numeric = text "numeric"
+renderNumericType TinyInt = text "AS tinyint"
+renderNumericType SmallInt = text "AS smallint"
+renderNumericType Int = text "AS int"
+renderNumericType BigInt = text "AS bigint"
+renderNumericType Decimal = text "AS decimal"
+renderNumericType Numeric = text "AS numeric"
 
 derive makeArbitrary ''NumericType
 
@@ -64,7 +64,7 @@ renderSequenceDefinition s = text "CREATE SEQUENCE" <+> renderRegularIdentifier 
     incrementBy' = maybe empty (\x -> text "INCREMENT BY" <+> integer x) (incrementBy s)
     minValue' = maybe empty renderMinValue (minValue s)
     maxValue' = maybe empty renderMaxValue (maxValue s)
-    cycle'    = maybe empty (\x -> if x then text "TRUE" else text "FALSE") (cycle s)
+    cycle'    = maybe empty (\x -> if x then text "CYCLE" else text "NO CYCLE") (cycle s)
     cache'    = maybe empty renderCacheValue (cache s)
 
 
