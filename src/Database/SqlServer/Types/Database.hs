@@ -49,9 +49,6 @@ instance Arbitrary TableDefinitions where
 
 instance Arbitrary SequenceDefinitions where
   arbitrary = liftM SequenceDefinitions $ (listOf1 arbitrary `suchThat` validIdentifiers)
-  
-
-
 
 derive makeArbitrary ''DatabaseDefinition
 
