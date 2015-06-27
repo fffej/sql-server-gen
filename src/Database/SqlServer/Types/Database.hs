@@ -8,6 +8,7 @@ import Database.SqlServer.Types.Table (TableDefinition,renderTableDefinition)
 import Database.SqlServer.Types.Properties (validIdentifiers)
 import Database.SqlServer.Types.Sequence (SequenceDefinition,renderSequenceDefinition)
 import Database.SqlServer.Types.Queue
+import Database.SqlServer.Types.Procedure
 
 import Test.QuickCheck
 import Control.Monad
@@ -55,5 +56,5 @@ derive makeArbitrary ''DatabaseDefinition
 
 dumpExamples :: Int -> FilePath -> IO ()
 dumpExamples m p = do
-  x <- generate (sequence [resize n (arbitrary :: Gen SequenceDefinition) | n <- [0..m] ])
-  writeFile p (unlines $ map (render . renderSequenceDefinition) x)
+  x <- generate (sequence [resize n (arbitrary :: Gen ProcedureDefinition) | n <- [0..m] ])
+  writeFile p (unlines $ map (render . renderProcedureDefinition) x)
