@@ -21,6 +21,7 @@ data Activation = Activation
     {
       maxQueueReaders  :: Maybe Word16
     , executeAs :: Maybe ExecuteAs
+    , procedureName :: RegularIdentifier
     } 
 
 data QueueDefinition = QueueDefinition
