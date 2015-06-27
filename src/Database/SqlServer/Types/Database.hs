@@ -7,6 +7,7 @@ import Database.SqlServer.Types.Identifiers (RegularIdentifier,renderRegularIden
 import Database.SqlServer.Types.Table (TableDefinition,renderTableDefinition)
 import Database.SqlServer.Types.Properties (validIdentifiers)
 import Database.SqlServer.Types.Sequence (SequenceDefinition,renderSequenceDefinition)
+import Database.SqlServer.Types.Queue
 
 import Test.QuickCheck
 import Control.Monad
