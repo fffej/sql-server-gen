@@ -72,7 +72,7 @@ makeArbitraryProcs reserved = listOf arbitrary `suchThat` (usesUnreservedNames r
 makeArbitrarySeqs :: S.Set RegularIdentifier -> Gen [SequenceDefinition]
 makeArbitrarySeqs reserved = listOf arbitrary `suchThat` (usesUnreservedNames reserved) `suchThat` validIdentifiers
 
-makeArbitraryQueues :: S.Set RegularIdentifier -> Gen [QueueDefinition]
+makeArbitraryQueues :: ProcedureDefinitions -> S.Set RegularIdentifier -> Gen [QueueDefinition]
 makeArbitraryQueues = undefined
 
 instance Arbitrary DatabaseDefinition where
@@ -81,7 +81,7 @@ instance Arbitrary DatabaseDefinition where
     tables <- arbitrary
     sequences <- liftM SequenceDefinitions $ makeArbitrarySeqs (tableNames tables)
     procs <- liftM ProcedureDefinitions $ makeArbitraryProcs ((tableNames tables) `S.union` (sequenceNames sequences))
-    queues <- liftM QueueDefinitions $ makeArbitraryQueues (
+    queues <- liftM QueueDefinitions $ makeArbitraryQueues procs (
       (tableNames tables) `S.union` (sequenceNames sequences) `S.union` (procedureNames procs))
     return $ DatabaseDefinition
       {
