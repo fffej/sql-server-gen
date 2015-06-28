@@ -77,13 +77,16 @@ numericBounds  (Just Int)      = Just (- 2147483648,214748367)
 numericBounds  (Just BigInt)   = Just (- 9223372036854775808,9223372036854775807)
 numericBounds  _               = Nothing
 
+boundedJust :: (Integer,Integer) -> Gen (Maybe Integer)
+boundedJust x = liftM Just $ choose x
+
 -- TODO get rid of duplication
 arbitraryValue :: Maybe NumericType -> Gen (Maybe Integer)
 arbitraryValue Nothing = arbitraryValue (Just Int)
-arbitraryValue (Just TinyInt)  = oneof [liftM Just $ choose (0,255),return Nothing]
-arbitraryValue (Just SmallInt) = oneof [liftM Just $ choose (- 32768,32767),return Nothing]
-arbitraryValue (Just Int)      = oneof [liftM Just $ choose (- 2147483648,214748367),return Nothing]
-arbitraryValue (Just BigInt)   = oneof [liftM Just $ choose (- 9223372036854775808,9223372036854775807),return Nothing]
+arbitraryValue (Just TinyInt)  = oneof [boundedJust (0,255),return Nothing]
+arbitraryValue (Just SmallInt) = oneof [boundedJust (- 32768,32767),return Nothing]
+arbitraryValue (Just Int)      = oneof [boundedJust (- 2147483648,214748367),return Nothing]
+arbitraryValue (Just BigInt)   = oneof [boundedJust (- 9223372036854775808,9223372036854775807),return Nothing]
 arbitraryValue (Just Numeric)  = oneof [liftM Just $ arbitrary,return Nothing]
 arbitraryValue (Just Decimal)  = oneof [liftM Just $ arbitrary,return Nothing]
 
