@@ -65,6 +65,7 @@ instance Arbitrary SequenceDefinitions where
 makeArbitraryProcs :: S.Set RegularIdentifier -> Gen [ProcedureDefinition]
 makeArbitraryProcs reserved = listOf arbitrary `suchThat` (\x -> not $ any (\a -> (procedureName a) `S.member` reserved) x)
 
+-- TODO consider Sequence names too
 instance Arbitrary DatabaseDefinition where
   arbitrary = do
     dbName <- arbitrary
