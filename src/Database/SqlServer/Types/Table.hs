@@ -24,6 +24,7 @@ import Database.SqlServer.Types.Collations (renderCollation)
 import Test.QuickCheck
 import Control.Monad
 import Text.PrettyPrint
+import Data.Ord
 
 import Data.DeriveTH
 
@@ -35,6 +36,12 @@ data TableDefinition = TableDefinition
                tableName    :: RegularIdentifier
              , columnDefinitions :: ColumnDefinitions
              }
+
+instance Eq TableDefinition where
+  a == b = tableName a == tableName b
+
+instance Ord TableDefinition where
+  compare = comparing tableName
 
 instance NamedEntity TableDefinition where
   name = tableName

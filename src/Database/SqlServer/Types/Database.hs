@@ -13,10 +13,10 @@ import qualified Data.Set as S
 
 import Text.PrettyPrint
 
-newtype TableDefinitions = TableDefinitions [TableDefinition]
-newtype SequenceDefinitions = SequenceDefinitions [SequenceDefinition]
-newtype ProcedureDefinitions = ProcedureDefinitions [ProcedureDefinition]
-newtype QueueDefinitions = QueueDefinitions [QueueDefinition]
+newtype TableDefinitions = TableDefinitions (S.Set TableDefinition)
+newtype SequenceDefinitions = SequenceDefinitions (S.Set SequenceDefinition)
+newtype ProcedureDefinitions = ProcedureDefinitions (S.Set ProcedureDefinition)
+newtype QueueDefinitions = QueueDefinitions (S.Set QueueDefinition)
 
 data DatabaseDefinition = DatabaseDefinition
                           {
@@ -36,17 +36,17 @@ sequenceNames (SequenceDefinitions xs) = names xs
 procedureNames :: ProcedureDefinitions -> S.Set RegularIdentifier
 procedureNames (ProcedureDefinitions xs) = names xs
 
-names :: NamedEntity a => [a] -> S.Set RegularIdentifier
-names xs = S.fromList (map name xs)
+names :: NamedEntity a => S.Set a -> S.Set RegularIdentifier
+names xs = S.map name xs
 
 renderTableDefinitions :: TableDefinitions -> Doc
-renderTableDefinitions (TableDefinitions xs) = vcat (map renderTableDefinition xs)
+renderTableDefinitions (TableDefinitions xs) = vcat (map renderTableDefinition (S.toList xs))
 
 renderSequenceDefinitions :: SequenceDefinitions -> Doc
-renderSequenceDefinitions (SequenceDefinitions xs) = vcat (map renderSequenceDefinition xs)
+renderSequenceDefinitions (SequenceDefinitions xs) = vcat (map renderSequenceDefinition (S.toList xs))
 
 renderProcedureDefinitions :: ProcedureDefinitions -> Doc
-renderProcedureDefinitions (ProcedureDefinitions xs) = vcat (map renderProcedureDefinition xs)
+renderProcedureDefinitions (ProcedureDefinitions xs) = vcat (map renderProcedureDefinition (S.toList xs))
 
 renderDatabaseDefinition :: DatabaseDefinition -> Doc
 renderDatabaseDefinition  dd = text "USE master" $+$
@@ -61,19 +61,25 @@ renderDatabaseDefinition  dd = text "USE master" $+$
     dbName = renderRegularIdentifier (databaseName dd)
 
 instance Arbitrary TableDefinitions where
-  arbitrary = liftM TableDefinitions $ (listOf1 arbitrary `suchThat` validIdentifiers)
+  arbitrary = liftM TableDefinitions $ (liftM S.fromList $ listOf1 arbitrary `suchThat` validIdentifiers)
 
 usesUnreservedNames :: NamedEntity a => S.Set RegularIdentifier -> [a] -> Bool
 usesUnreservedNames reserved = \x -> not $ any (\a -> (name a) `S.member` reserved) x
 
-makeArbitraryProcs :: S.Set RegularIdentifier -> Gen [ProcedureDefinition]
-makeArbitraryProcs reserved = listOf arbitrary `suchThat` (usesUnreservedNames reserved) `suchThat` validIdentifiers
+makeArbitraryProcs :: S.Set RegularIdentifier -> Gen (S.Set ProcedureDefinition)
+makeArbitraryProcs reserved = do
+  x <- listOf arbitrary `suchThat` (usesUnreservedNames reserved) `suchThat` validIdentifiers
+  return $ S.fromList x
 
-makeArbitrarySeqs :: S.Set RegularIdentifier -> Gen [SequenceDefinition]
-makeArbitrarySeqs reserved = listOf arbitrary `suchThat` (usesUnreservedNames reserved) `suchThat` validIdentifiers
+makeArbitrarySeqs :: S.Set RegularIdentifier -> Gen (S.Set SequenceDefinition)
+makeArbitrarySeqs reserved = do
+  x <- listOf arbitrary `suchThat` (usesUnreservedNames reserved) `suchThat` validIdentifiers
+  return $ S.fromList x
 
-makeArbitraryQueues :: S.Set RegularIdentifier -> Gen [QueueDefinition]
-makeArbitraryQueues reserved = listOf arbitrary `suchThat` (usesUnreservedNames reserved) `suchThat` validIdentifiers
+makeArbitraryQueues :: S.Set RegularIdentifier -> Gen (S.Set QueueDefinition)
+makeArbitraryQueues reserved = do
+  x <- listOf arbitrary `suchThat` (usesUnreservedNames reserved) `suchThat` validIdentifiers
+  return $ S.fromList x
 
 instance Arbitrary DatabaseDefinition where
   arbitrary = do
@@ -96,5 +102,5 @@ instance Arbitrary DatabaseDefinition where
 -- Note, for example, this doesn't guarantee unique database names
 dumpExamples :: Int -> FilePath -> IO ()
 dumpExamples m p = do
-  x <- generate (sequence [resize n (arbitrary :: Gen QueueDefinition) | n <- [0..m] ])
-  writeFile p (unlines $ map (render . renderQueueDefinition) x)
+  x <- generate (sequence [resize n (arbitrary :: Gen DatabaseDefinition) | n <- [0..m] ])
+  writeFile p (unlines $ map (render . renderDatabaseDefinition) x)
