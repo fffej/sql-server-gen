@@ -87,7 +87,6 @@ arbitraryValue (Just BigInt)   = oneof [liftM Just $ choose (- 92233720368547758
 arbitraryValue (Just Numeric)  = oneof [liftM Just $ arbitrary,return Nothing]
 arbitraryValue (Just Decimal)  = oneof [liftM Just $ arbitrary,return Nothing]
 
-
 arbitraryCacheValue :: Gen (Maybe Integer)
 arbitraryCacheValue = frequency [(50,liftM Just $ choose (1,500)), (50,return Nothing)]
 
@@ -97,15 +96,21 @@ greaterThanMin x y = fromMaybe True $ liftM2 (>) y x
 lessThanMax :: Maybe Integer -> Maybe Integer -> Bool
 lessThanMax x y = fromMaybe True $ liftM2 (<) y x
 
-{-  The absolute value of the increment for sequence object 'VYOAkIDTbnNf65tp9h_I'
-    must be less than or equal to the difference between the minimum and maximum
-    value of the sequence object.
+{-
+
+The absolute value of the increment for sequence object X 
+must be less than or equal to the difference between the minimum
+and maximum value of the sequence object.
+
+0 is not a valid increment (but negatives are)
+
+If the type isnt' specified, we default to Int32
 -}
 validIncrementBy :: Maybe NumericType -> Maybe Integer -> Maybe Integer -> Maybe Integer -> Bool
-validIncrementBy _       _ _ (Just 0) = False -- 0 is never a valid increment
-validIncrementBy Nothing x y z = validIncrementBy (Just Int) x y z -- default to int32
-validIncrementBy (Just t) x y z = validIncrementBy' t x y z 
+validIncrementBy _ _ _ (Just 0) = False
+validIncrementBy n x y z = validIncrementBy' (fromMaybe Int n) x y z 
 
+-- TODO eliminate the special case of Numeric
 validIncrementBy' :: NumericType -> Maybe Integer -> Maybe Integer -> Maybe Integer -> Bool
 validIncrementBy' Decimal min' max' incr' = validIncrementBy' Numeric min' max' incr' -- can treat these the same
 validIncrementBy' Numeric min' max' incr' = maybe True (\absDiff -> maybe True (\x -> abs x <= abs absDiff) incr') (liftM2 (-) max' min')
@@ -118,7 +123,7 @@ validIncrementBy' x       min' max' incr' = maybe True (\incr -> abs incr <= dif
 
 validSequenceName :: RegularIdentifier -> Bool
 validSequenceName (RegularIdentifier (x:_)) = x /= '#'
-validSequenceName _                         = error "new type declaration should fix this"
+validSequenceName _                         = error "instance of arbitrary for new type declaration should mean this can not happen"
 
 instance Arbitrary SequenceDefinition where
   arbitrary = do
