@@ -84,7 +84,7 @@ instance Arbitrary DatabaseDefinition where
     procs <- liftM ProcedureDefinitions $ makeArbitraryProcs ((tableNames tables) `S.union` (sequenceNames sequences))
     return $ DatabaseDefinition dbName tables sequences procs
    
-
+-- Note, for example, this doesn't guarantee unique database names
 dumpExamples :: Int -> FilePath -> IO ()
 dumpExamples m p = do
   x <- generate (sequence [resize n (arbitrary :: Gen DatabaseDefinition) | n <- [0..m] ])
