@@ -6,6 +6,7 @@ module Database.SqlServer.Types.Queue where
 
 import Database.SqlServer.Types.Identifiers
 import Database.SqlServer.Types.Properties
+import Database.SqlServer.Types.Procedure
 
 import Test.QuickCheck
 import Data.DeriveTH
@@ -28,7 +29,7 @@ data Activation = Activation
 
 data QueueDefinition = QueueDefinition
     {
-      queueName :: RegularIdentifier
+      queueName :: Procedure
     , queueStatus :: Maybe Bool
     , retention :: Maybe Bool
     , activation :: Maybe Activation

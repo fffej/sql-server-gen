@@ -72,19 +72,17 @@ makeArbitraryProcs reserved = listOf arbitrary `suchThat` (usesUnreservedNames r
 makeArbitrarySeqs :: S.Set RegularIdentifier -> Gen [SequenceDefinition]
 makeArbitrarySeqs reserved = listOf arbitrary `suchThat` (usesUnreservedNames reserved) `suchThat` validIdentifiers
 
-makeArbitraryQueues :: ProcedureDefinitions -> S.Set RegularIdentifier -> Gen [QueueDefinition]
-makeArbitraryQueues procs reserved = do
-  x <- listOf arbitrary `suchThat` (usesUnreservedNames reserved) `suchThat` validIdentifiers
-  let pNames = S.toList $ procedureNames procs
-  return $ zipWith assignProc pNames x 
+makeArbitraryQueues :: S.Set RegularIdentifier -> Gen [QueueDefinition]
+makeArbitraryQueues reserved = listOf arbitrary `suchThat` (usesUnreservedNames reserved) `suchThat` validIdentifiers
 
 instance Arbitrary DatabaseDefinition where
   arbitrary = do
     dbName <- arbitrary
     tables <- arbitrary
+    -- Yup, this is getting silly
     sequences <- liftM SequenceDefinitions $ makeArbitrarySeqs (tableNames tables)
     procs <- liftM ProcedureDefinitions $ makeArbitraryProcs ((tableNames tables) `S.union` (sequenceNames sequences))
-    queues <- liftM QueueDefinitions $ makeArbitraryQueues procs (
+    queues <- liftM QueueDefinitions $ makeArbitraryQueues (
       (tableNames tables) `S.union` (sequenceNames sequences) `S.union` (procedureNames procs))
     return $ DatabaseDefinition
       {
