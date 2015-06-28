@@ -98,7 +98,8 @@ renderColumnDefinition c = columnName' <+> columnType' <+> collation' <+>
 
 renderTableDefinition :: TableDefinition -> Doc
 renderTableDefinition t = text "CREATE TABLE" <+> tableName' $$
-                (parens $ renderColumnDefinitions (columnDefinitions t))
+                (parens $ renderColumnDefinitions (columnDefinitions t)) $+$
+                text "GO"
   where
     tableName' = renderRegularIdentifier (tableName t)
 

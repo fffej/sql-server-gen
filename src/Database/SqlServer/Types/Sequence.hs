@@ -13,6 +13,7 @@ import Text.PrettyPrint
 import Test.QuickCheck
 import Data.DeriveTH
 import Control.Monad
+import Data.Maybe (fromMaybe)
 
 
 data NumericType = TinyInt | SmallInt | Int | BigInt | Decimal | Numeric
@@ -57,14 +58,15 @@ renderCacheValue (Just n) = text "CACHE" <+> integer n
 renderSequenceDefinition :: SequenceDefinition -> Doc
 renderSequenceDefinition s = text "CREATE SEQUENCE" <+> renderRegularIdentifier (sequenceName s) $+$
                             dataType $+$ startWith' $+$ incrementBy' $+$ minValue' $+$ maxValue' $+$
-                            cycle' $+$ cache'
+                            cycle' $+$ cache' $+$
+                            text "GO"
   where
     dataType = maybe empty renderNumericType (sequenceType s)
     startWith' = maybe empty (\x -> text "START WITH" <+> integer x) (startWith s)
     incrementBy' = maybe empty (\x -> text "INCREMENT BY" <+> integer x) (incrementBy s)
     minValue' = maybe empty renderMinValue (minValue s)
     maxValue' = maybe empty renderMaxValue (maxValue s)
-    cycle'    = maybe empty (\x -> if x then text "CYCLE" else text "NO CYCLE") (cycle s)
+    cycle'    = maybe empty (\x -> text (if x then "CYCLE" else "NO CYCLE")) (cycle s)
     cache'    = maybe empty renderCacheValue (cache s)
 
 
@@ -75,52 +77,54 @@ numericBounds  (Just Int)      = Just (- 2147483648,214748367)
 numericBounds  (Just BigInt)   = Just (- 9223372036854775808,9223372036854775807)
 numericBounds  _               = Nothing
 
--- TODO get rid of duplication
+boundedMaybeInt :: (Integer,Integer) -> Gen (Maybe Integer)
+boundedMaybeInt x = oneof [liftM Just $ choose x, return Nothing]
+
 arbitraryValue :: Maybe NumericType -> Gen (Maybe Integer)
 arbitraryValue Nothing = arbitraryValue (Just Int)
-arbitraryValue (Just TinyInt)  = oneof [liftM Just $ choose (0,255),return Nothing]
-arbitraryValue (Just SmallInt) = oneof [liftM Just $ choose (- 32768,32767),return Nothing]
-arbitraryValue (Just Int)      = oneof [liftM Just $ choose (- 2147483648,214748367),return Nothing]
-arbitraryValue (Just BigInt)   = oneof [liftM Just $ choose (- 9223372036854775808,9223372036854775807),return Nothing]
-arbitraryValue (Just Numeric)  = oneof [liftM Just $ arbitrary,return Nothing]
-arbitraryValue (Just Decimal)  = oneof [liftM Just $ arbitrary,return Nothing]
-
+arbitraryValue (Just TinyInt)  = boundedMaybeInt (0,255)
+arbitraryValue (Just SmallInt) = boundedMaybeInt (- 32768,32767)
+arbitraryValue (Just Int)      = boundedMaybeInt (- 2147483648,214748367)
+arbitraryValue (Just BigInt)   = boundedMaybeInt (- 9223372036854775808,9223372036854775807)
+arbitraryValue _               = oneof [liftM Just $ arbitrary,return Nothing]
 
 arbitraryCacheValue :: Gen (Maybe Integer)
 arbitraryCacheValue = frequency [(50,liftM Just $ choose (1,500)), (50,return Nothing)]
 
 greaterThanMin :: Maybe Integer -> Maybe Integer -> Bool
-greaterThanMin Nothing     _           = True
-greaterThanMin (Just _)    Nothing     = True
-greaterThanMin (Just min') (Just max') = max' > min'
+greaterThanMin x y = fromMaybe True $ liftM2 (>) y x
 
 lessThanMax :: Maybe Integer -> Maybe Integer -> Bool
-lessThanMax Nothing     _           = True
-lessThanMax (Just _)    Nothing     = True
-lessThanMax (Just max') (Just min') = min' < max'
+lessThanMax x y = fromMaybe True $ liftM2 (<) y x
 
-{-  The absolute value of the increment for sequence object 'VYOAkIDTbnNf65tp9h_I'
-    must be less than or equal to the difference between the minimum and maximum
-    value of the sequence object.
+{-
+
+The absolute value of the increment for sequence object X 
+must be less than or equal to the difference between the minimum
+and maximum value of the sequence object.
+
+0 is not a valid increment (but negatives are)
+
+If the type isnt' specified, we default to Int32
 -}
 validIncrementBy :: Maybe NumericType -> Maybe Integer -> Maybe Integer -> Maybe Integer -> Bool
-validIncrementBy _       _ _ (Just 0) = False -- 0 is never a valid increment
-validIncrementBy Nothing x y z = validIncrementBy (Just Int) x y z -- default to int32
-validIncrementBy (Just t) x y z = validIncrementBy' t x y z 
+validIncrementBy _ _ _ (Just 0) = False
+validIncrementBy n x y z = validIncrementBy' (fromMaybe Int n) x y z 
 
+-- TODO eliminate the special case of Numeric
 validIncrementBy' :: NumericType -> Maybe Integer -> Maybe Integer -> Maybe Integer -> Bool
 validIncrementBy' Decimal min' max' incr' = validIncrementBy' Numeric min' max' incr' -- can treat these the same
 validIncrementBy' Numeric min' max' incr' = maybe True (\absDiff -> maybe True (\x -> abs x <= abs absDiff) incr') (liftM2 (-) max' min')
 validIncrementBy' x       min' max' incr' = maybe True (\incr -> abs incr <= diff) incr'
   where
     Just (lower,upper) = numericBounds (Just x)
-    min'' = maybe lower id min'
-    max'' = maybe upper id max'
+    min'' = fromMaybe lower min'
+    max'' = fromMaybe upper max'
     diff  = abs (max'' - min'')
 
 validSequenceName :: RegularIdentifier -> Bool
 validSequenceName (RegularIdentifier (x:_)) = x /= '#'
-validSequenceName _                         = error "new type declaration should fix this"
+validSequenceName _                         = error "instance of arbitrary for new type declaration should mean this can not happen"
 
 instance Arbitrary SequenceDefinition where
   arbitrary = do
@@ -131,9 +135,9 @@ instance Arbitrary SequenceDefinition where
     start <- arbitraryValue dataType `suchThat` (\x -> greaterThanMin minV x && lessThanMax maxV x)
     increment <- arbitraryValue dataType `suchThat` (validIncrementBy dataType minV maxV)
     cyc <- arbitrary
-    hasMinValue <- elements [Just, \_ -> Nothing]
-    hasMaxValue <- elements [Just, \_ -> Nothing]
-    hasChcValue <- elements [Just, \_ -> Nothing]    
+    hasMinValue <- elements [Just, const Nothing]
+    hasMaxValue <- elements [Just, const Nothing]
+    hasChcValue <- elements [Just, const Nothing]    
     chc <- arbitraryCacheValue
     return $ SequenceDefinition {
         sequenceName = nm
