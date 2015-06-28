@@ -6,17 +6,16 @@ module Database.SqlServer.Types.Database where
 import Database.SqlServer.Types.Identifiers (RegularIdentifier,renderRegularIdentifier)
 import Database.SqlServer.Types.Table (TableDefinition,renderTableDefinition,tableName)
 import Database.SqlServer.Types.Properties (validIdentifiers)
-import Database.SqlServer.Types.Sequence (SequenceDefinition,renderSequenceDefinition)
+import Database.SqlServer.Types.Sequence (SequenceDefinition,renderSequenceDefinition,sequenceName)
 import Database.SqlServer.Types.Queue hiding (procedureName)
 import Database.SqlServer.Types.Procedure
+import Database.SqlServer.Types.Properties
 
 import Test.QuickCheck
 import Control.Monad
 import qualified Data.Set as S
 
 import Text.PrettyPrint
-
-import Data.DeriveTH
 
 newtype TableDefinitions = TableDefinitions [TableDefinition]
 
@@ -32,8 +31,15 @@ data DatabaseDefinition = DatabaseDefinition
                           , procedureDefinitions :: ProcedureDefinitions
                           }
 
+
 tableNames :: TableDefinitions -> S.Set RegularIdentifier
-tableNames (TableDefinitions xs) = S.fromList (map tableName xs)
+tableNames (TableDefinitions xs) = names xs
+
+sequenceNames :: SequenceDefinitions -> S.Set RegularIdentifier
+sequenceNames (SequenceDefinitions xs) = names xs
+
+names :: NamedEntity a => [a] -> S.Set RegularIdentifier
+names xs = S.fromList (map name xs)
 
 renderTableDefinitions :: TableDefinitions -> Doc
 renderTableDefinitions (TableDefinitions xs) = vcat (map renderTableDefinition xs)
@@ -62,16 +68,22 @@ instance Arbitrary TableDefinitions where
 instance Arbitrary SequenceDefinitions where
   arbitrary = liftM SequenceDefinitions $ (listOf1 arbitrary `suchThat` validIdentifiers)
 
+usesUnreservedNames :: NamedEntity a => S.Set RegularIdentifier -> [a] -> Bool
+usesUnreservedNames reserved = \x -> not $ any (\a -> (name a) `S.member` reserved) x
+
 makeArbitraryProcs :: S.Set RegularIdentifier -> Gen [ProcedureDefinition]
-makeArbitraryProcs reserved = listOf arbitrary `suchThat` (\x -> not $ any (\a -> (procedureName a) `S.member` reserved) x)
+makeArbitraryProcs reserved = listOf arbitrary `suchThat` (usesUnreservedNames reserved)
+
+makeArbitrarySeqs :: S.Set RegularIdentifier -> Gen [SequenceDefinition]
+makeArbitrarySeqs reserved = listOf arbitrary `suchThat` (usesUnreservedNames reserved)
 
 -- TODO consider Sequence names too
 instance Arbitrary DatabaseDefinition where
   arbitrary = do
     dbName <- arbitrary
     tables <- arbitrary
-    sequences <- arbitrary
-    procs <- liftM ProcedureDefinitions $ makeArbitraryProcs (tableNames tables)
+    sequences <- liftM SequenceDefinitions $ makeArbitrarySeqs (tableNames tables)
+    procs <- liftM ProcedureDefinitions $ makeArbitraryProcs ((tableNames tables) `S.union` (sequenceNames sequences))
     return $ DatabaseDefinition dbName tables sequences procs
    
 
