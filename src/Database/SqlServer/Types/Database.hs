@@ -5,6 +5,7 @@ import Database.SqlServer.Types.Table (TableDefinition,renderTableDefinition)
 import Database.SqlServer.Types.Properties (validIdentifiers,NamedEntity,name)
 import Database.SqlServer.Types.Sequence (SequenceDefinition,renderSequenceDefinition)
 import Database.SqlServer.Types.Procedure
+import Database.SqlServer.Types.Queue
 
 import Test.QuickCheck
 import Control.Monad
@@ -13,10 +14,9 @@ import qualified Data.Set as S
 import Text.PrettyPrint
 
 newtype TableDefinitions = TableDefinitions [TableDefinition]
-
 newtype SequenceDefinitions = SequenceDefinitions [SequenceDefinition]
-
 newtype ProcedureDefinitions = ProcedureDefinitions [ProcedureDefinition]
+newtype QueueDefinitions = QueueDefinitions [QueueDefinition]
 
 data DatabaseDefinition = DatabaseDefinition
                           {
@@ -24,6 +24,7 @@ data DatabaseDefinition = DatabaseDefinition
                           , tableDefinitions :: TableDefinitions
                           , sequenceDefinitions :: SequenceDefinitions
                           , procedureDefinitions :: ProcedureDefinitions
+                          , queueDefinitions :: QueueDefinitions
                           }
 
 tableNames :: TableDefinitions -> S.Set RegularIdentifier
@@ -31,6 +32,9 @@ tableNames (TableDefinitions xs) = names xs
 
 sequenceNames :: SequenceDefinitions -> S.Set RegularIdentifier
 sequenceNames (SequenceDefinitions xs) = names xs
+
+procedureNames :: ProcedureDefinitions -> S.Set RegularIdentifier
+procedureNames (ProcedureDefinitions xs) = names xs
 
 names :: NamedEntity a => [a] -> S.Set RegularIdentifier
 names xs = S.fromList (map name xs)
@@ -68,13 +72,25 @@ makeArbitraryProcs reserved = listOf arbitrary `suchThat` (usesUnreservedNames r
 makeArbitrarySeqs :: S.Set RegularIdentifier -> Gen [SequenceDefinition]
 makeArbitrarySeqs reserved = listOf arbitrary `suchThat` (usesUnreservedNames reserved) `suchThat` validIdentifiers
 
+makeArbitraryQueues :: S.Set RegularIdentifier -> Gen [QueueDefinition]
+makeArbitraryQueues = undefined
+
 instance Arbitrary DatabaseDefinition where
   arbitrary = do
     dbName <- arbitrary
     tables <- arbitrary
     sequences <- liftM SequenceDefinitions $ makeArbitrarySeqs (tableNames tables)
     procs <- liftM ProcedureDefinitions $ makeArbitraryProcs ((tableNames tables) `S.union` (sequenceNames sequences))
-    return $ DatabaseDefinition dbName tables sequences procs
+    queues <- liftM QueueDefinitions $ makeArbitraryQueues (
+      (tableNames tables) `S.union` (sequenceNames sequences) `S.union` (procedureNames procs))
+    return $ DatabaseDefinition
+      {
+        databaseName = dbName
+      , tableDefinitions = tables
+      , sequenceDefinitions = sequences
+      , procedureDefinitions = procs
+      , queueDefinitions = queues
+      }
    
 -- Note, for example, this doesn't guarantee unique database names
 dumpExamples :: Int -> FilePath -> IO ()

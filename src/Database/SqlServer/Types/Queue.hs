@@ -71,7 +71,8 @@ renderActivation a
                                   , maybe empty renderExecuteAs (executeAs a)
                                   ]) <+> text ")"
   | otherwise             = empty
-                            
+
+
 renderQueue :: QueueDefinition -> Doc
 renderQueue q = text "CREATE QUEUE" <+> (renderRegularIdentifier (queueName q)) <+>
                 options
