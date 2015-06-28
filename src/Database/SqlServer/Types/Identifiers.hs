@@ -5,6 +5,7 @@ import Database.SqlServer.Types.Reserved (isReserved)
 import Test.QuickCheck
 import Control.Monad (liftM2)
 import Text.PrettyPrint
+import Data.Ord
 
 import Data.Char (toUpper)
 
@@ -12,10 +13,16 @@ import Data.Char (toUpper)
 newtype RegularIdentifier = RegularIdentifier
                             {
                               unwrap :: String
-                            } deriving (Ord)
+                            } 
+
+upCase :: String -> String
+upCase = map toUpper
 
 instance Eq RegularIdentifier where
-  a == b = (map toUpper $ unwrap a) == (map toUpper $ unwrap b)
+  a == b = (upCase $ unwrap a) == (upCase $ unwrap b)
+
+instance Ord RegularIdentifier where
+  compare = comparing (upCase . unwrap)
 
 renderRegularIdentifier :: RegularIdentifier -> Doc
 renderRegularIdentifier (RegularIdentifier x) = text x

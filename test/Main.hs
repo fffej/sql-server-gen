@@ -3,11 +3,23 @@ module Main (main) where
 import Test.Hspec
 
 import Database.SqlServer.Types.Sequence
+import Database.SqlServer.Types.Identifiers
 
-{-
-greaterThanMin :: Maybe Integer -> Maybe Integer -> Bool
-lessThanMax :: Maybe Integer -> Maybe Integer -> Bool
--}
+import qualified Data.Set as S
+
+a :: RegularIdentifier
+a = RegularIdentifier "a"
+
+aCaps :: RegularIdentifier
+aCaps = RegularIdentifier "A"
+
+identifierSpecs :: Spec
+identifierSpecs = do
+  describe "identifiers" $ do
+    it "compare equal even if differing case" $ do
+      a == aCaps `shouldBe` True
+    it "are handled correctly in sets even if differing in case" $ do
+      (S.size (S.fromList [a, aCaps])) `shouldBe` 1
 
 greaterThanMinSpecs :: Spec
 greaterThanMinSpecs = do
@@ -33,5 +45,6 @@ lessThanMaxSpecs = do
 
 main :: IO()
 main = hspec $ do
+  identifierSpecs
   greaterThanMinSpecs
   lessThanMaxSpecs
