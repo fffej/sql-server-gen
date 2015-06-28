@@ -41,7 +41,7 @@ data Parameter = Parameter
   {
     parameterName :: ParameterIdentifier
   , dataType      :: Type
-  , isOutput      :: Maybe Bool
+  , isOutput      :: Bool
   }
 
 instance NamedEntity Parameter where
@@ -49,8 +49,12 @@ instance NamedEntity Parameter where
 
 derive makeArbitrary ''Parameter
 
+renderOut :: Bool -> Doc
+renderOut True = text "OUTPUT"
+renderOut False = empty
+
 renderParameter :: Parameter -> Doc
-renderParameter p = renderParameterIdentifier (parameterName p) <+> renderDataType (dataType p)
+renderParameter p = renderParameterIdentifier (parameterName p) <+> renderDataType (dataType p) <+> renderOut (isOutput p)
 
 newtype Parameters = Parameters { unwrap :: [Parameter] } 
 
