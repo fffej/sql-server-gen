@@ -92,14 +92,10 @@ arbitraryCacheValue :: Gen (Maybe Integer)
 arbitraryCacheValue = frequency [(50,liftM Just $ choose (1,500)), (50,return Nothing)]
 
 greaterThanMin :: Maybe Integer -> Maybe Integer -> Bool
-greaterThanMin Nothing     _           = True
-greaterThanMin (Just _)    Nothing     = True
-greaterThanMin (Just min') (Just max') = max' > min'
+greaterThanMin x y = fromMaybe True $ liftM2 (>) y x
 
 lessThanMax :: Maybe Integer -> Maybe Integer -> Bool
-lessThanMax Nothing     _           = True
-lessThanMax (Just _)    Nothing     = True
-lessThanMax (Just max') (Just min') = min' < max'
+lessThanMax x y = fromMaybe True $ liftM2 (<) y x
 
 {-  The absolute value of the increment for sequence object 'VYOAkIDTbnNf65tp9h_I'
     must be less than or equal to the difference between the minimum and maximum
