@@ -4,12 +4,11 @@
 module Database.SqlServer.Types.Database where
 
 import Database.SqlServer.Types.Identifiers (RegularIdentifier,renderRegularIdentifier)
-import Database.SqlServer.Types.Table (TableDefinition,renderTableDefinition,tableName)
+import Database.SqlServer.Types.Table (TableDefinition,renderTableDefinition)
 import Database.SqlServer.Types.Properties (validIdentifiers)
-import Database.SqlServer.Types.Sequence (SequenceDefinition,renderSequenceDefinition,sequenceName)
-import Database.SqlServer.Types.Queue hiding (procedureName)
+import Database.SqlServer.Types.Sequence (SequenceDefinition,renderSequenceDefinition)
 import Database.SqlServer.Types.Procedure
-import Database.SqlServer.Types.Properties
+import Database.SqlServer.Types.Properties (NamedEntity,name)
 
 import Test.QuickCheck
 import Control.Monad
@@ -72,10 +71,10 @@ usesUnreservedNames :: NamedEntity a => S.Set RegularIdentifier -> [a] -> Bool
 usesUnreservedNames reserved = \x -> not $ any (\a -> (name a) `S.member` reserved) x
 
 makeArbitraryProcs :: S.Set RegularIdentifier -> Gen [ProcedureDefinition]
-makeArbitraryProcs reserved = listOf arbitrary `suchThat` (usesUnreservedNames reserved)
+makeArbitraryProcs reserved = listOf arbitrary `suchThat` (usesUnreservedNames reserved) `suchThat` validIdentifiers
 
 makeArbitrarySeqs :: S.Set RegularIdentifier -> Gen [SequenceDefinition]
-makeArbitrarySeqs reserved = listOf arbitrary `suchThat` (usesUnreservedNames reserved)
+makeArbitrarySeqs reserved = listOf arbitrary `suchThat` (usesUnreservedNames reserved) `suchThat` validIdentifiers
 
 -- TODO consider Sequence names too
 instance Arbitrary DatabaseDefinition where
