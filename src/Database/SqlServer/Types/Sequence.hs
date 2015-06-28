@@ -129,13 +129,9 @@ validIncrementBy' x       min' max' incr' = maybe True (\incr -> abs incr <= dif
     max'' = fromMaybe upper max'
     diff  = abs (max'' - min'')
 
-validSequenceName :: RegularIdentifier -> Bool
-validSequenceName (RegularIdentifier (x:_)) = x /= '#'
-validSequenceName _                         = error "instance of arbitrary for new type declaration should mean this can not happen"
-
 instance Arbitrary SequenceDefinition where
   arbitrary = do
-    nm <- arbitrary `suchThat` validSequenceName
+    nm <- arbitrary
     dataType <- arbitrary
     minV <- arbitraryValue dataType
     maxV <- arbitraryValue dataType `suchThat` (greaterThanMin minV)
