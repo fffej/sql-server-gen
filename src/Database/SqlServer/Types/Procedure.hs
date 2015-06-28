@@ -11,7 +11,6 @@ import Database.SqlServer.Types.Properties
 import Test.QuickCheck
 import Data.DeriveTH
 import Text.PrettyPrint
-import Control.Monad
 import Data.Ord
 
 import qualified Data.Set as S
