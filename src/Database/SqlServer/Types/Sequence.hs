@@ -77,18 +77,16 @@ numericBounds  (Just Int)      = Just (- 2147483648,214748367)
 numericBounds  (Just BigInt)   = Just (- 9223372036854775808,9223372036854775807)
 numericBounds  _               = Nothing
 
-boundedJust :: (Integer,Integer) -> Gen (Maybe Integer)
-boundedJust x = liftM Just $ choose x
+boundedMaybeInt :: (Integer,Integer) -> Gen (Maybe Integer)
+boundedMaybeInt x = oneof [liftM Just $ choose x, return Nothing]
 
--- TODO get rid of duplication
 arbitraryValue :: Maybe NumericType -> Gen (Maybe Integer)
 arbitraryValue Nothing = arbitraryValue (Just Int)
-arbitraryValue (Just TinyInt)  = oneof [boundedJust (0,255),return Nothing]
-arbitraryValue (Just SmallInt) = oneof [boundedJust (- 32768,32767),return Nothing]
-arbitraryValue (Just Int)      = oneof [boundedJust (- 2147483648,214748367),return Nothing]
-arbitraryValue (Just BigInt)   = oneof [boundedJust (- 9223372036854775808,9223372036854775807),return Nothing]
-arbitraryValue (Just Numeric)  = oneof [liftM Just $ arbitrary,return Nothing]
-arbitraryValue (Just Decimal)  = oneof [liftM Just $ arbitrary,return Nothing]
+arbitraryValue (Just TinyInt)  = boundedMaybeInt (0,255)
+arbitraryValue (Just SmallInt) = boundedMaybeInt (- 32768,32767)
+arbitraryValue (Just Int)      = boundedMaybeInt (- 2147483648,214748367)
+arbitraryValue (Just BigInt)   = boundedMaybeInt (- 9223372036854775808,9223372036854775807)
+arbitraryValue _               = oneof [liftM Just $ arbitrary,return Nothing]
 
 arbitraryCacheValue :: Gen (Maybe Integer)
 arbitraryCacheValue = frequency [(50,liftM Just $ choose (1,500)), (50,return Nothing)]
