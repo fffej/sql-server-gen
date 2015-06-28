@@ -64,9 +64,6 @@ renderDatabaseDefinition  dd = text "USE master" $+$
 instance Arbitrary TableDefinitions where
   arbitrary = liftM TableDefinitions $ (listOf1 arbitrary `suchThat` validIdentifiers)
 
-instance Arbitrary SequenceDefinitions where
-  arbitrary = liftM SequenceDefinitions $ (listOf1 arbitrary `suchThat` validIdentifiers)
-
 usesUnreservedNames :: NamedEntity a => S.Set RegularIdentifier -> [a] -> Bool
 usesUnreservedNames reserved = \x -> not $ any (\a -> (name a) `S.member` reserved) x
 
