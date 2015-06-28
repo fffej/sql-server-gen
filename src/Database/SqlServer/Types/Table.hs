@@ -22,7 +22,6 @@ import Database.SqlServer.Types.DataTypes (
 import Database.SqlServer.Types.Collations (renderCollation)
 
 import Test.QuickCheck
-import Control.Monad
 import Text.PrettyPrint
 import Data.Ord
 import qualified Data.Set as S
@@ -53,6 +52,13 @@ data ColumnDefinition = ColumnDefinition
                         , dataType   :: Type
                         }
 
+instance Ord ColumnDefinition where
+  compare = comparing columnName
+
+instance Eq ColumnDefinition where
+  a == b = columnName a == columnName b
+
+
 {-
 
 Creating or altering table 'diDsDhXF3In' failed because the minimum row size would be 12387, including 14 bytes of internal overhead. This exceeds the maximum allowable table row size of 8060 bytes.
@@ -82,7 +88,9 @@ instance NamedEntity ColumnDefinition where
   name = columnName
 
 instance Arbitrary ColumnDefinitions where
-  arbitrary = liftM ColumnDefinitions $ (listOf1 arbitrary `suchThat` columnConstraintsSatisfied)
+  arbitrary = do
+    cols <- listOf1 arbitrary `suchThat` columnConstraintsSatisfied
+    return $ ColumnDefinitions (S.fromList cols)
 
 derive makeArbitrary ''TableDefinition
 
@@ -91,7 +99,7 @@ derive makeArbitrary ''ColumnDefinition
 renderColumnDefinitions :: ColumnDefinitions -> Doc
 renderColumnDefinitions (ColumnDefinitions xs) = vcat (punctuate comma cols)
   where
-    cols = map renderColumnDefinition xs
+    cols = map renderColumnDefinition (S.toList xs)
 
 renderColumnDefinition :: ColumnDefinition -> Doc
 renderColumnDefinition c = columnName' <+> columnType' <+> collation' <+>

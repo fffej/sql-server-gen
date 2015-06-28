@@ -6,11 +6,16 @@ import Test.QuickCheck
 import Control.Monad (liftM2)
 import Text.PrettyPrint
 
+import Data.Char (toUpper)
+
 -- https://msdn.microsoft.com/en-us/subscriptions/downloads/ms175874
 newtype RegularIdentifier = RegularIdentifier
                             {
                               unwrap :: String
-                            } deriving (Eq,Ord)
+                            } deriving (Ord)
+
+instance Eq RegularIdentifier where
+  a == b = (map toUpper $ unwrap a) == (map toUpper $ unwrap b)
 
 renderRegularIdentifier :: RegularIdentifier -> Doc
 renderRegularIdentifier (RegularIdentifier x) = text x
