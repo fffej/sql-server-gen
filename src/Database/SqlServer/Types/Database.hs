@@ -1,14 +1,10 @@
-{-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE TemplateHaskell #-}
-
 module Database.SqlServer.Types.Database where
 
 import Database.SqlServer.Types.Identifiers (RegularIdentifier,renderRegularIdentifier)
 import Database.SqlServer.Types.Table (TableDefinition,renderTableDefinition)
-import Database.SqlServer.Types.Properties (validIdentifiers)
+import Database.SqlServer.Types.Properties (validIdentifiers,NamedEntity,name)
 import Database.SqlServer.Types.Sequence (SequenceDefinition,renderSequenceDefinition)
 import Database.SqlServer.Types.Procedure
-import Database.SqlServer.Types.Properties (NamedEntity,name)
 
 import Test.QuickCheck
 import Control.Monad
@@ -29,7 +25,6 @@ data DatabaseDefinition = DatabaseDefinition
                           , sequenceDefinitions :: SequenceDefinitions
                           , procedureDefinitions :: ProcedureDefinitions
                           }
-
 
 tableNames :: TableDefinitions -> S.Set RegularIdentifier
 tableNames (TableDefinitions xs) = names xs

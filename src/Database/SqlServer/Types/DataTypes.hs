@@ -105,7 +105,7 @@ data UniqueIdentifierOptions = RowGuidCol (Maybe NullStorageOptions)
 
 uniqueIdentifierstorageOptions :: UniqueIdentifierOptions -> Maybe StorageOptions
 uniqueIdentifierstorageOptions (UniqueIdentifierOptions x) = x
-uniqueIdentifierstorageOptions (RowGuidCol x) = maybe Nothing (Just . StorageOptions) x
+uniqueIdentifierstorageOptions (RowGuidCol x) = fmap StorageOptions x
 
 isRowGuidCol :: UniqueIdentifierOptions -> Bool
 isRowGuidCol (RowGuidCol _) = True

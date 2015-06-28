@@ -10,9 +10,7 @@ import Database.SqlServer.Types.Properties
 
 import Test.QuickCheck
 import Data.DeriveTH
-import Data.Word (Word16)
 import Text.PrettyPrint
-import Data.Maybe (isJust)
 import Control.Monad
 
 import qualified Data.Set as S

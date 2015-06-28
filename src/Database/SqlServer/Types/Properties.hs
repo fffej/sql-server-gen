@@ -20,3 +20,6 @@ unReserved = not . reserved
 
 validIdentifiers :: NamedEntity a => [a] -> Bool
 validIdentifiers xs = all unReserved xs && uniqueNames xs
+
+
+  

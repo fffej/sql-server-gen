@@ -13,6 +13,7 @@ import Text.PrettyPrint
 import Test.QuickCheck
 import Data.DeriveTH
 import Control.Monad
+import Data.Maybe (fromMaybe)
 
 
 data NumericType = TinyInt | SmallInt | Int | BigInt | Decimal | Numeric
@@ -65,7 +66,7 @@ renderSequenceDefinition s = text "CREATE SEQUENCE" <+> renderRegularIdentifier 
     incrementBy' = maybe empty (\x -> text "INCREMENT BY" <+> integer x) (incrementBy s)
     minValue' = maybe empty renderMinValue (minValue s)
     maxValue' = maybe empty renderMaxValue (maxValue s)
-    cycle'    = maybe empty (\x -> if x then text "CYCLE" else text "NO CYCLE") (cycle s)
+    cycle'    = maybe empty (\x -> text (if x then "CYCLE" else "NO CYCLE")) (cycle s)
     cache'    = maybe empty renderCacheValue (cache s)
 
 
@@ -115,8 +116,8 @@ validIncrementBy' Numeric min' max' incr' = maybe True (\absDiff -> maybe True (
 validIncrementBy' x       min' max' incr' = maybe True (\incr -> abs incr <= diff) incr'
   where
     Just (lower,upper) = numericBounds (Just x)
-    min'' = maybe lower id min'
-    max'' = maybe upper id max'
+    min'' = fromMaybe lower min'
+    max'' = fromMaybe upper max'
     diff  = abs (max'' - min'')
 
 validSequenceName :: RegularIdentifier -> Bool
@@ -132,9 +133,9 @@ instance Arbitrary SequenceDefinition where
     start <- arbitraryValue dataType `suchThat` (\x -> greaterThanMin minV x && lessThanMax maxV x)
     increment <- arbitraryValue dataType `suchThat` (validIncrementBy dataType minV maxV)
     cyc <- arbitrary
-    hasMinValue <- elements [Just, \_ -> Nothing]
-    hasMaxValue <- elements [Just, \_ -> Nothing]
-    hasChcValue <- elements [Just, \_ -> Nothing]    
+    hasMinValue <- elements [Just, const Nothing]
+    hasMaxValue <- elements [Just, const Nothing]
+    hasChcValue <- elements [Just, const Nothing]    
     chc <- arbitraryCacheValue
     return $ SequenceDefinition {
         sequenceName = nm
