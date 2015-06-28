@@ -25,10 +25,11 @@ import Test.QuickCheck
 import Control.Monad
 import Text.PrettyPrint
 import Data.Ord
+import qualified Data.Set as S
 
 import Data.DeriveTH
 
-newtype ColumnDefinitions = ColumnDefinitions [ColumnDefinition]
+newtype ColumnDefinitions = ColumnDefinitions (S.Set ColumnDefinition)
 
 -- https://msdn.microsoft.com/en-us/library/ms174979.aspx
 data TableDefinition = TableDefinition
