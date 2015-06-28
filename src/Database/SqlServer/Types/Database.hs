@@ -73,7 +73,10 @@ makeArbitrarySeqs :: S.Set RegularIdentifier -> Gen [SequenceDefinition]
 makeArbitrarySeqs reserved = listOf arbitrary `suchThat` (usesUnreservedNames reserved) `suchThat` validIdentifiers
 
 makeArbitraryQueues :: ProcedureDefinitions -> S.Set RegularIdentifier -> Gen [QueueDefinition]
-makeArbitraryQueues = undefined
+makeArbitraryQueues procs reserved = do
+  x <- listOf arbitrary `suchThat` (usesUnreservedNames reserved) `suchThat` validIdentifiers
+  let pNames = S.toList $ procedureNames procs
+  return $ zipWith assignProc pNames x 
 
 instance Arbitrary DatabaseDefinition where
   arbitrary = do

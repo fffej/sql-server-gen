@@ -5,18 +5,20 @@
 module Database.SqlServer.Types.Queue where
 
 import Database.SqlServer.Types.Identifiers
+import Database.SqlServer.Types.Properties
 
 import Test.QuickCheck
 import Data.DeriveTH
 import Data.Word (Word16)
 import Text.PrettyPrint
 import Data.Maybe (isJust)
+import qualified Data.Set as S
 
 -- TODO username support
 data ExecuteAs = Self
                | Owner
 
--- TODO procedure support
+-- Validation is handled at the next level up
 data Activation = Activation
     {
       maxQueueReaders  :: Maybe Word16
@@ -27,11 +29,17 @@ data Activation = Activation
 data QueueDefinition = QueueDefinition
     {
       queueName :: RegularIdentifier
-    , queueStatus    :: Maybe Bool
+    , queueStatus :: Maybe Bool
     , retention :: Maybe Bool
     , activation :: Maybe Activation
     , poisonMessageHandling :: Maybe Bool
     }
+
+assignProc :: RegularIdentifier -> QueueDefinition -> QueueDefinition
+assignProc ri qd = qd { activation = fmap (\x -> x { procedureName = ri }) (activation qd) }
+
+instance NamedEntity QueueDefinition where
+  name = queueName
 
 derive makeArbitrary ''ExecuteAs
 derive makeArbitrary ''Activation
