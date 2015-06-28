@@ -13,6 +13,8 @@ import Data.DeriveTH
 import Data.Word (Word16)
 import Text.PrettyPrint
 import Data.Maybe (isJust)
+import Data.Ord
+import qualified Data.Set as S
 
 -- TODO username support
 data ExecuteAs = Self
@@ -24,7 +26,7 @@ newtype ZeroParamProc = ZeroParamProc { unwrap :: ProcedureDefinition }
 instance Arbitrary ZeroParamProc where
   arbitrary = do
     proc <- arbitrary :: Gen ProcedureDefinition
-    return $ ZeroParamProc (proc { parameters = Parameters [] })
+    return $ ZeroParamProc (proc { parameters = Parameters S.empty })
 
 
 data Activation = Activation
@@ -45,6 +47,13 @@ data QueueDefinition = QueueDefinition
 
 instance NamedEntity QueueDefinition where
   name = queueName
+
+instance Eq QueueDefinition where
+  a == b = queueName a == queueName b
+
+instance Ord QueueDefinition where
+  compare = comparing queueName
+  
 
 derive makeArbitrary ''ExecuteAs
 derive makeArbitrary ''Activation

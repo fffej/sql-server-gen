@@ -137,8 +137,8 @@ data PrecisionStorage = PrecisionStorage Int
 
 instance Arbitrary PrecisionStorage where
   arbitrary = do
-    precision <- choose(1,53)
-    return (PrecisionStorage precision)
+    p <- choose(1,53)
+    return (PrecisionStorage p)
 
 renderPrecisionStorage :: PrecisionStorage -> Doc
 renderPrecisionStorage (PrecisionStorage n) = lparen <> int n <> rparen
@@ -147,8 +147,8 @@ data FractionalSecondsPrecision = FractionalSecondsPrecision Int
 
 instance Arbitrary FractionalSecondsPrecision where
   arbitrary = do
-    precision <- choose (0,7)
-    return (FractionalSecondsPrecision precision)
+    p <- choose (0,7)
+    return (FractionalSecondsPrecision p)
 
 renderFractionalSecondsPrecision :: FractionalSecondsPrecision -> Doc
 renderFractionalSecondsPrecision (FractionalSecondsPrecision n) = lparen <> int n <> rparen
