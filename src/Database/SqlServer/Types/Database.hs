@@ -76,7 +76,6 @@ makeArbitraryProcs reserved = listOf arbitrary `suchThat` (usesUnreservedNames r
 makeArbitrarySeqs :: S.Set RegularIdentifier -> Gen [SequenceDefinition]
 makeArbitrarySeqs reserved = listOf arbitrary `suchThat` (usesUnreservedNames reserved) `suchThat` validIdentifiers
 
--- TODO consider Sequence names too
 instance Arbitrary DatabaseDefinition where
   arbitrary = do
     dbName <- arbitrary
