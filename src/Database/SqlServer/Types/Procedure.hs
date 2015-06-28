@@ -67,15 +67,19 @@ data ProcedureDefinition = ProcedureDefinition
   , parameters    :: Parameters
   }
 
+instance NamedEntity ProcedureDefinition where
+  name = procedureName
+
 derive makeArbitrary ''ProcedureDefinition
 
 -- Generating arbitrary SQL is perhaps a bit complicated.
 statementBody :: String
-statementBody = "select 1\nGO\n"
+statementBody = "select 1\n"
 
 renderProcedureDefinition :: ProcedureDefinition -> Doc
 renderProcedureDefinition p = text "CREATE PROCEDURE" <+> renderRegularIdentifier (procedureName p) $+$
                               hcat (punctuate comma (map renderParameter (unwrap $ parameters p))) <+> text "AS" $+$
-                              text statementBody
+                              text statementBody $+$
+                              text "GO"
                               
                                                     

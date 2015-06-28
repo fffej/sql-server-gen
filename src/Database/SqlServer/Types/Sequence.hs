@@ -57,7 +57,8 @@ renderCacheValue (Just n) = text "CACHE" <+> integer n
 renderSequenceDefinition :: SequenceDefinition -> Doc
 renderSequenceDefinition s = text "CREATE SEQUENCE" <+> renderRegularIdentifier (sequenceName s) $+$
                             dataType $+$ startWith' $+$ incrementBy' $+$ minValue' $+$ maxValue' $+$
-                            cycle' $+$ cache'
+                            cycle' $+$ cache' $+$
+                            text "GO"
   where
     dataType = maybe empty renderNumericType (sequenceType s)
     startWith' = maybe empty (\x -> text "START WITH" <+> integer x) (startWith s)

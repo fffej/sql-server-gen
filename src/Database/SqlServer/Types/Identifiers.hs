@@ -10,13 +10,14 @@ import Text.PrettyPrint
 newtype RegularIdentifier = RegularIdentifier
                             {
                               unwrap :: String
-                            } deriving Eq
+                            } deriving (Eq,Ord)
 
 renderRegularIdentifier :: RegularIdentifier -> Doc
 renderRegularIdentifier (RegularIdentifier x) = text x
 
+-- Removed hash; it's magic
 firstChars :: String
-firstChars = ['a'..'z'] ++ ['A'..'Z'] ++ "_#"
+firstChars = ['a'..'z'] ++ ['A'..'Z'] ++ "_"
 
 subsequentChars :: String
 subsequentChars = firstChars ++ ['0'..'9']
