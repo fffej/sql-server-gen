@@ -4,40 +4,44 @@
 
 module Database.SqlServer.Types.Queue where
 
-import Database.SqlServer.Types.Identifiers
+import Database.SqlServer.Types.Identifiers hiding (unwrap)
 import Database.SqlServer.Types.Properties
-import Database.SqlServer.Types.Procedure
+import Database.SqlServer.Types.Procedure hiding (Owner,Self,unwrap)
 
 import Test.QuickCheck
 import Data.DeriveTH
 import Data.Word (Word16)
 import Text.PrettyPrint
 import Data.Maybe (isJust)
-import qualified Data.Set as S
 
 -- TODO username support
 data ExecuteAs = Self
                | Owner
 
--- Validation is handled at the next level up
+-- Activation procedures can not have any parameters
+newtype ZeroParamProc = ZeroParamProc { unwrap :: ProcedureDefinition }
+
+instance Arbitrary ZeroParamProc where
+  arbitrary = do
+    proc <- arbitrary :: Gen ProcedureDefinition
+    return $ ZeroParamProc (proc { parameters = Parameters [] })
+
+
 data Activation = Activation
     {
-      maxQueueReaders  :: Maybe Word16
-    , executeAs :: Maybe ExecuteAs
-    , procedureName :: RegularIdentifier
+      maxQueueReaders  ::  Word16
+    , executeAs :: ExecuteAs
+    , procedure :: ZeroParamProc
     } 
 
 data QueueDefinition = QueueDefinition
     {
-      queueName :: Procedure
+      queueName :: RegularIdentifier
     , queueStatus :: Maybe Bool
     , retention :: Maybe Bool
     , activation :: Maybe Activation
     , poisonMessageHandling :: Maybe Bool
     }
-
-assignProc :: RegularIdentifier -> QueueDefinition -> QueueDefinition
-assignProc ri qd = qd { activation = fmap (\x -> x { procedureName = ri }) (activation qd) }
 
 instance NamedEntity QueueDefinition where
   name = queueName
@@ -49,9 +53,6 @@ derive makeArbitrary ''QueueDefinition
 anySpecified :: QueueDefinition -> Bool
 anySpecified q = isJust (queueStatus q) || isJust (retention q) ||
                  isJust (activation q)  || isJust (poisonMessageHandling q)
-
-anyActivationValues :: Activation -> Bool
-anyActivationValues a = isJust (maxQueueReaders a) || isJust (executeAs a)
 
 renderStatus :: Bool -> Doc
 renderStatus True  = text "STATUS = ON"
@@ -72,19 +73,23 @@ renderExecuteAs :: ExecuteAs -> Doc
 renderExecuteAs Self = text "EXECUTE AS SELF"
 renderExecuteAs Owner = text "EXECUTE AS OWNER"
 
+renderProc :: Activation -> Doc
+renderProc a = renderProcedureDefinition (unwrap $ procedure a)
+
+renderProcedureName :: ProcedureDefinition -> Doc
+renderProcedureName a = text "PROCEDURE_NAME =" <+> renderRegularIdentifier (procedureName a)
+
 renderActivation :: Activation -> Doc
-renderActivation a
-  | anyActivationValues a = text "ACTIVATION(" <+>
-                            hcat (punctuate comma $ filter (/= empty)
-                                  [ maybe empty renderMaxQueueReaders (maxQueueReaders a) 
-                                  , maybe empty renderExecuteAs (executeAs a)
-                                  ]) <+> text ")"
-  | otherwise             = empty
+renderActivation a = text "ACTIVATION(" <+>
+                     hcat (punctuate comma $ filter (/= empty)
+                           [ renderMaxQueueReaders (maxQueueReaders a) 
+                           , renderExecuteAs (executeAs a)
+                           , renderProcedureName (unwrap $ procedure a)
+                           ]) <+> text ")"
 
-
-renderQueue :: QueueDefinition -> Doc
-renderQueue q = text "CREATE QUEUE" <+> (renderRegularIdentifier (queueName q)) <+>
-                options
+renderQueueDefinition :: QueueDefinition -> Doc
+renderQueueDefinition q =  maybe empty renderProc (activation q) $+$
+                           text "CREATE QUEUE" <+> (renderRegularIdentifier (queueName q)) <+> options $+$ text "GO"
   where
     options
       | not $ anySpecified q = empty

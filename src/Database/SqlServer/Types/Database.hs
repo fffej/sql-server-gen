@@ -96,5 +96,5 @@ instance Arbitrary DatabaseDefinition where
 -- Note, for example, this doesn't guarantee unique database names
 dumpExamples :: Int -> FilePath -> IO ()
 dumpExamples m p = do
-  x <- generate (sequence [resize n (arbitrary :: Gen DatabaseDefinition) | n <- [0..m] ])
-  writeFile p (unlines $ map (render . renderDatabaseDefinition) x)
+  x <- generate (sequence [resize n (arbitrary :: Gen QueueDefinition) | n <- [0..m] ])
+  writeFile p (unlines $ map (render . renderQueueDefinition) x)
