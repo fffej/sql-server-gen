@@ -48,6 +48,10 @@ renderSequenceDefinitions (SequenceDefinitions xs) = vcat (map renderSequenceDef
 renderProcedureDefinitions :: ProcedureDefinitions -> Doc
 renderProcedureDefinitions (ProcedureDefinitions xs) = vcat (map renderProcedureDefinition (S.toList xs))
 
+renderQueueDefinitions :: QueueDefinitions -> Doc
+renderQueueDefinitions (QueueDefinitions xs) = vcat (map renderQueueDefinition (S.toList xs))
+
+
 renderDatabaseDefinition :: DatabaseDefinition -> Doc
 renderDatabaseDefinition  dd = text "USE master" $+$
                                text "GO" $+$
@@ -56,7 +60,8 @@ renderDatabaseDefinition  dd = text "USE master" $+$
                                text "USE" <+> dbName $+$
                                renderTableDefinitions (tableDefinitions dd) $+$
                                renderSequenceDefinitions (sequenceDefinitions dd) $+$
-                               renderProcedureDefinitions (procedureDefinitions dd)
+                               renderProcedureDefinitions (procedureDefinitions dd) $+$
+                               renderQueueDefinitions (queueDefinitions dd)
   where
     dbName = renderRegularIdentifier (databaseName dd)
 
