@@ -56,8 +56,14 @@ instance Ord QueueDefinition where
   
 
 derive makeArbitrary ''ExecuteAs
-derive makeArbitrary ''Activation
 derive makeArbitrary ''QueueDefinition
+
+instance Arbitrary Activation where
+  arbitrary = do
+    r <- choose (0,32767)
+    x <- arbitrary
+    y <- arbitrary
+    return $ Activation r x y
 
 anySpecified :: QueueDefinition -> Bool
 anySpecified q = isJust (queueStatus q) || isJust (retention q) ||
