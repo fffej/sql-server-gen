@@ -109,3 +109,6 @@ dumpExamples :: Int -> FilePath -> IO ()
 dumpExamples m p = do
   x <- generate (sequence [resize n (arbitrary :: Gen DatabaseDefinition) | n <- [0..m] ])
   writeFile p (unlines $ map (render . renderDatabaseDefinition) x)
+
+instance Show DatabaseDefinition where
+  show = render . renderDatabaseDefinition

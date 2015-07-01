@@ -153,3 +153,5 @@ instance Arbitrary SequenceDefinition where
       , cache = hasChcValue chc
       }
 
+instance Show SequenceDefinition where
+  show = render . renderSequenceDefinition

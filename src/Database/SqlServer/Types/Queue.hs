@@ -28,7 +28,6 @@ instance Arbitrary ZeroParamProc where
     proc <- arbitrary :: Gen ProcedureDefinition
     return $ ZeroParamProc (proc { parameters = Parameters S.empty })
 
-
 data Activation = Activation
     {
       maxQueueReaders  ::  Word16
@@ -114,3 +113,6 @@ renderQueueDefinition q =  maybe empty renderProc (activation q) $+$
                              , maybe empty renderRetention (retention q)
                              , maybe empty renderActivation (activation q)
                              , maybe empty renderPoisonMessageHandling (poisonMessageHandling q)])
+
+instance Show QueueDefinition where
+  show = render . renderQueueDefinition
