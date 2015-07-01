@@ -94,4 +94,5 @@ renderProcedureDefinition p = text "CREATE PROCEDURE" <+> renderRegularIdentifie
                               text statementBody $+$
                               text "GO"
                               
-                                                    
+instance Show ProcedureDefinition where
+  show = render . renderProcedureDefinition                                                    
