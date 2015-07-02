@@ -103,8 +103,6 @@ executable webserver
                         sql-server-gen,
                         scotty >= 0.10.1,
                         aeson >= 0.9.0.1,
-                        hashable >= 1.2.3.2,
                         QuickCheck >= 2.8.1,
                         pretty >= 1.1.2,
-                        transformers >= 0.4.2.0,
-                        text >= 1.2.1.1
+                        transformers >= 0.4.2.0
