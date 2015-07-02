@@ -6,9 +6,22 @@ Contributers more than welcome (especially if you know enough Haskell to help me
 
 # Build instructions
 
+## Linux
+
 Download all the stuff you need. (GHC 7.10.1 from https://www.haskell.org/ghc/download_ghc_7_10_1 and cabal-install from https://www.haskell.org/cabal/download.html).  Clone this project and open up a command prompt in the root directory of the cloned project.  Running the following series of commands ought to get you somewhere close to working.
 
+    cabal update
     cabal sandbox init
+    cabal install --dependencies-only
+    cabal repl
+
+## Windows
+
+Building Haskell on Windows is a minor pain in the bottom.  You'll need to install MinGW (http://sourceforge.net/projects/mingw/?source=typ_redirect) and install the packages (make sure gcc is selected).  Once you've done this, find the install directory and run  `msys.bat`.  Do all of this in the command prompt that pops up.
+
+    cabal update
+    cabal sandbox init
+    cabal install happy
     cabal install --dependencies-only
     cabal repl
 
