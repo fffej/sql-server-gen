@@ -8,8 +8,11 @@ import Database.SqlServer.Types.Procedure
 import Database.SqlServer.Types.Queue
 
 import Test.QuickCheck
+import Test.QuickCheck.Gen
+import Test.QuickCheck.Random
 import Control.Monad
 import qualified Data.Set as S
+
 
 import Text.PrettyPrint
 
@@ -112,3 +115,6 @@ dumpExamples m p = do
 
 instance Show DatabaseDefinition where
   show = render . renderDatabaseDefinition
+
+seededDatabase :: Int -> Int -> DatabaseDefinition
+seededDatabase seed size = unGen arbitrary (mkQCGen seed) size
