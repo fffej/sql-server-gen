@@ -103,8 +103,6 @@ executable webserver
                         sql-server-gen,
                         scotty >= 0.10.1,
                         aeson >= 0.9.0.1,
-                        QuickCheck >= 2.8.1,
-                        pretty >= 1.1.2,
                         transformers >= 0.4.2.0
 
 executable cli
@@ -114,8 +112,6 @@ executable cli
   default-language:     Haskell2010
   build-depends:        base >=4.8 && <4.9,
                         sql-server-gen,
-                        scotty >= 0.10.1,
-                        aeson >= 0.9.0.1,
-                        QuickCheck >= 2.8.1,
-                        pretty >= 1.1.2,
-                        transformers >= 0.4.2.0
+                        transformers >= 0.4.2.0,
+                        cmdargs >= 0.10.13
+                        
