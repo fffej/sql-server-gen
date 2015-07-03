@@ -31,17 +31,9 @@ This'll create a sandbox environment, download and install all the dependencies 
     
 # Usage
 
-Assuming you're already building (if not see the instructions above) then
-
-    cabal run webserver
-    
-Should spin up a web server on port 8888.  Fire up your web browser and try, for example, http://localhost/database/235235235?size=1 to generate a tiny example database.  Play with the size parameter with caution, the whole response is in memory first so big numbers (say > 1000) are probably a bad idea.
-
-Usage should be consistent, so going to the same URL should always generate the same value for testing purposes.
-
-If you'd rather use a command line interface then
+There's a command line interface then
 
     cabal build cli
     ./cli --help    
 
-Should produce the documentation.  Seed and size are exactly as the webserver.
+Should produce the documentation.  
