@@ -18,8 +18,8 @@ msg =  ["More details on the github repo at " ++
 defaultArgs :: Arguments
 defaultArgs = Arguments 
     {
-      seed = def &= help "Seed for random number generator"
-    , size = def &= help "Size of database (optional)"
+      seed = def &= help "Seed for random number generator" &= name "s"
+    , size = 100 &= help "Size of database (optional)" &= opt (500 :: Int) &= name "n"
     } &= summary "SQL Server Schema Generator"
       &= help "Generate arbitrary SQL Server databases"
       &= details msg
