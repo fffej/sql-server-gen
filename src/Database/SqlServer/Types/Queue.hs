@@ -88,18 +88,16 @@ renderActivation a = text "ACTIVATION(" <+>
                            , renderProcedureName (unwrap $ procedure a)
                            ]) <+> text ")"
 
-renderQueueDefinition :: QueueDefinition -> Doc
-renderQueueDefinition q =  maybe empty renderProc (activation q) $+$
-                           text "CREATE QUEUE" <+> (renderRegularIdentifier (queueName q)) <+> options $+$ text "GO"
-  where
-    options
-      | not $ anySpecified q = empty
-      | otherwise       = text "WITH" <+>
-                          hcat (punctuate comma $ filter (/= empty)
-                             [ maybe empty renderStatus (queueStatus q) 
-                             , maybe empty renderRetention (retention q)
-                             , maybe empty renderActivation (activation q)
-                             , maybe empty renderPoisonMessageHandling (poisonMessageHandling q)])
-
-instance Show QueueDefinition where
-  show = render . renderQueueDefinition
+instance RenderableEntity QueueDefinition where
+  toDoc q = maybe empty renderProc (activation q) $+$
+            text "CREATE QUEUE" <+> (renderRegularIdentifier (queueName q)) <+> options $+$ text "GO"
+    where
+      options
+        | not $ anySpecified q = empty
+        | otherwise       = text "WITH" <+>
+                            hcat (punctuate comma $ filter (/= empty)
+                                  [ maybe empty renderStatus (queueStatus q) 
+                                  , maybe empty renderRetention (retention q)
+                                  , maybe empty renderActivation (activation q)
+                                  , maybe empty renderPoisonMessageHandling (poisonMessageHandling q)])
+  

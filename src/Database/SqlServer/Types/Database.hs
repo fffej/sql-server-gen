@@ -35,7 +35,7 @@ renderProcedureDefinitions :: [ProcedureDefinition] -> Doc
 renderProcedureDefinitions xs = vcat (map toDoc xs)
 
 renderQueueDefinitions :: [QueueDefinition] -> Doc
-renderQueueDefinitions xs = vcat (map renderQueueDefinition xs)
+renderQueueDefinitions xs = vcat (map toDoc xs)
 
 renderDatabaseDefinition :: DatabaseDefinition -> Doc
 renderDatabaseDefinition  dd = text "USE master" $+$

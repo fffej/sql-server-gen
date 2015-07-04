@@ -35,7 +35,6 @@ renderOut False = empty
 renderParameter :: Parameter -> Doc
 renderParameter p = renderParameterIdentifier (parameterName p) <+> renderDataType (dataType p) <+> renderOut (isOutput p)
 
-
 data ProcedureDefinition = ProcedureDefinition
   {
     procedureName :: RegularIdentifier
