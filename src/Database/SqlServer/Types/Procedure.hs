@@ -6,7 +6,6 @@ module Database.SqlServer.Types.Procedure where
 
 import Database.SqlServer.Types.Identifiers hiding (unwrap)
 import Database.SqlServer.Types.DataTypes
-import Database.SqlServer.Types.Properties
 
 import Test.QuickCheck
 import Data.DeriveTH
@@ -26,9 +25,6 @@ data Parameter = Parameter
   , isOutput      :: Bool
   }
 
-instance NamedEntity Parameter where
-  name = unwrapP . parameterName
-
 derive makeArbitrary ''Parameter
 
 renderOut :: Bool -> Doc
@@ -44,9 +40,6 @@ data ProcedureDefinition = ProcedureDefinition
     procedureName :: RegularIdentifier
   , parameters    :: [Parameter]
   }
-
-instance NamedEntity ProcedureDefinition where
-  name = procedureName
 
 derive makeArbitrary ''ProcedureDefinition
 

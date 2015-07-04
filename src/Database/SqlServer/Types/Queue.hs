@@ -5,7 +5,6 @@
 module Database.SqlServer.Types.Queue where
 
 import Database.SqlServer.Types.Identifiers hiding (unwrap)
-import Database.SqlServer.Types.Properties
 import Database.SqlServer.Types.Procedure
 
 import Test.QuickCheck
@@ -41,10 +40,6 @@ data QueueDefinition = QueueDefinition
     , activation :: Maybe Activation
     , poisonMessageHandling :: Maybe Bool
     }
-
-instance NamedEntity QueueDefinition where
-  name = queueName
-
 derive makeArbitrary ''ExecuteAs
 derive makeArbitrary ''QueueDefinition
 

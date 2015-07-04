@@ -6,7 +6,6 @@ module Database.SqlServer.Types.Sequence where
 
 import Prelude hiding (cycle)
 
-import Database.SqlServer.Types.Properties (NamedEntity,name)
 import Database.SqlServer.Types.Identifiers (RegularIdentifier(..), renderRegularIdentifier)
 
 import Text.PrettyPrint
@@ -42,9 +41,6 @@ data SequenceDefinition = SequenceDefinition
                   , cycle        :: Maybe Bool
                   , cache        :: Maybe (Maybe Integer)
                   }
-
-instance NamedEntity SequenceDefinition where
-  name = sequenceName
 
 renderMinValue :: Maybe Integer -> Doc
 renderMinValue Nothing = text "NO MINVALUE"

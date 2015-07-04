@@ -55,7 +55,6 @@ library
                        Database.SqlServer.Types.Sequence,
                        Database.SqlServer.Types.Identifiers,
                        Database.SqlServer.Types.Procedure,
-                       Database.SqlServer.Types.Properties,
                        Database.SqlServer.Types.Queue,
                        Database.SqlServer.Types.DataTypes,
                        Database.SqlServer.Types.Table,

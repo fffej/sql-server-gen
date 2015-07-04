@@ -3,7 +3,6 @@
 
 module Database.SqlServer.Types.Table where
 
-import Database.SqlServer.Types.Properties (NamedEntity,name)
 import Database.SqlServer.Types.Identifiers (RegularIdentifier, renderRegularIdentifier)
 import Database.SqlServer.Types.DataTypes (
   Type(..),
@@ -34,9 +33,6 @@ data TableDefinition = TableDefinition
              , columnDefinitions :: [ColumnDefinition]
              }
 
-instance NamedEntity TableDefinition where
-  name = tableName
-  
 data ColumnDefinition = ColumnDefinition
                         {
                           columnName :: RegularIdentifier
@@ -57,9 +53,6 @@ columnConstraintsSatisfied xs = length (filter isTimeStamp xs) <= 1 &&
     oneGuidCol c = case dataType c of
       (UniqueIdentifier s) -> maybe False isRowGuidCol s
       _                    -> False
-
-instance NamedEntity ColumnDefinition where
-  name = columnName
 
 derive makeArbitrary ''TableDefinition
 
