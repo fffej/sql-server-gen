@@ -7,7 +7,7 @@ module Database.SqlServer.Types.Sequence where
 import Prelude hiding (cycle)
 
 import Database.SqlServer.Types.Identifiers (RegularIdentifier(..), renderRegularIdentifier)
-import Database.SqlServer.Types.Renderable
+import Database.SqlServer.Types.Entity
 
 import Text.PrettyPrint
 import Test.QuickCheck
@@ -55,7 +55,7 @@ renderCacheValue :: Maybe Integer -> Doc
 renderCacheValue Nothing = text "NO CACHE"
 renderCacheValue (Just n) = text "CACHE" <+> integer n
 
-instance RenderableEntity SequenceDefinition where
+instance Entity SequenceDefinition where
   toDoc s = text "CREATE SEQUENCE" <+> renderRegularIdentifier (sequenceName s) $+$
             dataType $+$ startWith' $+$ incrementBy' $+$ minValue' $+$ maxValue' $+$
             cycle' $+$ cache' $+$

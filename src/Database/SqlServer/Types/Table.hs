@@ -19,6 +19,7 @@ import Database.SqlServer.Types.DataTypes (
   )
   
 import Database.SqlServer.Types.Collations (renderCollation)
+import Database.SqlServer.Types.Entity
 
 import Test.QuickCheck
 import Text.PrettyPrint
@@ -74,14 +75,10 @@ renderColumnDefinition c = columnName' <+> columnType' <+> collation' <+>
     nullConstraint    = maybe empty renderNullConstraint (nullOptions (dataType c))
     rowGuidConstraint = renderRowGuidConstraint (rowGuidOptions (dataType c))
 
-renderTableDefinition :: TableDefinition -> Doc
-renderTableDefinition t = text "CREATE TABLE" <+> tableName' $$
-                parens (renderColumnDefinitions (columnDefinitions t)) $+$
-                text "GO"
-  where
-    tableName' = renderRegularIdentifier (tableName t)
-
-
-instance Show TableDefinition where
-  show = render . renderTableDefinition
+instance Entity TableDefinition where
+  toDoc t = text "CREATE TABLE" <+> tableName' $$
+            parens (renderColumnDefinitions (columnDefinitions t)) $+$
+            text "GO"
+    where
+      tableName' = renderRegularIdentifier (tableName t)
 

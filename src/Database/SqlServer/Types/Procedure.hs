@@ -6,7 +6,7 @@ module Database.SqlServer.Types.Procedure where
 
 import Database.SqlServer.Types.Identifiers hiding (unwrap)
 import Database.SqlServer.Types.DataTypes
-import Database.SqlServer.Types.Renderable
+import Database.SqlServer.Types.Entity
 
 import Test.QuickCheck
 import Data.DeriveTH
@@ -47,7 +47,7 @@ derive makeArbitrary ''ProcedureDefinition
 statementBody :: String
 statementBody = "select 1\n"
 
-instance RenderableEntity ProcedureDefinition where
+instance Entity ProcedureDefinition where
   toDoc p = text "CREATE PROCEDURE" <+> renderRegularIdentifier (procedureName p) $+$
                               hcat (punctuate comma (map renderParameter (parameters p))) <+> text "AS" $+$
                               text statementBody $+$

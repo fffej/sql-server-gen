@@ -3,11 +3,11 @@
 module Database.SqlServer.Types.Database where
 
 import Database.SqlServer.Types.Identifiers (RegularIdentifier,renderRegularIdentifier)
-import Database.SqlServer.Types.Table (TableDefinition,renderTableDefinition)
+import Database.SqlServer.Types.Table (TableDefinition)
 import Database.SqlServer.Types.Sequence (SequenceDefinition)
 import Database.SqlServer.Types.Procedure
 import Database.SqlServer.Types.Queue
-import Database.SqlServer.Types.Renderable
+import Database.SqlServer.Types.Entity
 
 import Test.QuickCheck
 import Test.QuickCheck.Gen
@@ -25,17 +25,8 @@ data DatabaseDefinition = DatabaseDefinition
                           , queueDefinitions :: [QueueDefinition]
                           }
 
-renderTableDefiniton :: [TableDefinition] -> Doc
-renderTableDefiniton xs = vcat (map renderTableDefinition xs)
-
-renderSequenceDefinitions :: [SequenceDefinition] -> Doc
-renderSequenceDefinitions xs = vcat (map toDoc xs)
-
-renderProcedureDefinitions :: [ProcedureDefinition] -> Doc
-renderProcedureDefinitions xs = vcat (map toDoc xs)
-
-renderQueueDefinitions :: [QueueDefinition] -> Doc
-renderQueueDefinitions xs = vcat (map toDoc xs)
+renderNamedEntities :: Entity a => [a] -> Doc
+renderNamedEntities xs = vcat (map toDoc xs)
 
 renderDatabaseDefinition :: DatabaseDefinition -> Doc
 renderDatabaseDefinition  dd = text "USE master" $+$
@@ -43,10 +34,10 @@ renderDatabaseDefinition  dd = text "USE master" $+$
                                text "CREATE DATABASE" <+> dbName $+$
                                text "GO" $+$
                                text "USE" <+> dbName $+$
-                               renderTableDefiniton (tableDefinitions dd) $+$
-                               renderSequenceDefinitions (sequenceDefinitions dd) $+$
-                               renderProcedureDefinitions (procedureDefinitions dd) $+$
-                               renderQueueDefinitions (queueDefinitions dd)
+                               renderNamedEntities (tableDefinitions dd) $+$
+                               renderNamedEntities (sequenceDefinitions dd) $+$
+                               renderNamedEntities (procedureDefinitions dd) $+$
+                               renderNamedEntities (queueDefinitions dd)
   where
     dbName = renderRegularIdentifier (databaseName dd)
 

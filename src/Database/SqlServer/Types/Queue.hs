@@ -6,7 +6,7 @@ module Database.SqlServer.Types.Queue where
 
 import Database.SqlServer.Types.Identifiers hiding (unwrap)
 import Database.SqlServer.Types.Procedure
-import Database.SqlServer.Types.Renderable
+import Database.SqlServer.Types.Entity
 
 import Test.QuickCheck
 import Data.DeriveTH
@@ -88,7 +88,7 @@ renderActivation a = text "ACTIVATION(" <+>
                            , renderProcedureName (unwrap $ procedure a)
                            ]) <+> text ")"
 
-instance RenderableEntity QueueDefinition where
+instance Entity QueueDefinition where
   toDoc q = maybe empty renderProc (activation q) $+$
             text "CREATE QUEUE" <+> (renderRegularIdentifier (queueName q)) <+> options $+$ text "GO"
     where
