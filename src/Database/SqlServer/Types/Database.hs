@@ -10,15 +10,13 @@ import Test.QuickCheck
 import Test.QuickCheck.Gen
 import Test.QuickCheck.Random
 import Control.Monad
-import qualified Data.Set as S
-
 
 import Text.PrettyPrint
 
-newtype TableDefinitions = TableDefinitions (S.Set TableDefinition)
-newtype SequenceDefinitions = SequenceDefinitions (S.Set SequenceDefinition)
-newtype ProcedureDefinitions = ProcedureDefinitions (S.Set ProcedureDefinition)
-newtype QueueDefinitions = QueueDefinitions (S.Set QueueDefinition)
+newtype TableDefinitions = TableDefinitions [TableDefinition]
+newtype SequenceDefinitions = SequenceDefinitions [SequenceDefinition]
+newtype ProcedureDefinitions = ProcedureDefinitions [ProcedureDefinition]
+newtype QueueDefinitions = QueueDefinitions [QueueDefinition]
 
 data DatabaseDefinition = DatabaseDefinition
                           {
