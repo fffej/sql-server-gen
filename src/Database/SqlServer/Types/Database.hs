@@ -4,7 +4,7 @@ module Database.SqlServer.Types.Database where
 
 import Database.SqlServer.Types.Identifiers (RegularIdentifier,renderRegularIdentifier)
 import Database.SqlServer.Types.Table (TableDefinition,renderTableDefinition)
-import Database.SqlServer.Types.Sequence (SequenceDefinition,renderSequenceDefinition)
+import Database.SqlServer.Types.Sequence (SequenceDefinition)
 import Database.SqlServer.Types.Procedure
 import Database.SqlServer.Types.Queue
 import Database.SqlServer.Types.Renderable
@@ -29,7 +29,7 @@ renderTableDefiniton :: [TableDefinition] -> Doc
 renderTableDefiniton xs = vcat (map renderTableDefinition xs)
 
 renderSequenceDefinitions :: [SequenceDefinition] -> Doc
-renderSequenceDefinitions xs = vcat (map renderSequenceDefinition xs)
+renderSequenceDefinitions xs = vcat (map toDoc xs)
 
 renderProcedureDefinitions :: [ProcedureDefinition] -> Doc
 renderProcedureDefinitions xs = vcat (map toDoc xs)

@@ -7,6 +7,7 @@ module Database.SqlServer.Types.Sequence where
 import Prelude hiding (cycle)
 
 import Database.SqlServer.Types.Identifiers (RegularIdentifier(..), renderRegularIdentifier)
+import Database.SqlServer.Types.Renderable
 
 import Text.PrettyPrint
 import Test.QuickCheck
@@ -54,20 +55,19 @@ renderCacheValue :: Maybe Integer -> Doc
 renderCacheValue Nothing = text "NO CACHE"
 renderCacheValue (Just n) = text "CACHE" <+> integer n
 
-renderSequenceDefinition :: SequenceDefinition -> Doc
-renderSequenceDefinition s = text "CREATE SEQUENCE" <+> renderRegularIdentifier (sequenceName s) $+$
-                            dataType $+$ startWith' $+$ incrementBy' $+$ minValue' $+$ maxValue' $+$
-                            cycle' $+$ cache' $+$
-                            text "GO"
-  where
-    dataType = maybe empty renderNumericType (sequenceType s)
-    startWith' = maybe empty (\x -> text "START WITH" <+> integer x) (startWith s)
-    incrementBy' = maybe empty (\x -> text "INCREMENT BY" <+> integer x) (incrementBy s)
-    minValue' = maybe empty renderMinValue (minValue s)
-    maxValue' = maybe empty renderMaxValue (maxValue s)
-    cycle'    = maybe empty (\x -> text (if x then "CYCLE" else "NO CYCLE")) (cycle s)
-    cache'    = maybe empty renderCacheValue (cache s)
-
+instance RenderableEntity SequenceDefinition where
+  toDoc s = text "CREATE SEQUENCE" <+> renderRegularIdentifier (sequenceName s) $+$
+            dataType $+$ startWith' $+$ incrementBy' $+$ minValue' $+$ maxValue' $+$
+            cycle' $+$ cache' $+$
+            text "GO"
+    where
+      dataType = maybe empty renderNumericType (sequenceType s)
+      startWith' = maybe empty (\x -> text "START WITH" <+> integer x) (startWith s)
+      incrementBy' = maybe empty (\x -> text "INCREMENT BY" <+> integer x) (incrementBy s)
+      minValue' = maybe empty renderMinValue (minValue s)
+      maxValue' = maybe empty renderMaxValue (maxValue s)
+      cycle'    = maybe empty (\x -> text (if x then "CYCLE" else "NO CYCLE")) (cycle s)
+      cache'    = maybe empty renderCacheValue (cache s)
 
 numericBounds :: Maybe NumericType -> Maybe (Integer,Integer)
 numericBounds  (Just TinyInt)  = Just (0,255)
@@ -155,6 +155,3 @@ instance Arbitrary SequenceDefinition where
       , cycle = cyc
       , cache = hasChcValue chc
       }
-
-instance Show SequenceDefinition where
-  show = render . renderSequenceDefinition
