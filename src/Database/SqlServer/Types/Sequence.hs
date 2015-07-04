@@ -14,7 +14,6 @@ import Test.QuickCheck
 import Data.DeriveTH
 import Control.Monad
 import Data.Maybe (fromMaybe)
-import Data.Ord
 
 data NumericType = TinyInt | SmallInt | Int | BigInt | Decimal | Numeric
 
@@ -46,12 +45,6 @@ data SequenceDefinition = SequenceDefinition
 
 instance NamedEntity SequenceDefinition where
   name = sequenceName
-
-instance Ord SequenceDefinition where
-  compare = comparing sequenceName
-
-instance Eq SequenceDefinition where
-  a == b = sequenceName a == sequenceName b
 
 renderMinValue :: Maybe Integer -> Doc
 renderMinValue Nothing = text "NO MINVALUE"

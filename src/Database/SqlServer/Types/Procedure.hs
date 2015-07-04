@@ -11,24 +11,8 @@ import Database.SqlServer.Types.Properties
 import Test.QuickCheck
 import Data.DeriveTH
 import Text.PrettyPrint
-import Data.Ord
 
-import qualified Data.Set as S
-
-data ExecuteAsClause = Owner
-                     | Self
-
-derive makeArbitrary ''ExecuteAsClause
-
-data ProcedureOption = Encryption
-                     | Recompile
-                     | ExecuteAs ExecuteAsClause
-
-derive makeArbitrary ''ProcedureOption
-
-type ProcedureOptions = S.Set ProcedureOption
-
-newtype ParameterIdentifier = ParameterIdentifier { unwrapP :: RegularIdentifier } deriving (Ord,Eq)
+newtype ParameterIdentifier = ParameterIdentifier { unwrapP :: RegularIdentifier }
 
 derive makeArbitrary ''ParameterIdentifier
 
@@ -45,12 +29,6 @@ data Parameter = Parameter
 instance NamedEntity Parameter where
   name = unwrapP . parameterName
 
-instance Ord Parameter where
-  compare = comparing parameterName
-
-instance Eq Parameter where
-  a == b = parameterName a == parameterName b
-
 derive makeArbitrary ''Parameter
 
 renderOut :: Bool -> Doc
@@ -60,24 +38,12 @@ renderOut False = empty
 renderParameter :: Parameter -> Doc
 renderParameter p = renderParameterIdentifier (parameterName p) <+> renderDataType (dataType p) <+> renderOut (isOutput p)
 
-newtype Parameters = Parameters { unwrap :: S.Set Parameter } 
-
-instance Arbitrary Parameters where
-  arbitrary = do
-    p <- listOf arbitrary 
-    return $ Parameters (S.fromList p)
 
 data ProcedureDefinition = ProcedureDefinition
   {
     procedureName :: RegularIdentifier
-  , parameters    :: Parameters
+  , parameters    :: [Parameter]
   }
-
-instance Eq ProcedureDefinition where
-  a == b = procedureName a == procedureName b
-
-instance Ord ProcedureDefinition where
-  compare = comparing procedureName
 
 instance NamedEntity ProcedureDefinition where
   name = procedureName
@@ -90,7 +56,7 @@ statementBody = "select 1\n"
 
 renderProcedureDefinition :: ProcedureDefinition -> Doc
 renderProcedureDefinition p = text "CREATE PROCEDURE" <+> renderRegularIdentifier (procedureName p) $+$
-                              hcat (punctuate comma (map renderParameter (S.toList $ unwrap $ parameters p))) <+> text "AS" $+$
+                              hcat (punctuate comma (map renderParameter (parameters p))) <+> text "AS" $+$
                               text statementBody $+$
                               text "GO"
                               

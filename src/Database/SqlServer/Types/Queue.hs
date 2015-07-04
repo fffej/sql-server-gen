@@ -6,15 +6,13 @@ module Database.SqlServer.Types.Queue where
 
 import Database.SqlServer.Types.Identifiers hiding (unwrap)
 import Database.SqlServer.Types.Properties
-import Database.SqlServer.Types.Procedure hiding (Owner,Self,unwrap)
+import Database.SqlServer.Types.Procedure
 
 import Test.QuickCheck
 import Data.DeriveTH
 import Data.Word (Word16)
 import Text.PrettyPrint
 import Data.Maybe (isJust)
-import Data.Ord
-import qualified Data.Set as S
 
 -- TODO username support
 data ExecuteAs = Self
@@ -26,7 +24,7 @@ newtype ZeroParamProc = ZeroParamProc { unwrap :: ProcedureDefinition }
 instance Arbitrary ZeroParamProc where
   arbitrary = do
     proc <- arbitrary :: Gen ProcedureDefinition
-    return $ ZeroParamProc (proc { parameters = Parameters S.empty })
+    return $ ZeroParamProc (proc { parameters = [] })
 
 data Activation = Activation
     {
@@ -46,13 +44,6 @@ data QueueDefinition = QueueDefinition
 
 instance NamedEntity QueueDefinition where
   name = queueName
-
-instance Eq QueueDefinition where
-  a == b = queueName a == queueName b
-
-instance Ord QueueDefinition where
-  compare = comparing queueName
-  
 
 derive makeArbitrary ''ExecuteAs
 derive makeArbitrary ''QueueDefinition

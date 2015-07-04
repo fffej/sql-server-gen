@@ -23,25 +23,16 @@ import Database.SqlServer.Types.Collations (renderCollation)
 
 import Test.QuickCheck
 import Text.PrettyPrint
-import Data.Ord
-import qualified Data.Set as S
 
 import Data.DeriveTH
 
-newtype ColumnDefinitions = ColumnDefinitions (S.Set ColumnDefinition)
 
 -- https://msdn.microsoft.com/en-us/library/ms174979.aspx
 data TableDefinition = TableDefinition
              {
                tableName    :: RegularIdentifier
-             , columnDefinitions :: ColumnDefinitions
+             , columnDefinitions :: [ColumnDefinition]
              }
-
-instance Eq TableDefinition where
-  a == b = tableName a == tableName b
-
-instance Ord TableDefinition where
-  compare = comparing tableName
 
 instance NamedEntity TableDefinition where
   name = tableName
@@ -51,12 +42,6 @@ data ColumnDefinition = ColumnDefinition
                           columnName :: RegularIdentifier
                         , dataType   :: Type
                         }
-
-instance Ord ColumnDefinition where
-  compare = comparing columnName
-
-instance Eq ColumnDefinition where
-  a == b = columnName a == columnName b
 
 columnConstraintsSatisfied :: [ColumnDefinition] -> Bool
 columnConstraintsSatisfied xs = length (filter isTimeStamp xs) <= 1 && 
@@ -76,19 +61,14 @@ columnConstraintsSatisfied xs = length (filter isTimeStamp xs) <= 1 &&
 instance NamedEntity ColumnDefinition where
   name = columnName
 
-instance Arbitrary ColumnDefinitions where
-  arbitrary = do
-    cols <- listOf1 arbitrary `suchThat` columnConstraintsSatisfied
-    return $ ColumnDefinitions (S.fromList cols)
-
 derive makeArbitrary ''TableDefinition
 
 derive makeArbitrary ''ColumnDefinition
 
-renderColumnDefinitions :: ColumnDefinitions -> Doc
-renderColumnDefinitions (ColumnDefinitions xs) = vcat (punctuate comma cols)
+renderColumnDefinitions :: [ColumnDefinition] -> Doc
+renderColumnDefinitions xs = vcat (punctuate comma cols)
   where
-    cols = map renderColumnDefinition (S.toList xs)
+    cols = map renderColumnDefinition xs
 
 renderColumnDefinition :: ColumnDefinition -> Doc
 renderColumnDefinition c = columnName' <+> columnType' <+> collation' <+>

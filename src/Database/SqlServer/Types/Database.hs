@@ -1,3 +1,5 @@
+{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE TemplateHaskell #-}
 module Database.SqlServer.Types.Database where
 
 import Database.SqlServer.Types.Identifiers (RegularIdentifier,renderRegularIdentifier)
@@ -11,6 +13,7 @@ import Test.QuickCheck.Gen
 import Test.QuickCheck.Random
 
 import Text.PrettyPrint
+import Data.DeriveTH
 
 data DatabaseDefinition = DatabaseDefinition
                           {
@@ -46,23 +49,8 @@ renderDatabaseDefinition  dd = text "USE master" $+$
   where
     dbName = renderRegularIdentifier (databaseName dd)
 
--- TODO derive arbitrary
-instance Arbitrary DatabaseDefinition where
-  arbitrary = do
-    dbName <- arbitrary
-    tables <- arbitrary
-    sequences <- arbitrary
-    procs <- arbitrary
-    queues <-arbitrary
-    return $ DatabaseDefinition
-      {
-        databaseName = dbName
-      , tableDefinitions = tables
-      , sequenceDefinitions = sequences
-      , procedureDefinitions = procs
-      , queueDefinitions = queues
-      }
-   
+derive makeArbitrary ''DatabaseDefinition
+    
 dumpExamples :: Int -> FilePath -> IO ()
 dumpExamples m p = do
   x <- generate (sequence [resize n (arbitrary :: Gen DatabaseDefinition) | n <- [0..m] ])
