@@ -7,7 +7,7 @@ import Database.SqlServer.Types.Table (TableDefinition)
 import Database.SqlServer.Types.Sequence (SequenceDefinition)
 import Database.SqlServer.Types.Procedure (ProcedureDefinition)
 import Database.SqlServer.Types.Queue (QueueDefinition)
-import Database.SqlServer.Types.User (UserDefinition)
+import Database.SqlServer.Types.Certificate (CertificateDefinition)
 import Database.SqlServer.Types.Entity
 
 import Test.QuickCheck
@@ -17,15 +17,13 @@ import Test.QuickCheck.Random
 import Text.PrettyPrint
 import Data.DeriveTH
 
-data MasterKey = MasterKey String
+data MasterKey = MasterKey
 
 derive makeArbitrary ''MasterKey
 
 instance Entity MasterKey where
-  toDoc (MasterKey s) = text "CREATE MASTER KEY ENCRYPTION BY PASSWORD = '" <>
-                        text s <>
-                        text "'" $+$
-                        text "GO"
+  toDoc MasterKey = text "CREATE MASTER KEY ENCRYPTION BY PASSWORD = 'arbitrary_password'" $+$
+                    text "GO"
                         
 data DatabaseDefinition = DatabaseDefinition
                           {
@@ -34,7 +32,7 @@ data DatabaseDefinition = DatabaseDefinition
                           , sequenceDefinitions :: [SequenceDefinition]
                           , procedureDefinitions :: [ProcedureDefinition]
                           , queueDefinitions :: [QueueDefinition]
-                          , userDefinitions :: [UserDefinition]
+                          , certificateDefinitions :: [CertificateDefinition]
                           , masterKey :: MasterKey
                           }
 
@@ -52,7 +50,7 @@ renderDatabaseDefinition  dd = text "USE master" $+$
                                renderNamedEntities (sequenceDefinitions dd) $+$
                                renderNamedEntities (procedureDefinitions dd) $+$
                                renderNamedEntities (queueDefinitions dd) $+$
-                               renderNamedEntities (userDefinitions dd) $+$
+                               renderNamedEntities (certificateDefinitions dd) $+$
                                text "GO"
   where
     dbName = renderRegularIdentifier (databaseName dd)
