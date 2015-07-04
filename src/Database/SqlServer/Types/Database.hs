@@ -107,7 +107,6 @@ instance Arbitrary DatabaseDefinition where
       , queueDefinitions = queues
       }
    
--- Note, for example, this doesn't guarantee unique database names
 dumpExamples :: Int -> FilePath -> IO ()
 dumpExamples m p = do
   x <- generate (sequence [resize n (arbitrary :: Gen DatabaseDefinition) | n <- [0..m] ])
