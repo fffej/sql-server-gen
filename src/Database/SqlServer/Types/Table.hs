@@ -3,7 +3,7 @@
 
 module Database.SqlServer.Types.Table where
 
-import Database.SqlServer.Types.Properties (NamedEntity,name,validIdentifiers)
+import Database.SqlServer.Types.Properties (NamedEntity,name)
 import Database.SqlServer.Types.Identifiers (RegularIdentifier, renderRegularIdentifier)
 import Database.SqlServer.Types.DataTypes (
   Type(..),
@@ -58,31 +58,20 @@ instance Ord ColumnDefinition where
 instance Eq ColumnDefinition where
   a == b = columnName a == columnName b
 
-
-{-
-
-Creating or altering table 'diDsDhXF3In' failed because the minimum row size would be 12387, including 14 bytes of internal overhead. This exceeds the maximum allowable table row size of 8060 bytes.
-
-Calculating the internal overhead for column size looks a little impossible (alignment issues).
-
--}
 columnConstraintsSatisfied :: [ColumnDefinition] -> Bool
-columnConstraintsSatisfied xs = allValidIdentifiers &&
-                                length (filter isTimeStamp xs) <= 1 && -- only a single time stamp column is allowed
+columnConstraintsSatisfied xs = length (filter isTimeStamp xs) <= 1 && 
                                 totalColumnSizeBytes <= 8060 &&
-                                length (filter oneGuidCol xs) <= 1 -- only one row guid col allowed
+                                length (filter oneGuidCol xs) <= 1 
                                 
   where
     totalColumnSizeBits = 32 + (sum $ map (storageSize . dataType) xs)
     totalColumnSizeBytes = totalColumnSizeBits `div` 8 + (if totalColumnSizeBits `rem` 8 /= 0 then 1 else 0)
-    allValidIdentifiers = validIdentifiers xs
     isTimeStamp c = case dataType c of
       (Timestamp _) -> True
       _             -> False
     oneGuidCol c = case dataType c of
       (UniqueIdentifier s) -> maybe False isRowGuidCol s
       _                    -> False
-
 
 instance NamedEntity ColumnDefinition where
   name = columnName

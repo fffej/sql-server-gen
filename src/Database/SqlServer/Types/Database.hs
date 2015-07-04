@@ -2,7 +2,7 @@ module Database.SqlServer.Types.Database where
 
 import Database.SqlServer.Types.Identifiers (RegularIdentifier,renderRegularIdentifier)
 import Database.SqlServer.Types.Table (TableDefinition,renderTableDefinition)
-import Database.SqlServer.Types.Properties (validIdentifiers,NamedEntity,name)
+import Database.SqlServer.Types.Properties (NamedEntity,name)
 import Database.SqlServer.Types.Sequence (SequenceDefinition,renderSequenceDefinition)
 import Database.SqlServer.Types.Procedure
 import Database.SqlServer.Types.Queue
@@ -69,35 +69,28 @@ renderDatabaseDefinition  dd = text "USE master" $+$
     dbName = renderRegularIdentifier (databaseName dd)
 
 instance Arbitrary TableDefinitions where
-  arbitrary = liftM TableDefinitions $ (liftM S.fromList $ listOf1 arbitrary `suchThat` validIdentifiers)
+  arbitrary = liftM TableDefinitions $ (liftM S.fromList $ listOf1 arbitrary)
 
 usesUnreservedNames :: NamedEntity a => S.Set RegularIdentifier -> [a] -> Bool
 usesUnreservedNames reserved = \x -> not $ any (\a -> (name a) `S.member` reserved) x
 
-makeArbitraryProcs :: S.Set RegularIdentifier -> Gen (S.Set ProcedureDefinition)
-makeArbitraryProcs reserved = do
-  x <- listOf arbitrary `suchThat` (usesUnreservedNames reserved) `suchThat` validIdentifiers
-  return $ S.fromList x
+-- TODO remove duplication
+makeArbitraryProcs :: Gen (S.Set ProcedureDefinition)
+makeArbitraryProcs = liftM S.fromList arbitrary
 
-makeArbitrarySeqs :: S.Set RegularIdentifier -> Gen (S.Set SequenceDefinition)
-makeArbitrarySeqs reserved = do
-  x <- listOf arbitrary `suchThat` (usesUnreservedNames reserved) `suchThat` validIdentifiers
-  return $ S.fromList x
+makeArbitrarySeqs :: Gen (S.Set SequenceDefinition)
+makeArbitrarySeqs  = liftM S.fromList arbitrary
 
-makeArbitraryQueues :: S.Set RegularIdentifier -> Gen (S.Set QueueDefinition)
-makeArbitraryQueues reserved = do
-  x <- listOf arbitrary `suchThat` (usesUnreservedNames reserved) `suchThat` validIdentifiers
-  return $ S.fromList x
+makeArbitraryQueues :: Gen (S.Set QueueDefinition)
+makeArbitraryQueues = liftM S.fromList arbitrary
 
 instance Arbitrary DatabaseDefinition where
   arbitrary = do
     dbName <- arbitrary
     tables <- arbitrary
-    -- Yup, this is getting silly
-    sequences <- liftM SequenceDefinitions $ makeArbitrarySeqs (tableNames tables)
-    procs <- liftM ProcedureDefinitions $ makeArbitraryProcs ((tableNames tables) `S.union` (sequenceNames sequences))
-    queues <- liftM QueueDefinitions $ makeArbitraryQueues (
-      (tableNames tables) `S.union` (sequenceNames sequences) `S.union` (procedureNames procs))
+    sequences <- liftM SequenceDefinitions $ makeArbitrarySeqs
+    procs <- liftM ProcedureDefinitions $ makeArbitraryProcs
+    queues <- liftM QueueDefinitions $ makeArbitraryQueues 
     return $ DatabaseDefinition
       {
         databaseName = dbName
@@ -116,4 +109,4 @@ instance Show DatabaseDefinition where
   show = render . renderDatabaseDefinition
 
 seededDatabase :: Int -> Int -> DatabaseDefinition
-seededDatabase seed size = unGen arbitrary (mkQCGen seed) size
+seededDatabase seed = unGen arbitrary (mkQCGen seed) 

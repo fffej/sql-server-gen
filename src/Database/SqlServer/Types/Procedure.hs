@@ -64,7 +64,7 @@ newtype Parameters = Parameters { unwrap :: S.Set Parameter }
 
 instance Arbitrary Parameters where
   arbitrary = do
-    p <- listOf arbitrary `suchThat` validIdentifiers
+    p <- listOf arbitrary 
     return $ Parameters (S.fromList p)
 
 data ProcedureDefinition = ProcedureDefinition

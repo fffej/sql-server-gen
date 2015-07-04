@@ -136,18 +136,18 @@ validIncrementBy' x       min' max' incr' = maybe True (\incr -> abs incr <= dif
 validMinimum :: Maybe NumericType -> Maybe Integer -> Bool
 validMinimum x y = case (numericBounds x) of
   Nothing -> True
-  Just (_,max') -> maybe True (\x' -> x' < max') y
+  Just (_,max') -> maybe True (< max') y
 
 validMaximum :: Maybe NumericType -> Maybe Integer -> Bool
 validMaximum x y = case (numericBounds x) of
   Nothing -> True
-  Just (min',_) -> maybe True (\x' -> x' > min') y
+  Just (min',_) -> maybe True (> min') y
 
 instance Arbitrary SequenceDefinition where
   arbitrary = do
     nm <- arbitrary
     dataType <- arbitrary
-    minV <- arbitraryValue dataType `suchThat` (\x -> validMinimum dataType x)
+    minV <- arbitraryValue dataType `suchThat` (validMinimum dataType)
     maxV <- arbitraryValue dataType `suchThat` (\x -> greaterThanMin minV x && validMaximum dataType x)
     start <- arbitraryValue dataType `suchThat` (\x -> greaterThanMin minV x && lessThanMax maxV x)
     increment <- arbitraryValue dataType `suchThat` (validIncrementBy dataType minV maxV)
