@@ -64,7 +64,7 @@ columnConstraintsSatisfied xs = length (filter isTimeStamp xs) <= 1 &&
                                 length (filter oneGuidCol xs) <= 1 
                                 
   where
-    totalColumnSizeBits = 32 + (sum $ map (storageSize . dataType) xs)
+    totalColumnSizeBits = 32 + sum (map (storageSize . dataType) xs)
     totalColumnSizeBytes = totalColumnSizeBits `div` 8 + (if totalColumnSizeBits `rem` 8 /= 0 then 1 else 0)
     isTimeStamp c = case dataType c of
       (Timestamp _) -> True
@@ -103,7 +103,7 @@ renderColumnDefinition c = columnName' <+> columnType' <+> collation' <+>
 
 renderTableDefinition :: TableDefinition -> Doc
 renderTableDefinition t = text "CREATE TABLE" <+> tableName' $$
-                (parens $ renderColumnDefinitions (columnDefinitions t)) $+$
+                parens (renderColumnDefinitions (columnDefinitions t)) $+$
                 text "GO"
   where
     tableName' = renderRegularIdentifier (tableName t)

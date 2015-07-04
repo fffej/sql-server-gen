@@ -2,7 +2,6 @@ module Database.SqlServer.Types.Database where
 
 import Database.SqlServer.Types.Identifiers (RegularIdentifier,renderRegularIdentifier)
 import Database.SqlServer.Types.Table (TableDefinition,renderTableDefinition)
-import Database.SqlServer.Types.Properties (NamedEntity,name)
 import Database.SqlServer.Types.Sequence (SequenceDefinition,renderSequenceDefinition)
 import Database.SqlServer.Types.Procedure
 import Database.SqlServer.Types.Queue
@@ -30,18 +29,6 @@ data DatabaseDefinition = DatabaseDefinition
                           , queueDefinitions :: QueueDefinitions
                           }
 
-tableNames :: TableDefinitions -> S.Set RegularIdentifier
-tableNames (TableDefinitions xs) = names xs
-
-sequenceNames :: SequenceDefinitions -> S.Set RegularIdentifier
-sequenceNames (SequenceDefinitions xs) = names xs
-
-procedureNames :: ProcedureDefinitions -> S.Set RegularIdentifier
-procedureNames (ProcedureDefinitions xs) = names xs
-
-names :: NamedEntity a => S.Set a -> S.Set RegularIdentifier
-names xs = S.map name xs
-
 renderTableDefinitions :: TableDefinitions -> Doc
 renderTableDefinitions (TableDefinitions xs) = vcat (map renderTableDefinition (S.toList xs))
 
@@ -53,7 +40,6 @@ renderProcedureDefinitions (ProcedureDefinitions xs) = vcat (map renderProcedure
 
 renderQueueDefinitions :: QueueDefinitions -> Doc
 renderQueueDefinitions (QueueDefinitions xs) = vcat (map renderQueueDefinition (S.toList xs))
-
 
 renderDatabaseDefinition :: DatabaseDefinition -> Doc
 renderDatabaseDefinition  dd = text "USE master" $+$
@@ -69,10 +55,7 @@ renderDatabaseDefinition  dd = text "USE master" $+$
     dbName = renderRegularIdentifier (databaseName dd)
 
 instance Arbitrary TableDefinitions where
-  arbitrary = liftM TableDefinitions $ (liftM S.fromList $ listOf1 arbitrary)
-
-usesUnreservedNames :: NamedEntity a => S.Set RegularIdentifier -> [a] -> Bool
-usesUnreservedNames reserved = \x -> not $ any (\a -> (name a) `S.member` reserved) x
+  arbitrary = liftM (TableDefinitions . S.fromList) (listOf1 arbitrary)
 
 -- TODO remove duplication
 makeArbitraryProcs :: Gen (S.Set ProcedureDefinition)
@@ -88,9 +71,9 @@ instance Arbitrary DatabaseDefinition where
   arbitrary = do
     dbName <- arbitrary
     tables <- arbitrary
-    sequences <- liftM SequenceDefinitions $ makeArbitrarySeqs
-    procs <- liftM ProcedureDefinitions $ makeArbitraryProcs
-    queues <- liftM QueueDefinitions $ makeArbitraryQueues 
+    sequences <- liftM SequenceDefinitions makeArbitrarySeqs
+    procs <- liftM ProcedureDefinitions makeArbitraryProcs
+    queues <- liftM QueueDefinitions makeArbitraryQueues 
     return $ DatabaseDefinition
       {
         databaseName = dbName
