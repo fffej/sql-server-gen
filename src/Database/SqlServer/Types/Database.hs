@@ -5,8 +5,8 @@ module Database.SqlServer.Types.Database where
 import Database.SqlServer.Types.Identifiers (RegularIdentifier,renderRegularIdentifier)
 import Database.SqlServer.Types.Table (TableDefinition)
 import Database.SqlServer.Types.Sequence (SequenceDefinition)
-import Database.SqlServer.Types.Procedure
-import Database.SqlServer.Types.Queue
+import Database.SqlServer.Types.Procedure (ProcedureDefinition)
+import Database.SqlServer.Types.Queue (QueueDefinition)
 import Database.SqlServer.Types.Entity
 
 import Test.QuickCheck
