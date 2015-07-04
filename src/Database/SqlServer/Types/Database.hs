@@ -7,6 +7,7 @@ import Database.SqlServer.Types.Table (TableDefinition,renderTableDefinition)
 import Database.SqlServer.Types.Sequence (SequenceDefinition,renderSequenceDefinition)
 import Database.SqlServer.Types.Procedure
 import Database.SqlServer.Types.Queue
+import Database.SqlServer.Types.Renderable
 
 import Test.QuickCheck
 import Test.QuickCheck.Gen
@@ -31,7 +32,7 @@ renderSequenceDefinitions :: [SequenceDefinition] -> Doc
 renderSequenceDefinitions xs = vcat (map renderSequenceDefinition xs)
 
 renderProcedureDefinitions :: [ProcedureDefinition] -> Doc
-renderProcedureDefinitions xs = vcat (map renderProcedureDefinition xs)
+renderProcedureDefinitions xs = vcat (map toDoc xs)
 
 renderQueueDefinitions :: [QueueDefinition] -> Doc
 renderQueueDefinitions xs = vcat (map renderQueueDefinition xs)

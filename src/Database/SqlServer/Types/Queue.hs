@@ -6,6 +6,7 @@ module Database.SqlServer.Types.Queue where
 
 import Database.SqlServer.Types.Identifiers hiding (unwrap)
 import Database.SqlServer.Types.Procedure
+import Database.SqlServer.Types.Renderable
 
 import Test.QuickCheck
 import Data.DeriveTH
@@ -74,7 +75,7 @@ renderExecuteAs Self = text "EXECUTE AS SELF"
 renderExecuteAs Owner = text "EXECUTE AS OWNER"
 
 renderProc :: Activation -> Doc
-renderProc a = renderProcedureDefinition (unwrap $ procedure a)
+renderProc a = toDoc (unwrap $ procedure a)
 
 renderProcedureName :: ProcedureDefinition -> Doc
 renderProcedureName a = text "PROCEDURE_NAME =" <+> renderRegularIdentifier (procedureName a)
