@@ -8,6 +8,7 @@ import Database.SqlServer.Types.Sequence (SequenceDefinition)
 import Database.SqlServer.Types.Procedure (ProcedureDefinition)
 import Database.SqlServer.Types.Queue (QueueDefinition)
 import Database.SqlServer.Types.Certificate (CertificateDefinition)
+import Database.SqlServer.Types.Login (LoginDefinition)
 import Database.SqlServer.Types.Entity
 
 import Test.QuickCheck
