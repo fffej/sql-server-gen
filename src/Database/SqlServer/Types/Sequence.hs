@@ -28,6 +28,10 @@ renderNumericType Numeric = text "AS numeric"
 
 derive makeArbitrary ''NumericType
 
+{-
+  Rules of sequence definition.
+    Min value must be less than the maximum value
+-}
 data SequenceDefinition = SequenceDefinition
                   {
                     sequenceName :: RegularIdentifier
@@ -88,7 +92,7 @@ boundedMaybeInt x = oneof [liftM Just $ choose x, return Nothing]
 
 -- Bug.  If used for min value, value can't be upper bound (e.g. min value 255 for TinyInt)
 arbitraryValue :: Maybe NumericType -> Gen (Maybe Integer)
-arbitraryValue Nothing = arbitraryValue (Just Int)
+arbitraryValue Nothing         = arbitraryValue (Just Int)
 arbitraryValue (Just TinyInt)  = boundedMaybeInt (0,255)
 arbitraryValue (Just SmallInt) = boundedMaybeInt (- 32768,32767)
 arbitraryValue (Just Int)      = boundedMaybeInt (- 2147483648,214748367)
@@ -134,7 +138,7 @@ instance Arbitrary SequenceDefinition where
     nm <- arbitrary
     dataType <- arbitrary
     minV <- arbitraryValue dataType
-    maxV <- arbitraryValue dataType `suchThat` (greaterThanMin minV)
+    maxV <- arbitraryValue dataType `suchThat` (\x -> greaterThanMin minV)
     start <- arbitraryValue dataType `suchThat` (\x -> greaterThanMin minV x && lessThanMax maxV x)
     increment <- arbitraryValue dataType `suchThat` (validIncrementBy dataType minV maxV)
     cyc <- arbitrary
