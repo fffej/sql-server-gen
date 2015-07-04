@@ -20,6 +20,7 @@ import Database.SqlServer.Types.DataTypes (
   
 import Database.SqlServer.Types.Collations (renderCollation)
 import Database.SqlServer.Types.Entity
+import Control.Monad
 
 import Test.QuickCheck
 import Text.PrettyPrint
@@ -55,7 +56,8 @@ columnConstraintsSatisfied xs = length (filter isTimeStamp xs) <= 1 &&
       (UniqueIdentifier s) -> maybe False isRowGuidCol s
       _                    -> False
 
-derive makeArbitrary ''TableDefinition
+instance Arbitrary TableDefinition where
+  arbitrary = liftM2 TableDefinition arbitrary (listOf1 arbitrary)
 
 derive makeArbitrary ''ColumnDefinition
 

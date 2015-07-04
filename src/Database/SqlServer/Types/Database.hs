@@ -7,6 +7,7 @@ import Database.SqlServer.Types.Table (TableDefinition)
 import Database.SqlServer.Types.Sequence (SequenceDefinition)
 import Database.SqlServer.Types.Procedure (ProcedureDefinition)
 import Database.SqlServer.Types.Queue (QueueDefinition)
+import Database.SqlServer.Types.User (UserDefinition)
 import Database.SqlServer.Types.Entity
 
 import Test.QuickCheck
@@ -16,6 +17,16 @@ import Test.QuickCheck.Random
 import Text.PrettyPrint
 import Data.DeriveTH
 
+data MasterKey = MasterKey String
+
+derive makeArbitrary ''MasterKey
+
+instance Entity MasterKey where
+  toDoc (MasterKey s) = text "CREATE MASTER KEY ENCRYPTION BY PASSWORD = '" <>
+                        text s <>
+                        text "'" $+$
+                        text "GO"
+                        
 data DatabaseDefinition = DatabaseDefinition
                           {
                             databaseName :: RegularIdentifier
@@ -23,6 +34,8 @@ data DatabaseDefinition = DatabaseDefinition
                           , sequenceDefinitions :: [SequenceDefinition]
                           , procedureDefinitions :: [ProcedureDefinition]
                           , queueDefinitions :: [QueueDefinition]
+                          , userDefinitions :: [UserDefinition]
+                          , masterKey :: MasterKey
                           }
 
 renderNamedEntities :: Entity a => [a] -> Doc
@@ -34,10 +47,13 @@ renderDatabaseDefinition  dd = text "USE master" $+$
                                text "CREATE DATABASE" <+> dbName $+$
                                text "GO" $+$
                                text "USE" <+> dbName $+$
+                               toDoc (masterKey dd) $+$
                                renderNamedEntities (tableDefinitions dd) $+$
                                renderNamedEntities (sequenceDefinitions dd) $+$
                                renderNamedEntities (procedureDefinitions dd) $+$
-                               renderNamedEntities (queueDefinitions dd)
+                               renderNamedEntities (queueDefinitions dd) $+$
+                               renderNamedEntities (userDefinitions dd) $+$
+                               text "GO"
   where
     dbName = renderRegularIdentifier (databaseName dd)
 
