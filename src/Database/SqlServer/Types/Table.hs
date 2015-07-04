@@ -20,7 +20,6 @@ import Database.SqlServer.Types.DataTypes (
   
 import Database.SqlServer.Types.Collations (renderCollation)
 import Database.SqlServer.Types.Entity
-import Control.Monad
 
 import Test.QuickCheck
 import Text.PrettyPrint
@@ -28,12 +27,6 @@ import Text.PrettyPrint
 import Data.DeriveTH
 
 
--- https://msdn.microsoft.com/en-us/library/ms174979.aspx
-data TableDefinition = TableDefinition
-             {
-               tableName    :: RegularIdentifier
-             , columnDefinitions :: [ColumnDefinition]
-             }
 
 data ColumnDefinition = ColumnDefinition
                         {
@@ -41,11 +34,18 @@ data ColumnDefinition = ColumnDefinition
                         , dataType   :: Type
                         }
 
+newtype ColumnDefinitions = ColumnDefinitions [ColumnDefinition]
+
+data TableDefinition = TableDefinition
+             {
+               tableName    :: RegularIdentifier
+             , columnDefinitions :: ColumnDefinitions
+             }
+
 columnConstraintsSatisfied :: [ColumnDefinition] -> Bool
 columnConstraintsSatisfied xs = length (filter isTimeStamp xs) <= 1 && 
                                 totalColumnSizeBytes <= 8060 &&
                                 length (filter oneGuidCol xs) <= 1 
-                                
   where
     totalColumnSizeBits = 32 + sum (map (storageSize . dataType) xs)
     totalColumnSizeBytes = totalColumnSizeBits `div` 8 + (if totalColumnSizeBits `rem` 8 /= 0 then 1 else 0)
@@ -57,12 +57,20 @@ columnConstraintsSatisfied xs = length (filter isTimeStamp xs) <= 1 &&
       _                    -> False
 
 instance Arbitrary TableDefinition where
-  arbitrary = liftM2 TableDefinition arbitrary (listOf1 arbitrary)
+  arbitrary = do
+    cols <- arbitrary 
+    nm <- arbitrary
+    return $ TableDefinition nm cols
 
 derive makeArbitrary ''ColumnDefinition
 
-renderColumnDefinitions :: [ColumnDefinition] -> Doc
-renderColumnDefinitions xs = vcat (punctuate comma cols)
+instance Arbitrary ColumnDefinitions where
+  arbitrary = do
+    cols <- listOf1 arbitrary `suchThat` columnConstraintsSatisfied
+    return $ ColumnDefinitions cols
+
+renderColumnDefinitions :: ColumnDefinitions -> Doc
+renderColumnDefinitions (ColumnDefinitions xs) = vcat (punctuate comma cols)
   where
     cols = map renderColumnDefinition xs
 
