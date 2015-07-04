@@ -130,7 +130,7 @@ renderNumericStorage ns = lparen <> int (precision ns) <> scale' <> rparen
 instance Arbitrary NumericStorage where                      
   arbitrary = do
     p <- choose(1,38)
-    s     <- elements (Nothing : map Just [1..p])
+    s <- elements (Nothing : map Just [1..p])
     return $ NumericStorage p s
 
 data PrecisionStorage = PrecisionStorage Int
