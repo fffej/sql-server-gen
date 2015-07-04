@@ -6,7 +6,6 @@ module Database.SqlServer.Types.Sequence where
 
 import Prelude hiding (cycle)
 
-import Database.SqlServer.Types.Properties (NamedEntity,name)
 import Database.SqlServer.Types.Identifiers (RegularIdentifier(..), renderRegularIdentifier)
 
 import Text.PrettyPrint
@@ -14,7 +13,6 @@ import Test.QuickCheck
 import Data.DeriveTH
 import Control.Monad
 import Data.Maybe (fromMaybe)
-import Data.Ord
 
 data NumericType = TinyInt | SmallInt | Int | BigInt | Decimal | Numeric
 
@@ -28,6 +26,10 @@ renderNumericType Numeric = text "AS numeric"
 
 derive makeArbitrary ''NumericType
 
+{-
+  Rules of sequence definition.
+    Min value must be less than the maximum value
+-}
 data SequenceDefinition = SequenceDefinition
                   {
                     sequenceName :: RegularIdentifier
@@ -39,15 +41,6 @@ data SequenceDefinition = SequenceDefinition
                   , cycle        :: Maybe Bool
                   , cache        :: Maybe (Maybe Integer)
                   }
-
-instance NamedEntity SequenceDefinition where
-  name = sequenceName
-
-instance Ord SequenceDefinition where
-  compare = comparing sequenceName
-
-instance Eq SequenceDefinition where
-  a == b = sequenceName a == sequenceName b
 
 renderMinValue :: Maybe Integer -> Doc
 renderMinValue Nothing = text "NO MINVALUE"
@@ -88,7 +81,7 @@ boundedMaybeInt x = oneof [liftM Just $ choose x, return Nothing]
 
 -- Bug.  If used for min value, value can't be upper bound (e.g. min value 255 for TinyInt)
 arbitraryValue :: Maybe NumericType -> Gen (Maybe Integer)
-arbitraryValue Nothing = arbitraryValue (Just Int)
+arbitraryValue Nothing         = arbitraryValue (Just Int)
 arbitraryValue (Just TinyInt)  = boundedMaybeInt (0,255)
 arbitraryValue (Just SmallInt) = boundedMaybeInt (- 32768,32767)
 arbitraryValue (Just Int)      = boundedMaybeInt (- 2147483648,214748367)
@@ -129,12 +122,22 @@ validIncrementBy' x       min' max' incr' = maybe True (\incr -> abs incr <= dif
     max'' = fromMaybe upper max'
     diff  = abs (max'' - min'')
 
+validMinimum :: Maybe NumericType -> Maybe Integer -> Bool
+validMinimum x y = case (numericBounds x) of
+  Nothing -> True
+  Just (_,max') -> maybe True (< max') y
+
+validMaximum :: Maybe NumericType -> Maybe Integer -> Bool
+validMaximum x y = case (numericBounds x) of
+  Nothing -> True
+  Just (min',_) -> maybe True (> min') y
+
 instance Arbitrary SequenceDefinition where
   arbitrary = do
     nm <- arbitrary
     dataType <- arbitrary
-    minV <- arbitraryValue dataType
-    maxV <- arbitraryValue dataType `suchThat` (greaterThanMin minV)
+    minV <- arbitraryValue dataType `suchThat` (validMinimum dataType)
+    maxV <- arbitraryValue dataType `suchThat` (\x -> greaterThanMin minV x && validMaximum dataType x)
     start <- arbitraryValue dataType `suchThat` (\x -> greaterThanMin minV x && lessThanMax maxV x)
     increment <- arbitraryValue dataType `suchThat` (validIncrementBy dataType minV maxV)
     cyc <- arbitrary

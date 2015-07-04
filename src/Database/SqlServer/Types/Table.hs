@@ -3,7 +3,6 @@
 
 module Database.SqlServer.Types.Table where
 
-import Database.SqlServer.Types.Properties (NamedEntity,name,validIdentifiers)
 import Database.SqlServer.Types.Identifiers (RegularIdentifier, renderRegularIdentifier)
 import Database.SqlServer.Types.DataTypes (
   Type(..),
@@ -23,59 +22,31 @@ import Database.SqlServer.Types.Collations (renderCollation)
 
 import Test.QuickCheck
 import Text.PrettyPrint
-import Data.Ord
-import qualified Data.Set as S
 
 import Data.DeriveTH
 
-newtype ColumnDefinitions = ColumnDefinitions (S.Set ColumnDefinition)
 
 -- https://msdn.microsoft.com/en-us/library/ms174979.aspx
 data TableDefinition = TableDefinition
              {
                tableName    :: RegularIdentifier
-             , columnDefinitions :: ColumnDefinitions
+             , columnDefinitions :: [ColumnDefinition]
              }
 
-instance Eq TableDefinition where
-  a == b = tableName a == tableName b
-
-instance Ord TableDefinition where
-  compare = comparing tableName
-
-instance NamedEntity TableDefinition where
-  name = tableName
-  
 data ColumnDefinition = ColumnDefinition
                         {
                           columnName :: RegularIdentifier
                         , dataType   :: Type
                         }
 
-instance Ord ColumnDefinition where
-  compare = comparing columnName
-
-instance Eq ColumnDefinition where
-  a == b = columnName a == columnName b
-
-
-{-
-
-Creating or altering table 'diDsDhXF3In' failed because the minimum row size would be 12387, including 14 bytes of internal overhead. This exceeds the maximum allowable table row size of 8060 bytes.
-
-Calculating the internal overhead for column size looks a little impossible (alignment issues).
-
--}
 columnConstraintsSatisfied :: [ColumnDefinition] -> Bool
-columnConstraintsSatisfied xs = allValidIdentifiers &&
-                                length (filter isTimeStamp xs) <= 1 && -- only a single time stamp column is allowed
+columnConstraintsSatisfied xs = length (filter isTimeStamp xs) <= 1 && 
                                 totalColumnSizeBytes <= 8060 &&
-                                length (filter oneGuidCol xs) <= 1 -- only one row guid col allowed
+                                length (filter oneGuidCol xs) <= 1 
                                 
   where
-    totalColumnSizeBits = 32 + (sum $ map (storageSize . dataType) xs)
+    totalColumnSizeBits = 32 + sum (map (storageSize . dataType) xs)
     totalColumnSizeBytes = totalColumnSizeBits `div` 8 + (if totalColumnSizeBits `rem` 8 /= 0 then 1 else 0)
-    allValidIdentifiers = validIdentifiers xs
     isTimeStamp c = case dataType c of
       (Timestamp _) -> True
       _             -> False
@@ -83,23 +54,14 @@ columnConstraintsSatisfied xs = allValidIdentifiers &&
       (UniqueIdentifier s) -> maybe False isRowGuidCol s
       _                    -> False
 
-
-instance NamedEntity ColumnDefinition where
-  name = columnName
-
-instance Arbitrary ColumnDefinitions where
-  arbitrary = do
-    cols <- listOf1 arbitrary `suchThat` columnConstraintsSatisfied
-    return $ ColumnDefinitions (S.fromList cols)
-
 derive makeArbitrary ''TableDefinition
 
 derive makeArbitrary ''ColumnDefinition
 
-renderColumnDefinitions :: ColumnDefinitions -> Doc
-renderColumnDefinitions (ColumnDefinitions xs) = vcat (punctuate comma cols)
+renderColumnDefinitions :: [ColumnDefinition] -> Doc
+renderColumnDefinitions xs = vcat (punctuate comma cols)
   where
-    cols = map renderColumnDefinition (S.toList xs)
+    cols = map renderColumnDefinition xs
 
 renderColumnDefinition :: ColumnDefinition -> Doc
 renderColumnDefinition c = columnName' <+> columnType' <+> collation' <+>
@@ -114,7 +76,7 @@ renderColumnDefinition c = columnName' <+> columnType' <+> collation' <+>
 
 renderTableDefinition :: TableDefinition -> Doc
 renderTableDefinition t = text "CREATE TABLE" <+> tableName' $$
-                (parens $ renderColumnDefinitions (columnDefinitions t)) $+$
+                parens (renderColumnDefinitions (columnDefinitions t)) $+$
                 text "GO"
   where
     tableName' = renderRegularIdentifier (tableName t)
