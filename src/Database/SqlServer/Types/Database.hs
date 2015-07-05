@@ -36,6 +36,7 @@ data DatabaseDefinition = DatabaseDefinition
                           , queueDefinitions :: [QueueDefinition]
                           , certificateDefinitions :: [CertificateDefinition]
                           , userDefinitions :: [UserDefinition]
+                          , loginDefinitions :: [LoginDefinition]
                           , masterKey :: MasterKey
                           }
 
@@ -55,6 +56,7 @@ renderDatabaseDefinition  dd = text "USE master" $+$
                                renderNamedEntities (queueDefinitions dd) $+$
                                renderNamedEntities (certificateDefinitions dd) $+$
                                renderNamedEntities (userDefinitions dd) $+$
+                               renderNamedEntities (loginDefinitions dd) $+$
                                text "GO"
   where
     dbName = renderRegularIdentifier (databaseName dd)
