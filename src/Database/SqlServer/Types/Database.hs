@@ -9,6 +9,7 @@ import Database.SqlServer.Types.Procedure (ProcedureDefinition)
 import Database.SqlServer.Types.Queue (QueueDefinition)
 import Database.SqlServer.Types.Certificate (CertificateDefinition)
 import Database.SqlServer.Types.Login (LoginDefinition)
+import Database.SqlServer.Types.User (UserDefinition)
 import Database.SqlServer.Types.Entity
 
 import Test.QuickCheck
@@ -34,6 +35,7 @@ data DatabaseDefinition = DatabaseDefinition
                           , procedureDefinitions :: [ProcedureDefinition]
                           , queueDefinitions :: [QueueDefinition]
                           , certificateDefinitions :: [CertificateDefinition]
+                          , userDefinitions :: [UserDefinition]
                           , masterKey :: MasterKey
                           }
 
@@ -52,6 +54,7 @@ renderDatabaseDefinition  dd = text "USE master" $+$
                                renderNamedEntities (procedureDefinitions dd) $+$
                                renderNamedEntities (queueDefinitions dd) $+$
                                renderNamedEntities (certificateDefinitions dd) $+$
+                               renderNamedEntities (userDefinitions dd) $+$
                                text "GO"
   where
     dbName = renderRegularIdentifier (databaseName dd)
