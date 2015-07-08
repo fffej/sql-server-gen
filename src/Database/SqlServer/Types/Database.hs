@@ -10,6 +10,7 @@ import Database.SqlServer.Types.Queue (QueueDefinition)
 import Database.SqlServer.Types.Certificate (CertificateDefinition)
 import Database.SqlServer.Types.Login (LoginDefinition)
 import Database.SqlServer.Types.User (UserDefinition)
+import Database.SqlServer.Types.FullTextCatalog (FullTextCatalogDefinition)
 import Database.SqlServer.Types.Entity
 
 import Test.QuickCheck
@@ -24,7 +25,7 @@ data MasterKey = MasterKey
 derive makeArbitrary ''MasterKey
 
 instance Entity MasterKey where
-  toDoc MasterKey = text "CREATE MASTER KEY ENCRYPTION BY PASSWORD = 'arbitrary_password'" $+$
+  toDoc MasterKey = text "CREATE MASTER KEY ENCRYPTION BY PASSWORD = 'weKKjwehg252t!!'" $+$
                     text "GO"
                         
 data DatabaseDefinition = DatabaseDefinition
@@ -37,6 +38,7 @@ data DatabaseDefinition = DatabaseDefinition
                           , certificateDefinitions :: [CertificateDefinition]
                           , userDefinitions :: [UserDefinition]
                           , loginDefinitions :: [LoginDefinition]
+                          , fullTextCatalogDefinitions :: [FullTextCatalogDefinition]
                           , masterKey :: MasterKey
                           }
 
@@ -57,6 +59,7 @@ renderDatabaseDefinition  dd = text "USE master" $+$
                                renderNamedEntities (certificateDefinitions dd) $+$
                                renderNamedEntities (userDefinitions dd) $+$
                                renderNamedEntities (loginDefinitions dd) $+$
+                               renderNamedEntities (fullTextCatalogDefinitions dd) $+$
                                text "GO"
   where
     dbName = renderRegularIdentifier (databaseName dd)
