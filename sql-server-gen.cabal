@@ -58,7 +58,11 @@ library
                        Database.SqlServer.Types.Queue,
                        Database.SqlServer.Types.DataTypes,
                        Database.SqlServer.Types.Table,
-                       Database.SqlServer.Types.Collations
+                       Database.SqlServer.Types.Collations,
+                       Database.SqlServer.Types.Certificate,
+                       Database.SqlServer.Types.User,
+                       Database.SqlServer.Types.FullTextCatalog
+                       Database.SqlServer.Types.Login
 
   ghc-options:         -Wall
   
