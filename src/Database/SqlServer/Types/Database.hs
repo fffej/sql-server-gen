@@ -11,6 +11,7 @@ import Database.SqlServer.Types.Certificate (CertificateDefinition)
 import Database.SqlServer.Types.Login (LoginDefinition)
 import Database.SqlServer.Types.User (UserDefinition)
 import Database.SqlServer.Types.FullTextCatalog (FullTextCatalogDefinition)
+import Database.SqlServer.Types.FullTextStopList (FullTextStopListDefinition)
 import Database.SqlServer.Types.Entity
 
 import Test.QuickCheck
@@ -39,6 +40,7 @@ data DatabaseDefinition = DatabaseDefinition
                           , userDefinitions :: [UserDefinition]
                           , loginDefinitions :: [LoginDefinition]
                           , fullTextCatalogDefinitions :: [FullTextCatalogDefinition]
+                          , fullTextStopListDefinitions :: [FullTextStopListDefinition]
                           , masterKey :: MasterKey
                           }
 
@@ -60,6 +62,7 @@ renderDatabaseDefinition  dd = text "USE master" $+$
                                renderNamedEntities (userDefinitions dd) $+$
                                renderNamedEntities (loginDefinitions dd) $+$
                                renderNamedEntities (fullTextCatalogDefinitions dd) $+$
+                               renderNamedEntities (fullTextStopListDefinitions dd) $+$ 
                                text "GO"
   where
     dbName = renderRegularIdentifier (databaseName dd)
