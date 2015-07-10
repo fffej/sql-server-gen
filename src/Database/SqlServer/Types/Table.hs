@@ -47,8 +47,8 @@ columnConstraintsSatisfied xs = length (filter isTimeStamp xs) <= 1 &&
                                 totalColumnSizeBytes <= 8060 &&
                                 length (filter oneGuidCol xs) <= 1 
   where
-    totalColumnSizeBits = 48 + sum (map (storageSize . dataType) xs)
-    totalColumnSizeBytes = totalColumnSizeBits `div` 8 + (if totalColumnSizeBits `rem` 8 /= 0 then 1 else 0)
+    totalColumnSizeBits = (length xs * 8) 32 + sum (map (storageSize . dataType) xs)
+    totalColumnSizeBytes = totalColumnSizeBits `div` 8 + (if totalColumnSizeBits `rem` 8 /= 0 then 8 else 0)
     isTimeStamp c = case dataType c of
       (Timestamp _) -> True
       _             -> False
