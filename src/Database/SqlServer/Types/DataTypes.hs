@@ -190,6 +190,12 @@ data SQLGeometry = SQLGeometry String
 
 instance Arbitrary SQLGeometry where
   arbitrary = liftM SQLGeometry $ listOf $ elements ['a' .. 'z']
+
+data SQLString = SQLString String
+
+instance Arbitrary SQLString where
+  arbitrary = liftM SQLString $ listOf $ elements ['a' .. 'z']
+
   
 -- Note that SQL Server doesn't check the validity
 -- of the dates, so I choose not to either!
@@ -218,11 +224,11 @@ data Type = BigInt (Maybe StorageOptions) Int64
           | SmallDateTime (Maybe StorageOptions)
           | DateTime (Maybe StorageOptions)
           | Time (Maybe StorageOptions) (Maybe FractionalSecondsPrecision)
-          | Char (Maybe FixedRange) (Maybe Collation) (Maybe StorageOptions)
-          | VarChar Range (Maybe Collation) (Maybe StorageOptions)
+          | Char (Maybe FixedRange) (Maybe Collation) (Maybe StorageOptions) SQLString
+          | VarChar Range (Maybe Collation) (Maybe StorageOptions) SQLString
           | Text (Maybe Collation) (Maybe NullStorageOptions)
-          | NChar (Maybe NFixedRange) (Maybe Collation) (Maybe StorageOptions)
-          | NVarChar (Maybe NRange) (Maybe Collation) (Maybe StorageOptions)
+          | NChar (Maybe NFixedRange) (Maybe Collation) (Maybe StorageOptions) SQLString
+          | NVarChar (Maybe NRange) (Maybe Collation) (Maybe StorageOptions) SQLString
           | NText (Maybe Collation) (Maybe NullStorageOptions)
           | Binary (Maybe FixedRange) (Maybe StorageOptions) Integer
           | VarBinary (Maybe VarBinaryStorage) (Maybe StorageOptions) Integer
@@ -244,13 +250,13 @@ derive makeArbitrary ''NullStorageOptions
 derive makeArbitrary ''UniqueIdentifierOptions
 
 collation :: Type -> Maybe Collation
-collation (Char _ mc _)    = mc
-collation (VarChar _ mc _) = mc
-collation (Text mc _)      = mc
-collation (NChar _ mc _)   = mc
-collation (NVarChar _ mc _)= mc
-collation (NText mc _)     = mc
-collation _                = Nothing
+collation (Char _ mc _ _)     = mc
+collation (VarChar _ mc _ _)  = mc
+collation (Text mc _)         = mc
+collation (NChar _ mc _ _)    = mc
+collation (NVarChar _ mc _ _) = mc
+collation (NText mc _)        = mc
+collation _                   = Nothing
 
 numericStorageSize :: NumericStorage -> Int
 numericStorageSize x 
@@ -287,13 +293,13 @@ storageSize (DateTime2 _ p) = maybe (8 * 8) datetime2StorageSize p -- default is
 storageSize (DateTimeOffset _ p) = maybe (10 * 8) dateTimeOffsetStorageSize p
 storageSize (SmallDateTime _) = 4 * 8
 storageSize (Time _ p) = maybe (5 * 8) timeStorageSize p
-storageSize (Char fr _ _) = maybe 8 fixedRangeStorage fr
-storageSize (NChar fr _ _) = maybe 8 nfixedRangeStorage fr
+storageSize (Char fr _ _ _) = maybe 8 fixedRangeStorage fr
+storageSize (NChar fr _ _ _) = maybe 8 nfixedRangeStorage fr
 storageSize (Binary p _ _) = maybe (1 * 8) fixedRangeStorage p
 storageSize (UniqueIdentifier _) = 16 * 8
 storageSize (VarBinary r _ _) = maybe (1 * 8) varBinarySize r
-storageSize (VarChar r _ _) = rangeStorageSize r 
-storageSize (NVarChar r _ _) = maybe (1 * 8) nRangeStorageSize r
+storageSize (VarChar r _ _ _) = rangeStorageSize r 
+storageSize (NVarChar r _ _ _) = maybe (1 * 8) nRangeStorageSize r
 storageSize (Text _ _) = 0 -- assumption
 storageSize (NText _ _) = 0 -- assumption
 storageSize (Image _) = 0 -- assumption
@@ -330,10 +336,10 @@ storageOptions (DateTime2 s _) = s
 storageOptions (SmallDateTime s) = s
 storageOptions (DateTime s) = s
 storageOptions (Time s _) = s
-storageOptions (Char _ _ s)  = s
-storageOptions (VarChar _ _ s) = s
-storageOptions (NChar _ _ s) = s
-storageOptions (NVarChar _ _ s) = s
+storageOptions (Char _ _ s _)  = s
+storageOptions (VarChar _ _ s _) = s
+storageOptions (NChar _ _ s _) = s
+storageOptions (NVarChar _ _ s _) = s
 storageOptions (Binary _ s _)  = s 
 storageOptions (VarBinary _ s _) = s
 storageOptions (HierarchyId s) = s
@@ -367,6 +373,9 @@ renderSQLDate d = quotes (text yyyy <> text "-" <>
     mm = show (month d)
     dd = show (day d)
 
+renderSQLString :: SQLString -> Doc
+renderSQLString (SQLString s) = quotes $ text s
+
 renderValue :: Type -> Doc
 renderValue (BigInt _ v) = (text . show) v
 renderValue (Int _ v) = (text . show) v
@@ -380,6 +389,10 @@ renderValue (Geography _ (SQLGeography x)) = quotes (text x)
 renderValue (Geometry _ (SQLGeometry x)) = quotes (text x)
 renderValue (Binary _ _ x) = integer x
 renderValue (VarBinary _ _ x) = integer x
+renderValue (Char _ _ _ s) = renderSQLString s
+renderValue (NChar _ _ _ s) = renderSQLString s
+renderValue (VarChar _ _ _ s) = renderSQLString s
+renderValue (NVarChar _ _ _ s) = renderSQLString s
 
 renderDataType :: Type -> Doc
 renderDataType (BigInt _ _) = text "bigint"
@@ -399,11 +412,11 @@ renderDataType (DateTime2 _ p) = text "datetime2" <> maybe empty renderFractiona
 renderDataType (SmallDateTime _) = text "smalldatetime"
 renderDataType (DateTime _) = text "datetime"
 renderDataType (Time _ p)= text "time" <> maybe empty renderFractionalSecondsPrecision p
-renderDataType (Char fixedRange _ _)  = text "char" <> maybe empty renderFixedRange fixedRange
-renderDataType (VarChar range _ _) = text "varchar" <> renderRange range
+renderDataType (Char fixedRange _ _ _)  = text "char" <> maybe empty renderFixedRange fixedRange
+renderDataType (VarChar range _ _ _) = text "varchar" <> renderRange range
 renderDataType (Text _ _) = text "text"
-renderDataType (NChar p _ _) = text "nchar" <> maybe empty renderNFixedRange p
-renderDataType (NVarChar p _ _) = text "nvarchar" <> maybe empty renderNRange p
+renderDataType (NChar p _ _ _) = text "nchar" <> maybe empty renderNFixedRange p
+renderDataType (NVarChar p _ _ _) = text "nvarchar" <> maybe empty renderNRange p
 renderDataType (NText _ _) = text "ntext"
 renderDataType (Binary fixedRange _ _)  = text "binary" <> maybe empty renderFixedRange fixedRange
 renderDataType (VarBinary range _ _) = text "varbinary" <> maybe empty renderVarBinaryStorage range
