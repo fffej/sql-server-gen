@@ -181,14 +181,24 @@ data SQLDate = SQLData
                , day :: Int                 
                }
 
+data SQLGeography = SQLGeography String
+
+instance Arbitrary SQLGeography where
+  arbitrary = liftM SQLGeography $ listOf $ elements ['a' .. 'z']
+  
+data SQLGeometry = SQLGeometry String
+
+instance Arbitrary SQLGeometry where
+  arbitrary = liftM SQLGeometry $ listOf $ elements ['a' .. 'z']
+  
 -- Note that SQL Server doesn't check the validity
 -- of the dates, so I choose not to either!
 instance Arbitrary SQLDate where
   arbitrary = do
-    year <- choose (0,9999)
-    month <- choose (1,12)
-    day <- choose (1,31)
-    return $ SQLData year month day
+    y <- choose (0,9999)
+    m <- choose (1,12)
+    d <- choose (1,31)
+    return $ SQLData y m d
 
 -- https://msdn.microsoft.com/en-us/library/ms187752.aspx
 data Type = BigInt (Maybe StorageOptions) Int64
@@ -222,8 +232,8 @@ data Type = BigInt (Maybe StorageOptions) Int64
           | UniqueIdentifier (Maybe UniqueIdentifierOptions)
           | SqlVariant (Maybe StorageOptions)
           | Xml (Maybe StorageOptions)
-          | Geography (Maybe NullStorageOptions)
-          | Geometry  (Maybe NullStorageOptions)          
+          | Geography (Maybe NullStorageOptions) SQLGeography
+          | Geometry  (Maybe NullStorageOptions) SQLGeometry
 
 derive makeArbitrary ''StorageOptions
 derive makeArbitrary ''Type
@@ -289,8 +299,8 @@ storageSize (NText _ _) = 0 -- assumption
 storageSize (Image _) = 0 -- assumption
 storageSize (Timestamp _) = 5 * 8
 storageSize (HierarchyId _) = 0 -- assumption
-storageSize (Geometry _) = 0
-storageSize (Geography _) = 0
+storageSize (Geometry _ _) = 0
+storageSize (Geography _ _) = 0
 storageSize (SqlVariant _) = 0
 storageSize (Xml _) = 0
 
@@ -334,8 +344,8 @@ storageOptions (Timestamp _) = Nothing
 storageOptions (Text _ _) = Nothing
 storageOptions (NText _ _) = Nothing
 storageOptions (Image _) = Nothing
-storageOptions (Geography _) = Nothing
-storageOptions (Geometry _) = Nothing
+storageOptions (Geography _ _) = Nothing
+storageOptions (Geometry _ _) = Nothing
 
 
 divideBy10000 :: Integer -> String
@@ -365,7 +375,9 @@ renderValue (SmallInt _ v) = (text . show) v
 renderValue (Bit _ b) = maybe (text "NULL") (\x -> if x then int 1 else int 0) b
 renderValue (SmallMoney _ s) = text (divideBy10000 $ fromIntegral s)
 renderValue (Money _ s) = text (divideBy10000 $ fromIntegral s)
-renderValue (Date _ d) = renderSQLDate d 
+renderValue (Date _ d) = renderSQLDate d
+renderValue (Geography _ (SQLGeography x)) = quotes (text x)
+renderValue (Geometry _ (SQLGeometry x)) = quotes (text x)
 
 renderDataType :: Type -> Doc
 renderDataType (BigInt _ _) = text "bigint"
@@ -399,6 +411,6 @@ renderDataType (HierarchyId _) = text "hierarchyid"
 renderDataType (UniqueIdentifier _) = text "uniqueidentifier"
 renderDataType (SqlVariant _) = text "sql_variant"
 renderDataType (Xml _) = text "xml"
-renderDataType (Geography _) = text "geography"
-renderDataType (Geometry _) =  text "geometry"
+renderDataType (Geography _ _) = text "geography"
+renderDataType (Geometry _ _) =  text "geometry"
 
