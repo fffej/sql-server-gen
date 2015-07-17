@@ -228,7 +228,7 @@ data Type = BigInt (Maybe StorageOptions) Int64
           | Date (Maybe StorageOptions) SQLDate
           | DateTimeOffset (Maybe StorageOptions) (Maybe FractionalSecondsPrecision) SQLDateTime
           | DateTime2 (Maybe StorageOptions) (Maybe FractionalSecondsPrecision) SQLDateTime
-          | SmallDateTime (Maybe StorageOptions)
+          | SmallDateTime (Maybe StorageOptions) SQLDateTime
           | DateTime (Maybe StorageOptions) SQLDateTime
           | Time (Maybe StorageOptions) (Maybe FractionalSecondsPrecision)
           | Char (Maybe FixedRange) (Maybe Collation) (Maybe StorageOptions) SQLString
@@ -298,7 +298,7 @@ storageSize (Date _ _) = 3 * 8
 storageSize (DateTime _ _) = 8 * 8
 storageSize (DateTime2 _ p _) = maybe (8 * 8) datetime2StorageSize p -- default is 8 bytes
 storageSize (DateTimeOffset _ p _) = maybe (10 * 8) dateTimeOffsetStorageSize p
-storageSize (SmallDateTime _) = 4 * 8
+storageSize (SmallDateTime _ _) = 4 * 8
 storageSize (Time _ p) = maybe (5 * 8) timeStorageSize p
 storageSize (Char fr _ _ _) = maybe 8 fixedRangeStorage fr
 storageSize (NChar fr _ _ _) = maybe 8 nfixedRangeStorage fr
@@ -340,7 +340,7 @@ storageOptions (Real s) = s
 storageOptions (Date s _) = s
 storageOptions (DateTimeOffset s _ _) = s
 storageOptions (DateTime2 s _ _) = s
-storageOptions (SmallDateTime s) = s
+storageOptions (SmallDateTime s _) = s
 storageOptions (DateTime s _) = s
 storageOptions (Time s _) = s
 storageOptions (Char _ _ s _)  = s
@@ -395,6 +395,7 @@ renderValue (NVarChar _ _ _ s) = renderSQLString s
 renderValue (DateTime _ (SQLDateTime s)) = quotes $ text (formatISO8601Millis s)
 renderValue (DateTime2 _ _ (SQLDateTime s)) = quotes $ text (formatISO8601Millis s)
 renderValue (DateTimeOffset _ _ (SQLDateTime s)) = quotes $ text (formatISO8601Millis s)
+renderValue (SmallDateTime _ (SQLDateTime s)) = quotes $ text (formatISO8601Millis s)
 
 renderDataType :: Type -> Doc
 renderDataType (BigInt _ _) = text "bigint"
@@ -411,7 +412,7 @@ renderDataType (Real _) = text "real"
 renderDataType (Date _ _) = text "date"
 renderDataType (DateTimeOffset _ p _) = text "datetimeoffset" <> maybe empty renderFractionalSecondsPrecision p
 renderDataType (DateTime2 _ p _) = text "datetime2" <> maybe empty renderFractionalSecondsPrecision p
-renderDataType (SmallDateTime _) = text "smalldatetime"
+renderDataType (SmallDateTime _ _) = text "smalldatetime"
 renderDataType (DateTime _ _) = text "datetime"
 renderDataType (Time _ p)= text "time" <> maybe empty renderFractionalSecondsPrecision p
 renderDataType (Char fixedRange _ _ _)  = text "char" <> maybe empty renderFixedRange fixedRange
