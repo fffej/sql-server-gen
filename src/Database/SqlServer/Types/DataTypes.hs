@@ -10,6 +10,7 @@ import Text.PrettyPrint
 import Test.QuickCheck hiding (scale)
 import Control.Monad 
 import Data.DeriveTH
+import Data.Int
 
 
 -- Size of arbitrary data (>= 1 && <= 8000)
@@ -173,13 +174,13 @@ timeStorageSize (FractionalSecondsPrecision n)
   | otherwise = 5 * 8
 
 -- https://msdn.microsoft.com/en-us/library/ms187752.aspx
-data Type = BigInt (Maybe StorageOptions) Int
+data Type = BigInt (Maybe StorageOptions) Int64
           | Bit (Maybe StorageOptions)
           | Numeric (Maybe StorageOptions) (Maybe NumericStorage)
           | SmallInt (Maybe StorageOptions) 
           | Decimal (Maybe StorageOptions) (Maybe NumericStorage)
           | SmallMoney (Maybe StorageOptions)
-          | Int (Maybe StorageOptions)
+          | Int (Maybe StorageOptions) Int32
           | TinyInt (Maybe StorageOptions)
           | Money (Maybe StorageOptions)
           | Float (Maybe StorageOptions) (Maybe PrecisionStorage)
@@ -243,7 +244,7 @@ precisionStorageSize (PrecisionStorage x)
 -- and MSDN documentation
 storageSize :: Type -> Int
 storageSize (BigInt _ _) = 8 * 8
-storageSize (Int _)  = 4 * 8
+storageSize (Int _ _)  = 4 * 8
 storageSize (SmallInt _) = 2 * 8
 storageSize (TinyInt _) = 1 * 8
 storageSize (Bit _)     = 1
@@ -291,7 +292,7 @@ storageOptions (Numeric s _) = s
 storageOptions (SmallInt s) = s
 storageOptions (Decimal s _) = s
 storageOptions (SmallMoney s) = s
-storageOptions (Int s) = s
+storageOptions (Int s _) = s
 storageOptions (TinyInt s) = s
 storageOptions (Money s) = s
 storageOptions (Float s _) = s
@@ -321,7 +322,8 @@ storageOptions (Geometry _) = Nothing
 
 
 renderValue :: Type -> Doc
-renderValue (BigInt _ v) = int v
+renderValue (BigInt _ v) = (text . show) v
+renderValue (Int _ v) = (text . show) v
 
 renderDataType :: Type -> Doc
 renderDataType (BigInt _ _) = text "bigint"
@@ -330,7 +332,7 @@ renderDataType (Numeric _ ns) = text "numeric" <> maybe empty renderNumericStora
 renderDataType (SmallInt _) = text "smallint"
 renderDataType (Decimal _ ns) = text "decimal" <> maybe empty renderNumericStorage ns
 renderDataType (SmallMoney _) = text "smallmoney"
-renderDataType (Int _) = text "int"
+renderDataType (Int _ _) = text "int"
 renderDataType (TinyInt _) = text "tinyint"
 renderDataType (Money _) = text "money"
 renderDataType (Float _ ps) = text "float" <> maybe empty renderPrecisionStorage ps
