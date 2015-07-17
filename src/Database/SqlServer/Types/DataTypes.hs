@@ -222,16 +222,24 @@ data SQLGeography = SQLGeography String
 
 instance Arbitrary SQLGeography where
   arbitrary = do
-    a <- arbitrary :: Gen Float
-    b <- arbitrary :: Gen Float
-    c <- arbitrary :: Gen Float
-    d <- arbitrary :: Gen Float
+    a <- choose (- 90, 90) :: Gen Float
+    b <- choose (- 90, 90) :: Gen Float
+    c <- choose (- 90, 90) :: Gen Float
+    d <- choose (- 90, 90) :: Gen Float
+
     return $ SQLGeography ("LINESTRING(" ++ show a ++ " " ++ show b ++ "," ++ show c ++ " " ++ show d ++ ")")
   
 data SQLGeometry = SQLGeometry String
 
+-- Deliberate duplication so I can customize this
 instance Arbitrary SQLGeometry where
-  arbitrary = liftM SQLGeometry $ listOf $ elements ['a' .. 'z']
+  arbitrary = do
+    a <- arbitrary :: Gen Float
+    b <- arbitrary :: Gen Float
+    c <- arbitrary :: Gen Float
+    d <- arbitrary :: Gen Float
+    return $ SQLGeometry ("LINESTRING(" ++ show a ++ " " ++ show b ++ "," ++ show c ++ " " ++ show d ++ ")")
+
 
 data SQLString = SQLString String
 
