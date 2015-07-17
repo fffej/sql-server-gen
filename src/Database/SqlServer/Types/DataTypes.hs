@@ -199,6 +199,18 @@ instance Arbitrary SQLDateTime where
     datetime <- choose (0,86400)
     return (SQLDateTime (UTCTime day (secondsToDiffTime datetime)))
 
+data SQLSmallDateTime = SQLSmallDateTime UTCTime
+
+instance Arbitrary SQLSmallDateTime where
+  arbitrary = do
+    y <- choose (1900,2078)
+    m <- choose (1,12)
+    d <- choose (1,31)
+    let day = fromGregorian y m d
+    datetime <- choose (0,86400)
+    return (SQLSmallDateTime (UTCTime day (secondsToDiffTime datetime)))
+
+
 data SQLTime = SQLTime DiffTime
 
 instance Arbitrary SQLTime where
@@ -232,11 +244,11 @@ data SQLFloat = SQLFloat Float
 instance Arbitrary SQLFloat where
   arbitrary = liftM SQLFloat arbitrary
 
--- Hard coded of the form /x/y/z/
-data SQLHierarchyID = SQLHierarchyID Int Int Int
+data SQLHierarchyID = SQLHierarchyID String
 
+-- Just pick one of the examples from MSDN
 instance Arbitrary SQLHierarchyID where
-  arbitrary = liftM3 SQLHierarchyID arbitrary arbitrary arbitrary
+  arbitrary = liftM SQLHierarchyID $ elements ["/","/1/","/0.3.-7/","/1/3/","/0.1/0.2/"]
 
 data SQLUniqueIdentifier = SQLUniqueIdentifier ArbUUID
 
@@ -272,7 +284,7 @@ data Type = BigInt (Maybe StorageOptions) Int64
           | Date (Maybe StorageOptions) SQLDate
           | DateTimeOffset (Maybe StorageOptions) (Maybe FractionalSecondsPrecision) SQLDateTime
           | DateTime2 (Maybe StorageOptions) (Maybe FractionalSecondsPrecision) SQLDateTime
-          | SmallDateTime (Maybe StorageOptions) SQLDateTime
+          | SmallDateTime (Maybe StorageOptions) SQLSmallDateTime
           | DateTime (Maybe StorageOptions) SQLDateTime
           | Time (Maybe StorageOptions) (Maybe FractionalSecondsPrecision) SQLTime
           | Char (Maybe FixedRange) (Maybe Collation) (Maybe StorageOptions) SQLString
@@ -441,11 +453,11 @@ renderValue (NVarChar _ _ _ s) = Just $ renderSQLString s
 renderValue (DateTime _ (SQLDateTime s)) = Just $ quotes $ text (formatISO8601Millis s)
 renderValue (DateTime2 _ _ (SQLDateTime s)) = Just $ quotes $ text (formatISO8601Millis s)
 renderValue (DateTimeOffset _ _ (SQLDateTime s)) = Just $ quotes $ text (formatISO8601Millis s)
-renderValue (SmallDateTime _ (SQLDateTime s)) = Just $ quotes $ text (formatISO8601Millis s)
+renderValue (SmallDateTime _ (SQLSmallDateTime s)) = Just $ quotes $ text (formatISO8601Millis s)
 renderValue (Time _ _ (SQLTime t)) = Just $ quotes $ text (show $ timeToTimeOfDay t)
 renderValue (Float _ _ (SQLFloat f)) = Just $ float f
 renderValue (Real _ (SQLFloat f)) = Just $ float f
-renderValue (HierarchyId _ (SQLHierarchyID x y z)) = Just $ quotes $ text "/" <> int x <> text "/" <> int y <> text "/" <> int z
+renderValue (HierarchyId _ (SQLHierarchyID x)) = Just $ quotes $ text x
 renderValue (UniqueIdentifier _ (SQLUniqueIdentifier s)) = Just $ (quotes . text  . show) s
 renderValue (SqlVariant _ (SQLVariantInt n)) = Just $ int n
 renderValue (SqlVariant _ (SQLVariantString s)) = Just $ quotes $ text s
