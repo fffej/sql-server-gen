@@ -173,7 +173,7 @@ timeStorageSize (FractionalSecondsPrecision n)
   | otherwise = 5 * 8
 
 -- https://msdn.microsoft.com/en-us/library/ms187752.aspx
-data Type = BigInt (Maybe StorageOptions) 
+data Type = BigInt (Maybe StorageOptions) Int
           | Bit (Maybe StorageOptions)
           | Numeric (Maybe StorageOptions) (Maybe NumericStorage)
           | SmallInt (Maybe StorageOptions) 
@@ -242,7 +242,7 @@ precisionStorageSize (PrecisionStorage x)
 -- Based on http://dba.stackexchange.com/questions/66471/script-to-estimate-row-sizes-for-any-table
 -- and MSDN documentation
 storageSize :: Type -> Int
-storageSize (BigInt _) = 8 * 8
+storageSize (BigInt _ _) = 8 * 8
 storageSize (Int _)  = 4 * 8
 storageSize (SmallInt _) = 2 * 8
 storageSize (TinyInt _) = 1 * 8
@@ -285,7 +285,7 @@ rowGuidOptions (UniqueIdentifier a)  = maybe False isRowGuidCol a
 rowGuidOptions _                     = False
 
 storageOptions :: Type -> Maybe StorageOptions
-storageOptions (BigInt s) = s
+storageOptions (BigInt s _) = s
 storageOptions (Bit s) = s
 storageOptions (Numeric s _) = s
 storageOptions (SmallInt s) = s
@@ -320,8 +320,11 @@ storageOptions (Geography _) = Nothing
 storageOptions (Geometry _) = Nothing
 
 
+renderValue :: Type -> Doc
+renderValue (BigInt _ v) = int v
+
 renderDataType :: Type -> Doc
-renderDataType (BigInt _) = text "bigint"
+renderDataType (BigInt _ _) = text "bigint"
 renderDataType (Bit _) = text "bit"
 renderDataType (Numeric _ ns) = text "numeric" <> maybe empty renderNumericStorage ns
 renderDataType (SmallInt _) = text "smallint"
