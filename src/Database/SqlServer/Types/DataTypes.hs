@@ -14,6 +14,7 @@ import Data.Int
 import Data.Word
 
 import Data.Time.Calendar
+import Data.Time.Clock
 
 
 -- Size of arbitrary data (>= 1 && <= 8000)
@@ -178,7 +179,24 @@ timeStorageSize (FractionalSecondsPrecision n)
 
 data SQLDate = SQLDate Day
 
-data SQLDateTime = SQLDateTime String
+instance Arbitrary SQLDate where
+  arbitrary = do
+    y <- choose (0,9999)
+    m <- choose (1,12)
+    d <- choose (1,31)
+    return $ SQLDate (fromGregorian y m d) -- clipping handled by time package
+
+data SQLDateTime = SQLDateTime UTCTime
+
+instance Arbitrary SQLDateTime where
+  arbitrary = do
+    y <- choose (1753,9999)
+    m <- choose (1,12)
+    d <- choose (1,31)
+    let day = fromGregorian y m d
+    datetime <- choose (0,86400)
+    return (SQLDateTime (UTCTime day (secondsToDiffTime datetime)))
+
 data SQLDateTime2 = SQLDateTime2 String
 data SQLDateTimeOffset = SQLDateTimeOffset String
 data SQLSmallDateTime = SQLSmallDateTime String
@@ -198,13 +216,6 @@ data SQLString = SQLString String
 instance Arbitrary SQLString where
   arbitrary = liftM SQLString $ listOf $ elements ['a' .. 'z']
 
-instance Arbitrary SQLDate where
-  arbitrary = do
-    y <- choose (0,9999)
-    m <- choose (1,12)
-    d <- choose (1,31)
-    return $ SQLDate (fromGregorian y m d) -- clipping handled by time package
-
 -- https://msdn.microsoft.com/en-us/library/ms187752.aspx
 data Type = BigInt (Maybe StorageOptions) Int64
           | Bit (Maybe StorageOptions) (Maybe Bool)
@@ -221,7 +232,7 @@ data Type = BigInt (Maybe StorageOptions) Int64
           | DateTimeOffset (Maybe StorageOptions) (Maybe FractionalSecondsPrecision)
           | DateTime2 (Maybe StorageOptions) (Maybe FractionalSecondsPrecision)
           | SmallDateTime (Maybe StorageOptions)
-          | DateTime (Maybe StorageOptions)
+          | DateTime (Maybe StorageOptions) SQLDateTime
           | Time (Maybe StorageOptions) (Maybe FractionalSecondsPrecision)
           | Char (Maybe FixedRange) (Maybe Collation) (Maybe StorageOptions) SQLString
           | VarChar Range (Maybe Collation) (Maybe StorageOptions) SQLString
@@ -287,7 +298,7 @@ storageSize (Decimal _ ns) = maybe (9 * 8) numericStorageSize ns -- default prec
 storageSize (Float _ ps) = maybe (8 * 8) precisionStorageSize ps -- default precision is 53
 storageSize (Real _) = 4 * 8
 storageSize (Date _ _) = 3 * 8
-storageSize (DateTime _ ) = 8 * 8
+storageSize (DateTime _ _) = 8 * 8
 storageSize (DateTime2 _ p) = maybe (8 * 8) datetime2StorageSize p -- default is 8 bytes
 storageSize (DateTimeOffset _ p) = maybe (10 * 8) dateTimeOffsetStorageSize p
 storageSize (SmallDateTime _) = 4 * 8
@@ -333,7 +344,7 @@ storageOptions (Date s _) = s
 storageOptions (DateTimeOffset s _) = s
 storageOptions (DateTime2 s _) = s
 storageOptions (SmallDateTime s) = s
-storageOptions (DateTime s) = s
+storageOptions (DateTime s _) = s
 storageOptions (Time s _) = s
 storageOptions (Char _ _ s _)  = s
 storageOptions (VarChar _ _ s _) = s
@@ -403,7 +414,7 @@ renderDataType (Date _ _) = text "date"
 renderDataType (DateTimeOffset _ p) = text "datetimeoffset" <> maybe empty renderFractionalSecondsPrecision p
 renderDataType (DateTime2 _ p) = text "datetime2" <> maybe empty renderFractionalSecondsPrecision p
 renderDataType (SmallDateTime _) = text "smalldatetime"
-renderDataType (DateTime _) = text "datetime"
+renderDataType (DateTime _ _) = text "datetime"
 renderDataType (Time _ p)= text "time" <> maybe empty renderFractionalSecondsPrecision p
 renderDataType (Char fixedRange _ _ _)  = text "char" <> maybe empty renderFixedRange fixedRange
 renderDataType (VarChar range _ _ _) = text "varchar" <> renderRange range
