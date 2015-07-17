@@ -13,6 +13,7 @@ import Database.SqlServer.Types.User (UserDefinition)
 import Database.SqlServer.Types.FullTextCatalog (FullTextCatalogDefinition)
 import Database.SqlServer.Types.FullTextStopList (FullTextStopListDefinition)
 import Database.SqlServer.Types.Entity
+import Database.SqlServer.Types.DataTypes
 
 import Test.QuickCheck
 import Test.QuickCheck.Gen
@@ -68,11 +69,14 @@ renderDatabaseDefinition  dd = text "USE master" $+$
     dbName = renderRegularIdentifier (databaseName dd)
 
 derive makeArbitrary ''DatabaseDefinition
-    
+
+renderDeclareStatement :: Type -> Doc
+renderDeclareStatement = undefined
+  
 dumpExamples :: Int -> FilePath -> IO ()
 dumpExamples m p = do
-  x <- generate (sequence [resize n (arbitrary :: Gen DatabaseDefinition) | n <- [0..m] ])
-  writeFile p (unlines $ map (render . renderDatabaseDefinition) x)
+  x <- generate (sequence [resize n (arbitrary :: Gen Type) | n <- [0..m] ])
+  writeFile p (unlines $ map (render . renderDeclareStatement) x)
 
 instance Show DatabaseDefinition where
   show = render . renderDatabaseDefinition
