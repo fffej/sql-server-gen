@@ -231,6 +231,12 @@ data SQLFloat = SQLFloat Float
 instance Arbitrary SQLFloat where
   arbitrary = liftM SQLFloat arbitrary
 
+-- Hard coded of the form /x/y/z/
+data SQLHierarchyID = SQLHierarchyID Int Int Int
+
+instance Arbitrary SQLHierarchyID where
+  arbitrary = liftM3 SQLHierarchyID arbitrary arbitrary arbitrary
+
 -- https://msdn.microsoft.com/en-us/library/ms187752.aspx
 data Type = BigInt (Maybe StorageOptions) Int64
           | Bit (Maybe StorageOptions) (Maybe Bool)
@@ -259,7 +265,7 @@ data Type = BigInt (Maybe StorageOptions) Int64
           | VarBinary (Maybe VarBinaryStorage) (Maybe StorageOptions) Integer
           | Image (Maybe NullStorageOptions)
           | Timestamp (Maybe NullStorageOptions)
-          | HierarchyId (Maybe StorageOptions)
+          | HierarchyId (Maybe StorageOptions) SQLHierarchyID
           | UniqueIdentifier (Maybe UniqueIdentifierOptions)
           | SqlVariant (Maybe StorageOptions)
           | Xml (Maybe StorageOptions)
@@ -329,7 +335,7 @@ storageSize (Text _ _) = 0 -- assumption
 storageSize (NText _ _) = 0 -- assumption
 storageSize (Image _) = 0 -- assumption
 storageSize (Timestamp _) = 5 * 8
-storageSize (HierarchyId _) = 0 -- assumption
+storageSize (HierarchyId _ _) = 0 -- assumption
 storageSize (Geometry _ _) = 0
 storageSize (Geography _ _) = 0
 storageSize (SqlVariant _) = 0
@@ -367,7 +373,7 @@ storageOptions (NChar _ _ s _) = s
 storageOptions (NVarChar _ _ s _) = s
 storageOptions (Binary _ s _)  = s 
 storageOptions (VarBinary _ s _) = s
-storageOptions (HierarchyId s) = s
+storageOptions (HierarchyId s _) = s
 storageOptions (UniqueIdentifier s) = maybe Nothing uniqueIdentifierstorageOptions s
 storageOptions (SqlVariant s) = s
 storageOptions (Xml s) = s
@@ -419,9 +425,11 @@ renderValue (SmallDateTime _ (SQLDateTime s)) = Just $ quotes $ text (formatISO8
 renderValue (Time _ _ (SQLTime t)) = Just $ quotes $ text (show $ timeToTimeOfDay t)
 renderValue (Float _ _ (SQLFloat f)) = Just $ float f
 renderValue (Real _ (SQLFloat f)) = Just $ float f
-renderValue (Text _ _) = Nothing -- Text type invalid for local variables
-renderValue (NText _ _) = Nothing -- NText type invalid for local variables
-renderValue (Image _) = Nothing -- Image type invalid for local variable
+renderValue (HierarchyId _ (SQLHierarchyID x y z)) = Just $ text "/" <> int x <> text "/" <> int y <> text "/" <> int z
+renderValue (Text _ _) = Nothing -- Text type invalid for local variables, function returns
+renderValue (NText _ _) = Nothing -- NText type invalid for local variables, function returns
+renderValue (Image _) = Nothing -- Image type invalid for local variable, function returns
+renderValue (Timestamp _) = Nothing -- Timestamp invalid for local variable, function returns
 
 renderDataType :: Type -> Doc
 renderDataType (BigInt _ _) = text "bigint"
@@ -451,7 +459,7 @@ renderDataType (Binary fixedRange _ _)  = text "binary" <> maybe empty renderFix
 renderDataType (VarBinary range _ _) = text "varbinary" <> maybe empty renderVarBinaryStorage range
 renderDataType (Image _) = text "image"
 renderDataType (Timestamp _) = text "timestamp"
-renderDataType (HierarchyId _) = text "hierarchyid"
+renderDataType (HierarchyId _ _) = text "hierarchyid"
 renderDataType (UniqueIdentifier _) = text "uniqueidentifier"
 renderDataType (SqlVariant _) = text "sql_variant"
 renderDataType (Xml _) = text "xml"
