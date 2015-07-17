@@ -174,6 +174,22 @@ timeStorageSize (FractionalSecondsPrecision n)
   | n < 5     = 4 * 8
   | otherwise = 5 * 8
 
+data SQLDate = SQLData
+               {
+                 year :: Int
+               , month :: Int
+               , day :: Int                 
+               }
+
+-- Note that SQL Server doesn't check the validity
+-- of the dates, so I choose not to either!
+instance Arbitrary SQLDate where
+  arbitrary = do
+    year <- choose (0,9999)
+    month <- choose (1,12)
+    day <- choose (1,31)
+    return $ SQLData year month day
+
 -- https://msdn.microsoft.com/en-us/library/ms187752.aspx
 data Type = BigInt (Maybe StorageOptions) Int64
           | Bit (Maybe StorageOptions) (Maybe Bool)
@@ -186,7 +202,7 @@ data Type = BigInt (Maybe StorageOptions) Int64
           | Money (Maybe StorageOptions) Int64
           | Float (Maybe StorageOptions) (Maybe PrecisionStorage)
           | Real (Maybe StorageOptions)
-          | Date (Maybe StorageOptions)
+          | Date (Maybe StorageOptions) SQLDate
           | DateTimeOffset (Maybe StorageOptions) (Maybe FractionalSecondsPrecision)
           | DateTime2 (Maybe StorageOptions) (Maybe FractionalSecondsPrecision)
           | SmallDateTime (Maybe StorageOptions)
@@ -255,7 +271,7 @@ storageSize (Numeric _ ns) = maybe (9 * 8) numericStorageSize ns -- default prec
 storageSize (Decimal _ ns) = maybe (9 * 8) numericStorageSize ns -- default precision is 18
 storageSize (Float _ ps) = maybe (8 * 8) precisionStorageSize ps -- default precision is 53
 storageSize (Real _) = 4 * 8
-storageSize (Date _) = 3 * 8
+storageSize (Date _ _) = 3 * 8
 storageSize (DateTime _ ) = 8 * 8
 storageSize (DateTime2 _ p) = maybe (8 * 8) datetime2StorageSize p -- default is 8 bytes
 storageSize (DateTimeOffset _ p) = maybe (10 * 8) dateTimeOffsetStorageSize p
@@ -298,7 +314,7 @@ storageOptions (TinyInt s _) = s
 storageOptions (Money s _) = s
 storageOptions (Float s _) = s
 storageOptions (Real s) = s
-storageOptions (Date s) = s
+storageOptions (Date s _) = s
 storageOptions (DateTimeOffset s _) = s
 storageOptions (DateTime2 s _) = s
 storageOptions (SmallDateTime s) = s
@@ -330,6 +346,17 @@ divideBy10000 n
     s = show n
     len = length s
 
+-- I've made no effort to fix padding.
+-- Conversion fails at runtime (urgh!)
+renderSQLDate :: SQLDate -> Doc
+renderSQLDate d = quotes (text yyyy <> text "-" <>
+                          text mm <> text "-" <>
+                          text dd)
+  where
+    yyyy = show (year d)
+    mm = show (month d)
+    dd = show (day d)
+
 renderValue :: Type -> Doc
 renderValue (BigInt _ v) = (text . show) v
 renderValue (Int _ v) = (text . show) v
@@ -338,6 +365,7 @@ renderValue (SmallInt _ v) = (text . show) v
 renderValue (Bit _ b) = maybe (text "NULL") (\x -> if x then int 1 else int 0) b
 renderValue (SmallMoney _ s) = text (divideBy10000 $ fromIntegral s)
 renderValue (Money _ s) = text (divideBy10000 $ fromIntegral s)
+renderValue (Date _ d) = renderSQLDate d 
 
 renderDataType :: Type -> Doc
 renderDataType (BigInt _ _) = text "bigint"
@@ -351,7 +379,7 @@ renderDataType (TinyInt _ _) = text "tinyint"
 renderDataType (Money _ _) = text "money"
 renderDataType (Float _ ps) = text "float" <> maybe empty renderPrecisionStorage ps
 renderDataType (Real _) = text "real"
-renderDataType (Date _) = text "date"
+renderDataType (Date _ _) = text "date"
 renderDataType (DateTimeOffset _ p) = text "datetimeoffset" <> maybe empty renderFractionalSecondsPrecision p
 renderDataType (DateTime2 _ p) = text "datetime2" <> maybe empty renderFractionalSecondsPrecision p
 renderDataType (SmallDateTime _) = text "smalldatetime"
