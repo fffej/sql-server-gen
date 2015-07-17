@@ -221,7 +221,12 @@ instance Arbitrary SQLTime where
 data SQLGeography = SQLGeography String
 
 instance Arbitrary SQLGeography where
-  arbitrary = liftM SQLGeography $ listOf $ elements ['a' .. 'z']
+  arbitrary = do
+    a <- arbitrary :: Gen Float
+    b <- arbitrary :: Gen Float
+    c <- arbitrary :: Gen Float
+    d <- arbitrary :: Gen Float
+    return $ SQLGeography ("LINESTRING(" ++ show a ++ " " ++ show b ++ "," ++ show c ++ " " ++ show d ++ ")")
   
 data SQLGeometry = SQLGeometry String
 
