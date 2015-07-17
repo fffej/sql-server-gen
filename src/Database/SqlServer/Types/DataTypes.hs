@@ -178,7 +178,7 @@ timeStorageSize (FractionalSecondsPrecision n)
 data Type = BigInt (Maybe StorageOptions) Int64
           | Bit (Maybe StorageOptions)
           | Numeric (Maybe StorageOptions) (Maybe NumericStorage)
-          | SmallInt (Maybe StorageOptions) 
+          | SmallInt (Maybe StorageOptions) Int16
           | Decimal (Maybe StorageOptions) (Maybe NumericStorage)
           | SmallMoney (Maybe StorageOptions)
           | Int (Maybe StorageOptions) Int32
@@ -246,7 +246,7 @@ precisionStorageSize (PrecisionStorage x)
 storageSize :: Type -> Int
 storageSize (BigInt _ _) = 8 * 8
 storageSize (Int _ _)  = 4 * 8
-storageSize (SmallInt _) = 2 * 8
+storageSize (SmallInt _ _) = 2 * 8
 storageSize (TinyInt _ _) = 1 * 8
 storageSize (Bit _)     = 1
 storageSize (SmallMoney _) = 4 * 8
@@ -290,7 +290,7 @@ storageOptions :: Type -> Maybe StorageOptions
 storageOptions (BigInt s _) = s
 storageOptions (Bit s) = s
 storageOptions (Numeric s _) = s
-storageOptions (SmallInt s) = s
+storageOptions (SmallInt s _) = s
 storageOptions (Decimal s _) = s
 storageOptions (SmallMoney s) = s
 storageOptions (Int s _) = s
@@ -326,12 +326,13 @@ renderValue :: Type -> Doc
 renderValue (BigInt _ v) = (text . show) v
 renderValue (Int _ v) = (text . show) v
 renderValue (TinyInt _ v) = (text . show) v
+renderValue (SmallInt _ v) = (text . show) v
 
 renderDataType :: Type -> Doc
 renderDataType (BigInt _ _) = text "bigint"
 renderDataType (Bit _) = text "bit"
 renderDataType (Numeric _ ns) = text "numeric" <> maybe empty renderNumericStorage ns
-renderDataType (SmallInt _) = text "smallint"
+renderDataType (SmallInt _ _) = text "smallint"
 renderDataType (Decimal _ ns) = text "decimal" <> maybe empty renderNumericStorage ns
 renderDataType (SmallMoney _) = text "smallmoney"
 renderDataType (Int _ _) = text "int"
