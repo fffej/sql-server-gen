@@ -15,7 +15,7 @@ import Data.Word
 
 import Data.Time.Calendar
 import Data.Time.Clock
-import Data.Time.Format
+import Data.Time.ISO8601
 
 
 -- Size of arbitrary data (>= 1 && <= 8000)
@@ -226,8 +226,8 @@ data Type = BigInt (Maybe StorageOptions) Int64
           | Float (Maybe StorageOptions) (Maybe PrecisionStorage)
           | Real (Maybe StorageOptions)
           | Date (Maybe StorageOptions) SQLDate
-          | DateTimeOffset (Maybe StorageOptions) (Maybe FractionalSecondsPrecision)
-          | DateTime2 (Maybe StorageOptions) (Maybe FractionalSecondsPrecision)
+          | DateTimeOffset (Maybe StorageOptions) (Maybe FractionalSecondsPrecision) SQLDateTime
+          | DateTime2 (Maybe StorageOptions) (Maybe FractionalSecondsPrecision) SQLDateTime
           | SmallDateTime (Maybe StorageOptions)
           | DateTime (Maybe StorageOptions) SQLDateTime
           | Time (Maybe StorageOptions) (Maybe FractionalSecondsPrecision)
@@ -296,8 +296,8 @@ storageSize (Float _ ps) = maybe (8 * 8) precisionStorageSize ps -- default prec
 storageSize (Real _) = 4 * 8
 storageSize (Date _ _) = 3 * 8
 storageSize (DateTime _ _) = 8 * 8
-storageSize (DateTime2 _ p) = maybe (8 * 8) datetime2StorageSize p -- default is 8 bytes
-storageSize (DateTimeOffset _ p) = maybe (10 * 8) dateTimeOffsetStorageSize p
+storageSize (DateTime2 _ p _) = maybe (8 * 8) datetime2StorageSize p -- default is 8 bytes
+storageSize (DateTimeOffset _ p _) = maybe (10 * 8) dateTimeOffsetStorageSize p
 storageSize (SmallDateTime _) = 4 * 8
 storageSize (Time _ p) = maybe (5 * 8) timeStorageSize p
 storageSize (Char fr _ _ _) = maybe 8 fixedRangeStorage fr
@@ -338,8 +338,8 @@ storageOptions (Money s _) = s
 storageOptions (Float s _) = s
 storageOptions (Real s) = s
 storageOptions (Date s _) = s
-storageOptions (DateTimeOffset s _) = s
-storageOptions (DateTime2 s _) = s
+storageOptions (DateTimeOffset s _ _) = s
+storageOptions (DateTime2 s _ _) = s
 storageOptions (SmallDateTime s) = s
 storageOptions (DateTime s _) = s
 storageOptions (Time s _) = s
@@ -369,8 +369,6 @@ divideBy10000 n
     s = show n
     len = length s
 
--- I've made no effort to fix padding.
--- Conversion fails at runtime (urgh!)
 renderSQLDate :: SQLDate -> Doc
 renderSQLDate (SQLDate d) = quotes (text $ showGregorian d)
 
@@ -394,7 +392,9 @@ renderValue (Char _ _ _ s) = renderSQLString s
 renderValue (NChar _ _ _ s) = renderSQLString s
 renderValue (VarChar _ _ _ s) = renderSQLString s
 renderValue (NVarChar _ _ _ s) = renderSQLString s
-renderValue (DateTime _ _ s) = renderDateTime s
+renderValue (DateTime _ (SQLDateTime s)) = quotes $ text (formatISO8601Millis s)
+renderValue (DateTime2 _ _ (SQLDateTime s)) = quotes $ text (formatISO8601Millis s)
+renderValue (DateTimeOffset _ _ (SQLDateTime s)) = quotes $ text (formatISO8601Millis s)
 
 renderDataType :: Type -> Doc
 renderDataType (BigInt _ _) = text "bigint"
@@ -409,8 +409,8 @@ renderDataType (Money _ _) = text "money"
 renderDataType (Float _ ps) = text "float" <> maybe empty renderPrecisionStorage ps
 renderDataType (Real _) = text "real"
 renderDataType (Date _ _) = text "date"
-renderDataType (DateTimeOffset _ p) = text "datetimeoffset" <> maybe empty renderFractionalSecondsPrecision p
-renderDataType (DateTime2 _ p) = text "datetime2" <> maybe empty renderFractionalSecondsPrecision p
+renderDataType (DateTimeOffset _ p _) = text "datetimeoffset" <> maybe empty renderFractionalSecondsPrecision p
+renderDataType (DateTime2 _ p _) = text "datetime2" <> maybe empty renderFractionalSecondsPrecision p
 renderDataType (SmallDateTime _) = text "smalldatetime"
 renderDataType (DateTime _ _) = text "datetime"
 renderDataType (Time _ p)= text "time" <> maybe empty renderFractionalSecondsPrecision p
