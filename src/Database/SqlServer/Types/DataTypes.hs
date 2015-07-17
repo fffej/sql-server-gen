@@ -252,6 +252,11 @@ instance Arbitrary SQLVariant where
     y <- elements [\y -> SQLVariantString (show y), \y -> SQLVariantInt y]
     return $ y x
 
+data SQLXml = SQLXml String
+
+instance Arbitrary SQLXml where
+  arbitrary = return $ SQLXml "some xml"
+
 -- https://msdn.microsoft.com/en-us/library/ms187752.aspx
 data Type = BigInt (Maybe StorageOptions) Int64
           | Bit (Maybe StorageOptions) (Maybe Bool)
@@ -283,7 +288,7 @@ data Type = BigInt (Maybe StorageOptions) Int64
           | HierarchyId (Maybe StorageOptions) SQLHierarchyID
           | UniqueIdentifier (Maybe UniqueIdentifierOptions) SQLUniqueIdentifier
           | SqlVariant (Maybe StorageOptions) SQLVariant
-          | Xml (Maybe StorageOptions)
+          | Xml (Maybe StorageOptions) SQLXml
           | Geography (Maybe NullStorageOptions) SQLGeography
           | Geometry  (Maybe NullStorageOptions) SQLGeometry
 
@@ -354,7 +359,7 @@ storageSize (HierarchyId _ _) = 0 -- assumption
 storageSize (Geometry _ _) = 0
 storageSize (Geography _ _) = 0
 storageSize (SqlVariant _ _) = 0
-storageSize (Xml _) = 0
+storageSize (Xml _ _) = 0
 
 
 nullOptions :: Type -> Maybe NullStorageOptions
@@ -391,7 +396,7 @@ storageOptions (VarBinary _ s _) = s
 storageOptions (HierarchyId s _) = s
 storageOptions (UniqueIdentifier s _) = maybe Nothing uniqueIdentifierstorageOptions s
 storageOptions (SqlVariant s _) = s
-storageOptions (Xml s) = s
+storageOptions (Xml s _) = s
 storageOptions (Timestamp _) = Nothing
 storageOptions (Text _ _) = Nothing
 storageOptions (NText _ _) = Nothing
@@ -440,10 +445,11 @@ renderValue (SmallDateTime _ (SQLDateTime s)) = Just $ quotes $ text (formatISO8
 renderValue (Time _ _ (SQLTime t)) = Just $ quotes $ text (show $ timeToTimeOfDay t)
 renderValue (Float _ _ (SQLFloat f)) = Just $ float f
 renderValue (Real _ (SQLFloat f)) = Just $ float f
-renderValue (HierarchyId _ (SQLHierarchyID x y z)) = Just $ text "/" <> int x <> text "/" <> int y <> text "/" <> int z
+renderValue (HierarchyId _ (SQLHierarchyID x y z)) = Just $ quotes $ text "/" <> int x <> text "/" <> int y <> text "/" <> int z
 renderValue (UniqueIdentifier _ (SQLUniqueIdentifier s)) = Just $ (text . show) s
 renderValue (SqlVariant _ (SQLVariantInt n)) = Just $ int n
-renderValue (SqlVariant _ (SQLVariantString s)) = Just $ text s
+renderValue (SqlVariant _ (SQLVariantString s)) = Just $ quotes $ text s
+renderValue (Xml _ (SQLXml s)) = Just $ quotes $ text s
 renderValue (Text _ _) = Nothing -- Text type invalid for local variables, function returns
 renderValue (NText _ _) = Nothing -- NText type invalid for local variables, function returns
 renderValue (Image _) = Nothing -- Image type invalid for local variable, function returns
@@ -481,7 +487,7 @@ renderDataType (Timestamp _) = text "timestamp"
 renderDataType (HierarchyId _ _) = text "hierarchyid"
 renderDataType (UniqueIdentifier _ _) = text "uniqueidentifier"
 renderDataType (SqlVariant _ _) = text "sql_variant"
-renderDataType (Xml _) = text "xml"
+renderDataType (Xml _ _) = text "xml"
 renderDataType (Geography _ _) = text "geography"
 renderDataType (Geometry _ _) =  text "geometry"
 
