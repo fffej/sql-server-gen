@@ -224,8 +224,8 @@ data Type = BigInt (Maybe StorageOptions) Int64
           | NChar (Maybe NFixedRange) (Maybe Collation) (Maybe StorageOptions)
           | NVarChar (Maybe NRange) (Maybe Collation) (Maybe StorageOptions)
           | NText (Maybe Collation) (Maybe NullStorageOptions)
-          | Binary (Maybe FixedRange) (Maybe StorageOptions)
-          | VarBinary (Maybe VarBinaryStorage) (Maybe StorageOptions)
+          | Binary (Maybe FixedRange) (Maybe StorageOptions) Integer
+          | VarBinary (Maybe VarBinaryStorage) (Maybe StorageOptions) Integer
           | Image (Maybe NullStorageOptions)
           | Timestamp (Maybe NullStorageOptions)
           | HierarchyId (Maybe StorageOptions)
@@ -289,9 +289,9 @@ storageSize (SmallDateTime _) = 4 * 8
 storageSize (Time _ p) = maybe (5 * 8) timeStorageSize p
 storageSize (Char fr _ _) = maybe 8 fixedRangeStorage fr
 storageSize (NChar fr _ _) = maybe 8 nfixedRangeStorage fr
-storageSize (Binary p _) = maybe (1 * 8) fixedRangeStorage p
+storageSize (Binary p _ _) = maybe (1 * 8) fixedRangeStorage p
 storageSize (UniqueIdentifier _) = 16 * 8
-storageSize (VarBinary r _) = maybe (1 * 8) varBinarySize r
+storageSize (VarBinary r _ _) = maybe (1 * 8) varBinarySize r
 storageSize (VarChar r _ _) = rangeStorageSize r 
 storageSize (NVarChar r _ _) = maybe (1 * 8) nRangeStorageSize r
 storageSize (Text _ _) = 0 -- assumption
@@ -334,8 +334,8 @@ storageOptions (Char _ _ s)  = s
 storageOptions (VarChar _ _ s) = s
 storageOptions (NChar _ _ s) = s
 storageOptions (NVarChar _ _ s) = s
-storageOptions (Binary _ s)  = s 
-storageOptions (VarBinary _ s) = s
+storageOptions (Binary _ s _)  = s 
+storageOptions (VarBinary _ s _) = s
 storageOptions (HierarchyId s) = s
 storageOptions (UniqueIdentifier s) = maybe Nothing uniqueIdentifierstorageOptions s
 storageOptions (SqlVariant s) = s
@@ -378,6 +378,8 @@ renderValue (Money _ s) = text (divideBy10000 $ fromIntegral s)
 renderValue (Date _ d) = renderSQLDate d
 renderValue (Geography _ (SQLGeography x)) = quotes (text x)
 renderValue (Geometry _ (SQLGeometry x)) = quotes (text x)
+renderValue (Binary _ _ x) = integer x
+renderValue (VarBinary _ _ x) = integer x
 
 renderDataType :: Type -> Doc
 renderDataType (BigInt _ _) = text "bigint"
@@ -403,8 +405,8 @@ renderDataType (Text _ _) = text "text"
 renderDataType (NChar p _ _) = text "nchar" <> maybe empty renderNFixedRange p
 renderDataType (NVarChar p _ _) = text "nvarchar" <> maybe empty renderNRange p
 renderDataType (NText _ _) = text "ntext"
-renderDataType (Binary fixedRange _)  = text "binary" <> maybe empty renderFixedRange fixedRange
-renderDataType (VarBinary range _) = text "varbinary" <> maybe empty renderVarBinaryStorage range
+renderDataType (Binary fixedRange _ _)  = text "binary" <> maybe empty renderFixedRange fixedRange
+renderDataType (VarBinary range _ _) = text "varbinary" <> maybe empty renderVarBinaryStorage range
 renderDataType (Image _) = text "image"
 renderDataType (Timestamp _) = text "timestamp"
 renderDataType (HierarchyId _) = text "hierarchyid"
