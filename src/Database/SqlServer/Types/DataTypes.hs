@@ -16,7 +16,8 @@ import Data.Word
 import Data.Time.Calendar
 import Data.Time.Clock
 import Data.Time.ISO8601
-
+import Data.Time.Format
+import Data.Time.LocalTime
 
 -- Size of arbitrary data (>= 1 && <= 8000)
 newtype FixedRange = FixedRange Int
@@ -198,6 +199,13 @@ instance Arbitrary SQLDateTime where
     datetime <- choose (0,86400)
     return (SQLDateTime (UTCTime day (secondsToDiffTime datetime)))
 
+data SQLTime = SQLTime DiffTime
+
+instance Arbitrary SQLTime where
+  arbitrary = do
+    time <- choose (0,86400)
+    return (SQLTime (secondsToDiffTime time))
+
 data SQLGeography = SQLGeography String
 
 instance Arbitrary SQLGeography where
@@ -230,7 +238,7 @@ data Type = BigInt (Maybe StorageOptions) Int64
           | DateTime2 (Maybe StorageOptions) (Maybe FractionalSecondsPrecision) SQLDateTime
           | SmallDateTime (Maybe StorageOptions) SQLDateTime
           | DateTime (Maybe StorageOptions) SQLDateTime
-          | Time (Maybe StorageOptions) (Maybe FractionalSecondsPrecision)
+          | Time (Maybe StorageOptions) (Maybe FractionalSecondsPrecision) SQLTime
           | Char (Maybe FixedRange) (Maybe Collation) (Maybe StorageOptions) SQLString
           | VarChar Range (Maybe Collation) (Maybe StorageOptions) SQLString
           | Text (Maybe Collation) (Maybe NullStorageOptions)
@@ -299,7 +307,7 @@ storageSize (DateTime _ _) = 8 * 8
 storageSize (DateTime2 _ p _) = maybe (8 * 8) datetime2StorageSize p -- default is 8 bytes
 storageSize (DateTimeOffset _ p _) = maybe (10 * 8) dateTimeOffsetStorageSize p
 storageSize (SmallDateTime _ _) = 4 * 8
-storageSize (Time _ p) = maybe (5 * 8) timeStorageSize p
+storageSize (Time _ p _) = maybe (5 * 8) timeStorageSize p
 storageSize (Char fr _ _ _) = maybe 8 fixedRangeStorage fr
 storageSize (NChar fr _ _ _) = maybe 8 nfixedRangeStorage fr
 storageSize (Binary p _ _) = maybe (1 * 8) fixedRangeStorage p
@@ -342,7 +350,7 @@ storageOptions (DateTimeOffset s _ _) = s
 storageOptions (DateTime2 s _ _) = s
 storageOptions (SmallDateTime s _) = s
 storageOptions (DateTime s _) = s
-storageOptions (Time s _) = s
+storageOptions (Time s _ _) = s
 storageOptions (Char _ _ s _)  = s
 storageOptions (VarChar _ _ s _) = s
 storageOptions (NChar _ _ s _) = s
@@ -396,6 +404,7 @@ renderValue (DateTime _ (SQLDateTime s)) = quotes $ text (formatISO8601Millis s)
 renderValue (DateTime2 _ _ (SQLDateTime s)) = quotes $ text (formatISO8601Millis s)
 renderValue (DateTimeOffset _ _ (SQLDateTime s)) = quotes $ text (formatISO8601Millis s)
 renderValue (SmallDateTime _ (SQLDateTime s)) = quotes $ text (formatISO8601Millis s)
+renderValue (Time _ _ (SQLTime t)) = quotes $ text (show $ timeToTimeOfDay t)
 
 renderDataType :: Type -> Doc
 renderDataType (BigInt _ _) = text "bigint"
@@ -414,7 +423,7 @@ renderDataType (DateTimeOffset _ p _) = text "datetimeoffset" <> maybe empty ren
 renderDataType (DateTime2 _ p _) = text "datetime2" <> maybe empty renderFractionalSecondsPrecision p
 renderDataType (SmallDateTime _ _) = text "smalldatetime"
 renderDataType (DateTime _ _) = text "datetime"
-renderDataType (Time _ p)= text "time" <> maybe empty renderFractionalSecondsPrecision p
+renderDataType (Time _ p _)= text "time" <> maybe empty renderFractionalSecondsPrecision p
 renderDataType (Char fixedRange _ _ _)  = text "char" <> maybe empty renderFixedRange fixedRange
 renderDataType (VarChar range _ _ _) = text "varchar" <> renderRange range
 renderDataType (Text _ _) = text "text"
