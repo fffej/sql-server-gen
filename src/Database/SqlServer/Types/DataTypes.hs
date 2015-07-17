@@ -180,10 +180,10 @@ data Type = BigInt (Maybe StorageOptions) Int64
           | Numeric (Maybe StorageOptions) (Maybe NumericStorage)
           | SmallInt (Maybe StorageOptions) Int16
           | Decimal (Maybe StorageOptions) (Maybe NumericStorage)
-          | SmallMoney (Maybe StorageOptions)
+          | SmallMoney (Maybe StorageOptions) Int32
           | Int (Maybe StorageOptions) Int32
           | TinyInt (Maybe StorageOptions) Word8
-          | Money (Maybe StorageOptions)
+          | Money (Maybe StorageOptions) Int64
           | Float (Maybe StorageOptions) (Maybe PrecisionStorage)
           | Real (Maybe StorageOptions)
           | Date (Maybe StorageOptions)
@@ -249,8 +249,8 @@ storageSize (Int _ _)  = 4 * 8
 storageSize (SmallInt _ _) = 2 * 8
 storageSize (TinyInt _ _) = 1 * 8
 storageSize (Bit _ _)     = 1
-storageSize (SmallMoney _) = 4 * 8
-storageSize (Money _) = 8 * 8
+storageSize (SmallMoney _ _) = 4 * 8
+storageSize (Money _ _) = 8 * 8
 storageSize (Numeric _ ns) = maybe (9 * 8) numericStorageSize ns -- default precision is 18
 storageSize (Decimal _ ns) = maybe (9 * 8) numericStorageSize ns -- default precision is 18
 storageSize (Float _ ps) = maybe (8 * 8) precisionStorageSize ps -- default precision is 53
@@ -292,10 +292,10 @@ storageOptions (Bit s _) = s
 storageOptions (Numeric s _) = s
 storageOptions (SmallInt s _) = s
 storageOptions (Decimal s _) = s
-storageOptions (SmallMoney s) = s
+storageOptions (SmallMoney s _) = s
 storageOptions (Int s _) = s
 storageOptions (TinyInt s _) = s
-storageOptions (Money s) = s
+storageOptions (Money s _) = s
 storageOptions (Float s _) = s
 storageOptions (Real s) = s
 storageOptions (Date s) = s
@@ -322,12 +322,22 @@ storageOptions (Geography _) = Nothing
 storageOptions (Geometry _) = Nothing
 
 
+divideBy10000 :: Integer -> String
+divideBy10000 n
+  | length s < 5 = s
+  | otherwise    = take (len - 4) s ++ "." ++ drop (len - 4) s
+  where
+    s = show n
+    len = length s
+
 renderValue :: Type -> Doc
 renderValue (BigInt _ v) = (text . show) v
 renderValue (Int _ v) = (text . show) v
 renderValue (TinyInt _ v) = (text . show) v
 renderValue (SmallInt _ v) = (text . show) v
 renderValue (Bit _ b) = maybe (text "NULL") (\x -> if x then int 1 else int 0) b
+renderValue (SmallMoney _ s) = text (divideBy10000 $ fromIntegral s)
+renderValue (Money _ s) = text (divideBy10000 $ fromIntegral s)
 
 renderDataType :: Type -> Doc
 renderDataType (BigInt _ _) = text "bigint"
@@ -335,10 +345,10 @@ renderDataType (Bit _ _) = text "bit"
 renderDataType (Numeric _ ns) = text "numeric" <> maybe empty renderNumericStorage ns
 renderDataType (SmallInt _ _) = text "smallint"
 renderDataType (Decimal _ ns) = text "decimal" <> maybe empty renderNumericStorage ns
-renderDataType (SmallMoney _) = text "smallmoney"
+renderDataType (SmallMoney _ _) = text "smallmoney"
 renderDataType (Int _ _) = text "int"
 renderDataType (TinyInt _ _) = text "tinyint"
-renderDataType (Money _) = text "money"
+renderDataType (Money _ _) = text "money"
 renderDataType (Float _ ps) = text "float" <> maybe empty renderPrecisionStorage ps
 renderDataType (Real _) = text "real"
 renderDataType (Date _) = text "date"
