@@ -4,6 +4,7 @@
 module Database.SqlServer.Types.DataTypes where
 
 import Database.SqlServer.Types.Collations (Collation)
+import Database.SqlServer.Types.Identifiers (ArbUUID(..))
 
 import Text.PrettyPrint
 
@@ -237,6 +238,11 @@ data SQLHierarchyID = SQLHierarchyID Int Int Int
 instance Arbitrary SQLHierarchyID where
   arbitrary = liftM3 SQLHierarchyID arbitrary arbitrary arbitrary
 
+data SQLUniqueIdentifier = SQLUniqueIdentifier ArbUUID
+
+instance Arbitrary SQLUniqueIdentifier where
+  arbitrary = liftM SQLUniqueIdentifier arbitrary
+
 -- https://msdn.microsoft.com/en-us/library/ms187752.aspx
 data Type = BigInt (Maybe StorageOptions) Int64
           | Bit (Maybe StorageOptions) (Maybe Bool)
@@ -266,7 +272,7 @@ data Type = BigInt (Maybe StorageOptions) Int64
           | Image (Maybe NullStorageOptions)
           | Timestamp (Maybe NullStorageOptions)
           | HierarchyId (Maybe StorageOptions) SQLHierarchyID
-          | UniqueIdentifier (Maybe UniqueIdentifierOptions)
+          | UniqueIdentifier (Maybe UniqueIdentifierOptions) SQLUniqueIdentifier
           | SqlVariant (Maybe StorageOptions)
           | Xml (Maybe StorageOptions)
           | Geography (Maybe NullStorageOptions) SQLGeography
@@ -327,7 +333,7 @@ storageSize (Time _ p _) = maybe (5 * 8) timeStorageSize p
 storageSize (Char fr _ _ _) = maybe 8 fixedRangeStorage fr
 storageSize (NChar fr _ _ _) = maybe 8 nfixedRangeStorage fr
 storageSize (Binary p _ _) = maybe (1 * 8) fixedRangeStorage p
-storageSize (UniqueIdentifier _) = 16 * 8
+storageSize (UniqueIdentifier _ _) = 16 * 8
 storageSize (VarBinary r _ _) = maybe (1 * 8) varBinarySize r
 storageSize (VarChar r _ _ _) = rangeStorageSize r 
 storageSize (NVarChar r _ _ _) = maybe (1 * 8) nRangeStorageSize r
@@ -346,8 +352,8 @@ nullOptions :: Type -> Maybe NullStorageOptions
 nullOptions t = maybe Nothing nullStorageFromStorageOptions (storageOptions t)
 
 rowGuidOptions :: Type -> Bool
-rowGuidOptions (UniqueIdentifier a)  = maybe False isRowGuidCol a
-rowGuidOptions _                     = False
+rowGuidOptions (UniqueIdentifier a _) = maybe False isRowGuidCol a
+rowGuidOptions _                      = False
 
 storageOptions :: Type -> Maybe StorageOptions
 storageOptions (BigInt s _) = s
@@ -374,7 +380,7 @@ storageOptions (NVarChar _ _ s _) = s
 storageOptions (Binary _ s _)  = s 
 storageOptions (VarBinary _ s _) = s
 storageOptions (HierarchyId s _) = s
-storageOptions (UniqueIdentifier s) = maybe Nothing uniqueIdentifierstorageOptions s
+storageOptions (UniqueIdentifier s _) = maybe Nothing uniqueIdentifierstorageOptions s
 storageOptions (SqlVariant s) = s
 storageOptions (Xml s) = s
 storageOptions (Timestamp _) = Nothing
@@ -426,6 +432,7 @@ renderValue (Time _ _ (SQLTime t)) = Just $ quotes $ text (show $ timeToTimeOfDa
 renderValue (Float _ _ (SQLFloat f)) = Just $ float f
 renderValue (Real _ (SQLFloat f)) = Just $ float f
 renderValue (HierarchyId _ (SQLHierarchyID x y z)) = Just $ text "/" <> int x <> text "/" <> int y <> text "/" <> int z
+renderValue (UniqueIdentifier _ (SQLUniqueIdentifier s)) = Just $ (text . show) s
 renderValue (Text _ _) = Nothing -- Text type invalid for local variables, function returns
 renderValue (NText _ _) = Nothing -- NText type invalid for local variables, function returns
 renderValue (Image _) = Nothing -- Image type invalid for local variable, function returns
@@ -460,7 +467,7 @@ renderDataType (VarBinary range _ _) = text "varbinary" <> maybe empty renderVar
 renderDataType (Image _) = text "image"
 renderDataType (Timestamp _) = text "timestamp"
 renderDataType (HierarchyId _ _) = text "hierarchyid"
-renderDataType (UniqueIdentifier _) = text "uniqueidentifier"
+renderDataType (UniqueIdentifier _ _) = text "uniqueidentifier"
 renderDataType (SqlVariant _) = text "sql_variant"
 renderDataType (Xml _) = text "xml"
 renderDataType (Geography _ _) = text "geography"

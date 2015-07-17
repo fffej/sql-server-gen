@@ -8,6 +8,9 @@ import Data.UUID.Util
 
 newtype ArbUUID = ArbUUID { unpck :: UUID } deriving (Eq,Ord)
 
+instance Show ArbUUID where
+  show (ArbUUID x) = show x
+
 newtype RegularIdentifier = RegularIdentifier ArbUUID deriving (Eq,Ord)
 
 unwrap :: RegularIdentifier -> String
