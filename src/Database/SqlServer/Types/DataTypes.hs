@@ -176,7 +176,7 @@ timeStorageSize (FractionalSecondsPrecision n)
 
 -- https://msdn.microsoft.com/en-us/library/ms187752.aspx
 data Type = BigInt (Maybe StorageOptions) Int64
-          | Bit (Maybe StorageOptions)
+          | Bit (Maybe StorageOptions) (Maybe Bool)
           | Numeric (Maybe StorageOptions) (Maybe NumericStorage)
           | SmallInt (Maybe StorageOptions) Int16
           | Decimal (Maybe StorageOptions) (Maybe NumericStorage)
@@ -248,7 +248,7 @@ storageSize (BigInt _ _) = 8 * 8
 storageSize (Int _ _)  = 4 * 8
 storageSize (SmallInt _ _) = 2 * 8
 storageSize (TinyInt _ _) = 1 * 8
-storageSize (Bit _)     = 1
+storageSize (Bit _ _)     = 1
 storageSize (SmallMoney _) = 4 * 8
 storageSize (Money _) = 8 * 8
 storageSize (Numeric _ ns) = maybe (9 * 8) numericStorageSize ns -- default precision is 18
@@ -288,7 +288,7 @@ rowGuidOptions _                     = False
 
 storageOptions :: Type -> Maybe StorageOptions
 storageOptions (BigInt s _) = s
-storageOptions (Bit s) = s
+storageOptions (Bit s _) = s
 storageOptions (Numeric s _) = s
 storageOptions (SmallInt s _) = s
 storageOptions (Decimal s _) = s
@@ -327,10 +327,11 @@ renderValue (BigInt _ v) = (text . show) v
 renderValue (Int _ v) = (text . show) v
 renderValue (TinyInt _ v) = (text . show) v
 renderValue (SmallInt _ v) = (text . show) v
+renderValue (Bit _ b) = maybe (text "NULL") (\x -> if x then int 1 else int 0) b
 
 renderDataType :: Type -> Doc
 renderDataType (BigInt _ _) = text "bigint"
-renderDataType (Bit _) = text "bit"
+renderDataType (Bit _ _) = text "bit"
 renderDataType (Numeric _ ns) = text "numeric" <> maybe empty renderNumericStorage ns
 renderDataType (SmallInt _ _) = text "smallint"
 renderDataType (Decimal _ ns) = text "decimal" <> maybe empty renderNumericStorage ns
