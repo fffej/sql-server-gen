@@ -16,7 +16,6 @@ import Data.Word
 import Data.Time.Calendar
 import Data.Time.Clock
 import Data.Time.ISO8601
-import Data.Time.Format
 import Data.Time.LocalTime
 
 -- Size of arbitrary data (>= 1 && <= 8000)
@@ -221,12 +220,19 @@ data SQLString = SQLString String
 instance Arbitrary SQLString where
   arbitrary = liftM SQLString $ listOf $ elements ['a' .. 'z']
 
+-- Range 0 to 100000 transfers to 0 . 100 in 0.0001
+data SQLNumeric = SQLNumeric Integer
+
+instance Arbitrary SQLNumeric where
+  arbitrary = liftM SQLNumeric $ choose (0,1000000)
+    
+
 -- https://msdn.microsoft.com/en-us/library/ms187752.aspx
 data Type = BigInt (Maybe StorageOptions) Int64
           | Bit (Maybe StorageOptions) (Maybe Bool)
-          | Numeric (Maybe StorageOptions) (Maybe NumericStorage)
+          | Numeric (Maybe StorageOptions) (Maybe NumericStorage) SQLNumeric
           | SmallInt (Maybe StorageOptions) Int16
-          | Decimal (Maybe StorageOptions) (Maybe NumericStorage)
+          | Decimal (Maybe StorageOptions) (Maybe NumericStorage) SQLNumeric
           | SmallMoney (Maybe StorageOptions) Int32
           | Int (Maybe StorageOptions) Int32
           | TinyInt (Maybe StorageOptions) Word8
@@ -298,8 +304,8 @@ storageSize (TinyInt _ _) = 1 * 8
 storageSize (Bit _ _)     = 1
 storageSize (SmallMoney _ _) = 4 * 8
 storageSize (Money _ _) = 8 * 8
-storageSize (Numeric _ ns) = maybe (9 * 8) numericStorageSize ns -- default precision is 18
-storageSize (Decimal _ ns) = maybe (9 * 8) numericStorageSize ns -- default precision is 18
+storageSize (Numeric _ ns _) = maybe (9 * 8) numericStorageSize ns -- default precision is 18
+storageSize (Decimal _ ns _) = maybe (9 * 8) numericStorageSize ns -- default precision is 18
 storageSize (Float _ ps) = maybe (8 * 8) precisionStorageSize ps -- default precision is 53
 storageSize (Real _) = 4 * 8
 storageSize (Date _ _) = 3 * 8
@@ -336,9 +342,9 @@ rowGuidOptions _                     = False
 storageOptions :: Type -> Maybe StorageOptions
 storageOptions (BigInt s _) = s
 storageOptions (Bit s _) = s
-storageOptions (Numeric s _) = s
+storageOptions (Numeric s _ _) = s
 storageOptions (SmallInt s _) = s
-storageOptions (Decimal s _) = s
+storageOptions (Decimal s _ _) = s
 storageOptions (SmallMoney s _) = s
 storageOptions (Int s _) = s
 storageOptions (TinyInt s _) = s
@@ -384,6 +390,8 @@ renderSQLString :: SQLString -> Doc
 renderSQLString (SQLString s) = quotes $ text s
 
 renderValue :: Type -> Doc
+renderValue (Numeric _ _ (SQLNumeric s)) = text (divideBy10000 $ fromIntegral s)
+renderValue (Decimal _ _ (SQLNumeric s)) = text (divideBy10000 $ fromIntegral s)
 renderValue (BigInt _ v) = (text . show) v
 renderValue (Int _ v) = (text . show) v
 renderValue (TinyInt _ v) = (text . show) v
@@ -409,9 +417,9 @@ renderValue (Time _ _ (SQLTime t)) = quotes $ text (show $ timeToTimeOfDay t)
 renderDataType :: Type -> Doc
 renderDataType (BigInt _ _) = text "bigint"
 renderDataType (Bit _ _) = text "bit"
-renderDataType (Numeric _ ns) = text "numeric" <> maybe empty renderNumericStorage ns
+renderDataType (Numeric _ ns _) = text "numeric" <> maybe empty renderNumericStorage ns
 renderDataType (SmallInt _ _) = text "smallint"
-renderDataType (Decimal _ ns) = text "decimal" <> maybe empty renderNumericStorage ns
+renderDataType (Decimal _ ns _) = text "decimal" <> maybe empty renderNumericStorage ns
 renderDataType (SmallMoney _ _) = text "smallmoney"
 renderDataType (Int _ _) = text "int"
 renderDataType (TinyInt _ _) = text "tinyint"
