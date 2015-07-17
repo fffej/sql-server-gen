@@ -225,7 +225,11 @@ data SQLNumeric = SQLNumeric Integer
 
 instance Arbitrary SQLNumeric where
   arbitrary = liftM SQLNumeric $ choose (0,1000000)
-    
+
+data SQLFloat = SQLFloat Float
+
+instance Arbitrary SQLFloat where
+  arbitrary = liftM SQLFloat arbitrary
 
 -- https://msdn.microsoft.com/en-us/library/ms187752.aspx
 data Type = BigInt (Maybe StorageOptions) Int64
@@ -237,8 +241,8 @@ data Type = BigInt (Maybe StorageOptions) Int64
           | Int (Maybe StorageOptions) Int32
           | TinyInt (Maybe StorageOptions) Word8
           | Money (Maybe StorageOptions) Int64
-          | Float (Maybe StorageOptions) (Maybe PrecisionStorage)
-          | Real (Maybe StorageOptions)
+          | Float (Maybe StorageOptions) (Maybe PrecisionStorage) SQLFloat
+          | Real (Maybe StorageOptions) SQLFloat
           | Date (Maybe StorageOptions) SQLDate
           | DateTimeOffset (Maybe StorageOptions) (Maybe FractionalSecondsPrecision) SQLDateTime
           | DateTime2 (Maybe StorageOptions) (Maybe FractionalSecondsPrecision) SQLDateTime
@@ -306,8 +310,8 @@ storageSize (SmallMoney _ _) = 4 * 8
 storageSize (Money _ _) = 8 * 8
 storageSize (Numeric _ ns _) = maybe (9 * 8) numericStorageSize ns -- default precision is 18
 storageSize (Decimal _ ns _) = maybe (9 * 8) numericStorageSize ns -- default precision is 18
-storageSize (Float _ ps) = maybe (8 * 8) precisionStorageSize ps -- default precision is 53
-storageSize (Real _) = 4 * 8
+storageSize (Float _ ps _) = maybe (8 * 8) precisionStorageSize ps -- default precision is 53
+storageSize (Real _ _) = 4 * 8
 storageSize (Date _ _) = 3 * 8
 storageSize (DateTime _ _) = 8 * 8
 storageSize (DateTime2 _ p _) = maybe (8 * 8) datetime2StorageSize p -- default is 8 bytes
@@ -349,8 +353,8 @@ storageOptions (SmallMoney s _) = s
 storageOptions (Int s _) = s
 storageOptions (TinyInt s _) = s
 storageOptions (Money s _) = s
-storageOptions (Float s _) = s
-storageOptions (Real s) = s
+storageOptions (Float s _ _) = s
+storageOptions (Real s _) = s
 storageOptions (Date s _) = s
 storageOptions (DateTimeOffset s _ _) = s
 storageOptions (DateTime2 s _ _) = s
@@ -389,30 +393,35 @@ renderSQLDate (SQLDate d) = quotes (text $ showGregorian d)
 renderSQLString :: SQLString -> Doc
 renderSQLString (SQLString s) = quotes $ text s
 
-renderValue :: Type -> Doc
-renderValue (Numeric _ _ (SQLNumeric s)) = text (divideBy10000 $ fromIntegral s)
-renderValue (Decimal _ _ (SQLNumeric s)) = text (divideBy10000 $ fromIntegral s)
-renderValue (BigInt _ v) = (text . show) v
-renderValue (Int _ v) = (text . show) v
-renderValue (TinyInt _ v) = (text . show) v
-renderValue (SmallInt _ v) = (text . show) v
-renderValue (Bit _ b) = maybe (text "NULL") (\x -> if x then int 1 else int 0) b
-renderValue (SmallMoney _ s) = text (divideBy10000 $ fromIntegral s)
-renderValue (Money _ s) = text (divideBy10000 $ fromIntegral s)
-renderValue (Date _ d) = renderSQLDate d
-renderValue (Geography _ (SQLGeography x)) = quotes (text x)
-renderValue (Geometry _ (SQLGeometry x)) = quotes (text x)
-renderValue (Binary _ _ x) = integer x
-renderValue (VarBinary _ _ x) = integer x
-renderValue (Char _ _ _ s) = renderSQLString s
-renderValue (NChar _ _ _ s) = renderSQLString s
-renderValue (VarChar _ _ _ s) = renderSQLString s
-renderValue (NVarChar _ _ _ s) = renderSQLString s
-renderValue (DateTime _ (SQLDateTime s)) = quotes $ text (formatISO8601Millis s)
-renderValue (DateTime2 _ _ (SQLDateTime s)) = quotes $ text (formatISO8601Millis s)
-renderValue (DateTimeOffset _ _ (SQLDateTime s)) = quotes $ text (formatISO8601Millis s)
-renderValue (SmallDateTime _ (SQLDateTime s)) = quotes $ text (formatISO8601Millis s)
-renderValue (Time _ _ (SQLTime t)) = quotes $ text (show $ timeToTimeOfDay t)
+renderValue :: Type -> Maybe Doc
+renderValue (Numeric _ _ (SQLNumeric s)) = Just $ text (divideBy10000 $ fromIntegral s)
+renderValue (Decimal _ _ (SQLNumeric s)) = Just $ text (divideBy10000 $ fromIntegral s)
+renderValue (BigInt _ v) = Just $ (text . show) v
+renderValue (Int _ v) = Just $ (text . show) v
+renderValue (TinyInt _ v) = Just $ (text . show) v
+renderValue (SmallInt _ v) = Just $ (text . show) v
+renderValue (Bit _ b) = Just $ maybe (text "NULL") (\x -> if x then int 1 else int 0) b
+renderValue (SmallMoney _ s) = Just $ text (divideBy10000 $ fromIntegral s)
+renderValue (Money _ s) = Just $ text (divideBy10000 $ fromIntegral s)
+renderValue (Date _ d) = Just $ renderSQLDate d
+renderValue (Geography _ (SQLGeography x)) = Just $ quotes (text x)
+renderValue (Geometry _ (SQLGeometry x)) = Just $ quotes (text x)
+renderValue (Binary _ _ x) = Just $ integer x
+renderValue (VarBinary _ _ x) = Just $ integer x
+renderValue (Char _ _ _ s) = Just $ renderSQLString s
+renderValue (NChar _ _ _ s) = Just $ renderSQLString s
+renderValue (VarChar _ _ _ s) = Just $ renderSQLString s
+renderValue (NVarChar _ _ _ s) = Just $ renderSQLString s
+renderValue (DateTime _ (SQLDateTime s)) = Just $ quotes $ text (formatISO8601Millis s)
+renderValue (DateTime2 _ _ (SQLDateTime s)) = Just $ quotes $ text (formatISO8601Millis s)
+renderValue (DateTimeOffset _ _ (SQLDateTime s)) = Just $ quotes $ text (formatISO8601Millis s)
+renderValue (SmallDateTime _ (SQLDateTime s)) = Just $ quotes $ text (formatISO8601Millis s)
+renderValue (Time _ _ (SQLTime t)) = Just $ quotes $ text (show $ timeToTimeOfDay t)
+renderValue (Float _ _ (SQLFloat f)) = Just $ float f
+renderValue (Real _ (SQLFloat f)) = Just $ float f
+renderValue (Text _ _) = Nothing -- Text type invalid for local variables
+renderValue (NText _ _) = Nothing -- NText type invalid for local variables
+renderValue (Image _) = Nothing -- Image type invalid for local variable
 
 renderDataType :: Type -> Doc
 renderDataType (BigInt _ _) = text "bigint"
@@ -424,8 +433,8 @@ renderDataType (SmallMoney _ _) = text "smallmoney"
 renderDataType (Int _ _) = text "int"
 renderDataType (TinyInt _ _) = text "tinyint"
 renderDataType (Money _ _) = text "money"
-renderDataType (Float _ ps) = text "float" <> maybe empty renderPrecisionStorage ps
-renderDataType (Real _) = text "real"
+renderDataType (Float _ ps _) = text "float" <> maybe empty renderPrecisionStorage ps
+renderDataType (Real _ _) = text "real"
 renderDataType (Date _ _) = text "date"
 renderDataType (DateTimeOffset _ p _) = text "datetimeoffset" <> maybe empty renderFractionalSecondsPrecision p
 renderDataType (DateTime2 _ p _) = text "datetime2" <> maybe empty renderFractionalSecondsPrecision p
