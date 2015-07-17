@@ -11,6 +11,7 @@ import Test.QuickCheck hiding (scale)
 import Control.Monad 
 import Data.DeriveTH
 import Data.Int
+import Data.Word
 
 
 -- Size of arbitrary data (>= 1 && <= 8000)
@@ -181,7 +182,7 @@ data Type = BigInt (Maybe StorageOptions) Int64
           | Decimal (Maybe StorageOptions) (Maybe NumericStorage)
           | SmallMoney (Maybe StorageOptions)
           | Int (Maybe StorageOptions) Int32
-          | TinyInt (Maybe StorageOptions)
+          | TinyInt (Maybe StorageOptions) Word8
           | Money (Maybe StorageOptions)
           | Float (Maybe StorageOptions) (Maybe PrecisionStorage)
           | Real (Maybe StorageOptions)
@@ -246,7 +247,7 @@ storageSize :: Type -> Int
 storageSize (BigInt _ _) = 8 * 8
 storageSize (Int _ _)  = 4 * 8
 storageSize (SmallInt _) = 2 * 8
-storageSize (TinyInt _) = 1 * 8
+storageSize (TinyInt _ _) = 1 * 8
 storageSize (Bit _)     = 1
 storageSize (SmallMoney _) = 4 * 8
 storageSize (Money _) = 8 * 8
@@ -293,7 +294,7 @@ storageOptions (SmallInt s) = s
 storageOptions (Decimal s _) = s
 storageOptions (SmallMoney s) = s
 storageOptions (Int s _) = s
-storageOptions (TinyInt s) = s
+storageOptions (TinyInt s _) = s
 storageOptions (Money s) = s
 storageOptions (Float s _) = s
 storageOptions (Real s) = s
@@ -324,6 +325,7 @@ storageOptions (Geometry _) = Nothing
 renderValue :: Type -> Doc
 renderValue (BigInt _ v) = (text . show) v
 renderValue (Int _ v) = (text . show) v
+renderValue (TinyInt _ v) = (text . show) v
 
 renderDataType :: Type -> Doc
 renderDataType (BigInt _ _) = text "bigint"
@@ -333,7 +335,7 @@ renderDataType (SmallInt _) = text "smallint"
 renderDataType (Decimal _ ns) = text "decimal" <> maybe empty renderNumericStorage ns
 renderDataType (SmallMoney _) = text "smallmoney"
 renderDataType (Int _ _) = text "int"
-renderDataType (TinyInt _) = text "tinyint"
+renderDataType (TinyInt _ _) = text "tinyint"
 renderDataType (Money _) = text "money"
 renderDataType (Float _ ps) = text "float" <> maybe empty renderPrecisionStorage ps
 renderDataType (Real _) = text "real"
