@@ -15,6 +15,7 @@ import Data.Word
 
 import Data.Time.Calendar
 import Data.Time.Clock
+import Data.Time.Format
 
 
 -- Size of arbitrary data (>= 1 && <= 8000)
@@ -197,10 +198,6 @@ instance Arbitrary SQLDateTime where
     datetime <- choose (0,86400)
     return (SQLDateTime (UTCTime day (secondsToDiffTime datetime)))
 
-data SQLDateTime2 = SQLDateTime2 String
-data SQLDateTimeOffset = SQLDateTimeOffset String
-data SQLSmallDateTime = SQLSmallDateTime String
-data SQLTime = SQLTime String
 data SQLGeography = SQLGeography String
 
 instance Arbitrary SQLGeography where
@@ -397,6 +394,7 @@ renderValue (Char _ _ _ s) = renderSQLString s
 renderValue (NChar _ _ _ s) = renderSQLString s
 renderValue (VarChar _ _ _ s) = renderSQLString s
 renderValue (NVarChar _ _ _ s) = renderSQLString s
+renderValue (DateTime _ _ s) = renderDateTime s
 
 renderDataType :: Type -> Doc
 renderDataType (BigInt _ _) = text "bigint"
