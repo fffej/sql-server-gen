@@ -13,6 +13,8 @@ import Data.DeriveTH
 import Data.Int
 import Data.Word
 
+import Data.Time.Calendar
+
 
 -- Size of arbitrary data (>= 1 && <= 8000)
 newtype FixedRange = FixedRange Int
@@ -174,13 +176,13 @@ timeStorageSize (FractionalSecondsPrecision n)
   | n < 5     = 4 * 8
   | otherwise = 5 * 8
 
-data SQLDate = SQLData
-               {
-                 year :: Int
-               , month :: Int
-               , day :: Int                 
-               }
+data SQLDate = SQLDate Day
 
+data SQLDateTime = SQLDateTime String
+data SQLDateTime2 = SQLDateTime2 String
+data SQLDateTimeOffset = SQLDateTimeOffset String
+data SQLSmallDateTime = SQLSmallDateTime String
+data SQLTime = SQLTime String
 data SQLGeography = SQLGeography String
 
 instance Arbitrary SQLGeography where
@@ -196,15 +198,12 @@ data SQLString = SQLString String
 instance Arbitrary SQLString where
   arbitrary = liftM SQLString $ listOf $ elements ['a' .. 'z']
 
-  
--- Note that SQL Server doesn't check the validity
--- of the dates, so I choose not to either!
 instance Arbitrary SQLDate where
   arbitrary = do
     y <- choose (0,9999)
     m <- choose (1,12)
     d <- choose (1,31)
-    return $ SQLData y m d
+    return $ SQLDate (fromGregorian y m d) -- clipping handled by time package
 
 -- https://msdn.microsoft.com/en-us/library/ms187752.aspx
 data Type = BigInt (Maybe StorageOptions) Int64
@@ -365,13 +364,7 @@ divideBy10000 n
 -- I've made no effort to fix padding.
 -- Conversion fails at runtime (urgh!)
 renderSQLDate :: SQLDate -> Doc
-renderSQLDate d = quotes (text yyyy <> text "-" <>
-                          text mm <> text "-" <>
-                          text dd)
-  where
-    yyyy = show (year d)
-    mm = show (month d)
-    dd = show (day d)
+renderSQLDate (SQLDate d) = quotes (text $ showGregorian d)
 
 renderSQLString :: SQLString -> Doc
 renderSQLString (SQLString s) = quotes $ text s
