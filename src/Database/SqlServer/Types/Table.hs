@@ -26,8 +26,6 @@ import Text.PrettyPrint
 
 import Data.DeriveTH
 
-
-
 data ColumnDefinition = ColumnDefinition
                         {
                           columnName :: RegularIdentifier
@@ -53,8 +51,8 @@ columnConstraintsSatisfied xs = length (filter isTimeStamp xs) <= 1 &&
       (Timestamp _) -> True
       _             -> False
     oneGuidCol c = case dataType c of
-      (UniqueIdentifier s) -> maybe False isRowGuidCol s
-      _                    -> False
+      (UniqueIdentifier s _) -> maybe False isRowGuidCol s -- TODO eliminate this
+      _                      -> False
 
 instance Arbitrary TableDefinition where
   arbitrary = do

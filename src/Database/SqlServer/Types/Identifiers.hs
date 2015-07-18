@@ -2,20 +2,26 @@ module Database.SqlServer.Types.Identifiers where
 
 import Test.QuickCheck
 import Text.PrettyPrint
+import Control.Monad
 import Data.UUID
 import Data.UUID.Util
 
-newtype RegularIdentifier = RegularIdentifier UUID deriving (Eq,Ord)
+newtype ArbUUID = ArbUUID { unpck :: UUID } deriving (Eq,Ord)
+
+instance Show ArbUUID where
+  show (ArbUUID x) = show x
+
+newtype RegularIdentifier = RegularIdentifier ArbUUID deriving (Eq,Ord)
 
 unwrap :: RegularIdentifier -> String
 unwrap (RegularIdentifier x) = "UUID_" ++ xstr
   where
-    xstr = filter (/= '-') (toString x)
+    xstr = filter (/= '-') (toString $ unpck x)
 
 renderRegularIdentifier :: RegularIdentifier -> Doc
 renderRegularIdentifier = text . unwrap 
 
-instance Arbitrary RegularIdentifier where
+instance Arbitrary ArbUUID where
   arbitrary = do
     tl <- choose(minBound,maxBound)
     tm <- choose(minBound,maxBound)
@@ -41,5 +47,7 @@ instance Arbitrary RegularIdentifier where
         , node_4 = n4
         , node_5 = n5
         } 
+    return $ ArbUUID (pack unpackedUUID)
 
-    return (RegularIdentifier (pack unpackedUUID))
+instance Arbitrary RegularIdentifier where
+  arbitrary = liftM RegularIdentifier arbitrary
