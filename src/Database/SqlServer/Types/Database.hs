@@ -39,6 +39,7 @@ data DatabaseDefinition = DatabaseDefinition
                           , tableDefinitions :: [TableDefinition]
                           , sequenceDefinitions :: [SequenceDefinition]
                           , procedureDefinitions :: [ProcedureDefinition]
+                          , functionDefinitions :: [FunctionDefinition]
                           , queueDefinitions :: [QueueDefinition]
                           , certificateDefinitions :: [CertificateDefinition]
                           , userDefinitions :: [UserDefinition]
@@ -61,6 +62,7 @@ renderDatabaseDefinition  dd = text "USE master" $+$
                                renderNamedEntities (tableDefinitions dd) $+$
                                renderNamedEntities (sequenceDefinitions dd) $+$
                                renderNamedEntities (procedureDefinitions dd) $+$
+                               renderNamedEntities (functionDefinitions dd) $+$
                                renderNamedEntities (queueDefinitions dd) $+$
                                renderNamedEntities (certificateDefinitions dd) $+$
                                renderNamedEntities (userDefinitions dd) $+$
