@@ -246,11 +246,10 @@ data SQLString = SQLString String
 instance Arbitrary SQLString where
   arbitrary = liftM SQLString $ listOf $ elements ['a' .. 'z']
 
--- Range 0 to 100000 transfers to 0 . 100 in 0.0001
 data SQLNumeric = SQLNumeric Integer
 
 instance Arbitrary SQLNumeric where
-  arbitrary = liftM SQLNumeric $ choose (0,1000000)
+  arbitrary = liftM SQLNumeric arbitrary
 
 data SQLFloat = SQLFloat Float
 
@@ -444,9 +443,20 @@ renderSQLDate (SQLDate d) = quotes (text $ showGregorian d)
 renderSQLString :: SQLString -> Doc
 renderSQLString (SQLString s) = quotes $ text s
 
+-- https://msdn.microsoft.com/en-us/library/ms190476.aspx
+renderNumeric :: Maybe NumericStorage -> SQLNumeric -> Doc
+renderNumeric Nothing s                = renderNumeric (Just (NumericStorage 18 (Just 18))) s
+renderNumeric (Just ns) (SQLNumeric n) = text num
+  where
+    v = take p (show (abs n))
+    len = length v
+    num = take (len - s) v ++ "." ++ drop (len - s) v
+    p = precision ns
+    s = maybe 18 id $ scale ns
+
 renderValue :: Type -> Maybe Doc
-renderValue (Numeric _ _ (SQLNumeric s)) = Just $ text (divideBy10000 $ fromIntegral s)
-renderValue (Decimal _ _ (SQLNumeric s)) = Just $ text (divideBy10000 $ fromIntegral s)
+renderValue (Numeric _ n s) = Just $ renderNumeric n s 
+renderValue (Decimal _ n s) = Just $ renderNumeric n s
 renderValue (BigInt _ v) = Just $ (text . show) v
 renderValue (Int _ v) = Just $ (text . show) v
 renderValue (TinyInt _ v) = Just $ (text . show) v
