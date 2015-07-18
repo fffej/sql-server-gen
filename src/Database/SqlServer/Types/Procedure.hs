@@ -12,13 +12,6 @@ import Test.QuickCheck
 import Data.DeriveTH
 import Text.PrettyPrint
 
-newtype ParameterIdentifier = ParameterIdentifier { unwrapP :: RegularIdentifier }
-
-derive makeArbitrary ''ParameterIdentifier
-
-renderParameterIdentifier :: ParameterIdentifier -> Doc
-renderParameterIdentifier (ParameterIdentifier p) = text "@" <> renderRegularIdentifier p
-
 data Parameter = Parameter
   {
     parameterName :: ParameterIdentifier

@@ -1,5 +1,10 @@
+{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE GADTs #-}
+
 module Database.SqlServer.Types.Identifiers where
 
+import Data.DeriveTH
 import Test.QuickCheck
 import Text.PrettyPrint
 import Control.Monad
@@ -20,6 +25,13 @@ unwrap (RegularIdentifier x) = "UUID_" ++ xstr
 
 renderRegularIdentifier :: RegularIdentifier -> Doc
 renderRegularIdentifier = text . unwrap 
+
+newtype ParameterIdentifier = ParameterIdentifier { unwrapP :: RegularIdentifier }
+
+derive makeArbitrary ''ParameterIdentifier
+
+renderParameterIdentifier :: ParameterIdentifier -> Doc
+renderParameterIdentifier (ParameterIdentifier p) = text "@" <> renderRegularIdentifier p
 
 instance Arbitrary ArbUUID where
   arbitrary = do

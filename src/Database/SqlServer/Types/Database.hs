@@ -12,6 +12,7 @@ import Database.SqlServer.Types.Login (LoginDefinition)
 import Database.SqlServer.Types.User (UserDefinition)
 import Database.SqlServer.Types.FullTextCatalog (FullTextCatalogDefinition)
 import Database.SqlServer.Types.FullTextStopList (FullTextStopListDefinition)
+import Database.SqlServer.Types.Function (FunctionDefinition)
 import Database.SqlServer.Types.Entity
 import Database.SqlServer.Types.DataTypes
 
