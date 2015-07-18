@@ -316,6 +316,11 @@ data Type = BigInt (Maybe StorageOptions) Int64
           | Geography (Maybe NullStorageOptions) SQLGeography
           | Geometry  (Maybe NullStorageOptions) SQLGeometry
 
+
+isTimestamp :: Type -> Bool
+isTimestamp (Timestamp _) = True
+isTimestamp _             = False
+
 derive makeArbitrary ''StorageOptions
 derive makeArbitrary ''Type
 derive makeArbitrary ''Range
