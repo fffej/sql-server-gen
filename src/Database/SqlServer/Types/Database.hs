@@ -13,6 +13,7 @@ import Database.SqlServer.Types.User (UserDefinition)
 import Database.SqlServer.Types.FullTextCatalog (FullTextCatalogDefinition)
 import Database.SqlServer.Types.FullTextStopList (FullTextStopListDefinition)
 import Database.SqlServer.Types.Function (FunctionDefinition)
+import Database.SqlServer.Types.Credential (CredentialDefinition)
 import Database.SqlServer.Types.Entity
 
 import Test.QuickCheck
@@ -43,6 +44,7 @@ data DatabaseDefinition = DatabaseDefinition
                           , loginDefinitions :: [LoginDefinition]
                           , fullTextCatalogDefinitions :: [FullTextCatalogDefinition]
                           , fullTextStopListDefinitions :: [FullTextStopListDefinition]
+                          , credentials :: [CredentialDefinition]
                           , masterKey :: MasterKey
                           }
 
@@ -65,7 +67,8 @@ renderDatabaseDefinition  dd = text "USE master" $+$
                                renderNamedEntities (userDefinitions dd) $+$
                                renderNamedEntities (loginDefinitions dd) $+$
                                renderNamedEntities (fullTextCatalogDefinitions dd) $+$
-                               renderNamedEntities (fullTextStopListDefinitions dd) $+$ 
+                               renderNamedEntities (fullTextStopListDefinitions dd) $+$
+                               renderNamedEntities (credentials dd) $+$
                                text "GO"
   where
     dbName = renderRegularIdentifier (databaseName dd)
@@ -74,8 +77,8 @@ derive makeArbitrary ''DatabaseDefinition
 
 dumpExamples :: Int -> FilePath -> IO ()
 dumpExamples m p = do
-  x <- generate (sequence [resize n (arbitrary :: Gen DatabaseDefinition) | n <- [0..m] ])
-  writeFile p (unlines $ map (show . renderDatabaseDefinition) x)
+  x <- generate (sequence [resize n (arbitrary :: Gen CredentialDefinition) | n <- [0..m] ])
+  writeFile p (unlines $ map (show . toDoc) x)
 
 instance Show DatabaseDefinition where
   show = render . renderDatabaseDefinition
