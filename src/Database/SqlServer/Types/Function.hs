@@ -19,14 +19,30 @@ data NullOption = ReturnsNullOnNullInput
 
 derive makeArbitrary ''NullOption
 
+renderNullOption :: NullOption -> Doc
+renderNullOption ReturnsNullOnNullInput = text "RETURNS NULL ON NULL INPUT"
+renderNullOption CalledOnNullInput = text "CALLED ON NULL INPUT"
+
 data FunctionOption = FunctionOption
     {
-      encryption :: Maybe Bool
-    , schemaBinding :: Maybe Bool
+      encryption :: Bool
+    , schemaBinding :: Bool
     , nullOption :: Maybe NullOption
     }
 
 derive makeArbitrary ''FunctionOption
+
+areThereAnyOptionsSet :: FunctionOption -> Bool
+areThereAnyOptionsSet f = encryption f || schemaBinding f || isJust (nullOption f)
+
+renderFunctionOptions :: FunctionOption -> Doc
+renderFunctionOptions f
+  | not (areThereAnyOptionsSet f) = empty
+  | otherwise = text "WITH" <+>
+                vcat (punctuate comma
+                  (filter (/= empty) [ if (encryption f) then (text "ENCRYPTION") else empty
+                                     , if (schemaBinding f) then (text "SCHEMABINDING") else empty
+                                     , maybe empty renderNullOption (nullOption f) ]))
 
 newtype InputType = InputType Type
 
@@ -78,7 +94,9 @@ derive makeArbitrary ''FunctionDefinition
 instance Entity FunctionDefinition where
   toDoc (ScalarFunction f) = text "CREATE FUNCTION" <+> renderRegularIdentifier (scalarFunctionName f) <+>
                              (parens $ hcat (punctuate comma (map renderParameter (parameters f)))) $+$
-                             text "RETURNS" <+> renderReturnType (returnType f) <+> text "AS" $+$
+                             text "RETURNS" <+> renderReturnType (returnType f) $+$
+                             renderFunctionOptions (functionOption f) $+$
+                             text "AS" $+$
                              text "BEGIN" $+$
                              text "RETURN" <+> renderReturnValue (returnType f) $+$
                              text "END" $+$ text "GO\n"
