@@ -5,6 +5,7 @@ import Database.SqlServer.Types.Entity
 
 import Test.QuickCheck
 import Text.PrettyPrint
+import Control.Monad
 
 data FullTextStopListDefinition = FullTextStopListDefinition
   {
@@ -19,7 +20,7 @@ instance Arbitrary FullTextStopListDefinition where
     return (FullTextStopListDefinition x y)
 
 instance Entity FullTextStopListDefinition where
-  toDoc f = maybe empty toDoc (maybe Nothing id (sourceStopList f)) $+$
+  toDoc f = maybe empty toDoc (join (sourceStopList f)) $+$
             text "CREATE FULLTEXT STOPLIST" <+>
             renderRegularIdentifier (stoplistName f) <+>
             maybe (text ";") (\q -> text "FROM" <+>

@@ -14,6 +14,8 @@ import Data.DeriveTH
 import Data.Int
 import Data.Word
 
+import Data.Maybe
+
 import Data.Time.Calendar
 import Data.Time.Clock
 import Data.Time.ISO8601
@@ -457,7 +459,7 @@ renderNumeric (Just ns) (SQLNumeric n) = text num
     len = length v
     num = take (len - s) v ++ "." ++ drop (len - s) v
     p = precision ns
-    s = maybe 18 id $ scale ns
+    s = fromMaybe 18 $ scale ns
 
 renderValue :: Type -> Maybe Doc
 renderValue (Numeric _ n s) = Just $ renderNumeric n s 
