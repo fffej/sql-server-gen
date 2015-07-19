@@ -21,7 +21,7 @@ import Database.SqlServer.Definition.DataType (
   isTimestamp
   )
   
-import Database.SqlServer.Definition.Collations (renderCollation)
+import Database.SqlServer.Definition.Collation (renderCollation)
 import Database.SqlServer.Definition.Entity
 
 import Test.QuickCheck

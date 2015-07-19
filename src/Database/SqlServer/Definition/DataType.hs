@@ -18,7 +18,7 @@ module Database.SqlServer.Definition.DataType
        , renderValue
        ) where
 
-import Database.SqlServer.Definition.Collations (Collation)
+import Database.SqlServer.Definition.Collation (Collation)
 import Database.SqlServer.Definition.Identifier (ArbUUID)
 
 import Text.PrettyPrint
