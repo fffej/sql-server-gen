@@ -16,6 +16,7 @@ Currently supported (at various degrees of completion are:
 * Full text stoplists
 * Credentials
 * Message types
+* Contracts
 
 Contributers more than welcome (especially if you know enough Haskell to help me simplify the code!).
 
