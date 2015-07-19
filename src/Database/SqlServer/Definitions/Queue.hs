@@ -33,7 +33,7 @@ data Activation = Activation
     , procedure :: ZeroParamProc
     } 
 
-data QueueDefinition = QueueDefinition
+data Queue = Queue
     {
       queueName :: RegularIdentifier
     , queueStatus :: Maybe Bool
@@ -42,7 +42,7 @@ data QueueDefinition = QueueDefinition
     , poisonMessageHandling :: Maybe Bool
     }
 derive makeArbitrary ''ExecuteAs
-derive makeArbitrary ''QueueDefinition
+derive makeArbitrary ''Queue
 
 instance Arbitrary Activation where
   arbitrary = do
@@ -51,7 +51,7 @@ instance Arbitrary Activation where
     y <- arbitrary
     return $ Activation r x y
 
-anySpecified :: QueueDefinition -> Bool
+anySpecified :: Queue -> Bool
 anySpecified q = isJust (queueStatus q) || isJust (retention q) ||
                  isJust (activation q)  || isJust (poisonMessageHandling q)
 
@@ -88,7 +88,7 @@ renderActivation a = text "ACTIVATION(" <+>
                            , renderProcedureName (unwrap $ procedure a)
                            ]) <+> text ")"
 
-instance Entity QueueDefinition where
+instance Entity Queue where
   toDoc q = maybe empty renderProc (activation q) $+$
             text "CREATE QUEUE" <+> (renderRegularIdentifier (queueName q)) <+> options $+$ text "GO"
     where

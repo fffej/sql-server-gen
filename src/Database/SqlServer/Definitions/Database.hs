@@ -6,10 +6,10 @@ import Database.SqlServer.Definitions.Identifiers (RegularIdentifier,renderRegul
 import Database.SqlServer.Definitions.Table (Table)
 import Database.SqlServer.Definitions.Sequence (Sequence)
 import Database.SqlServer.Definitions.Procedure (Procedure)
-import Database.SqlServer.Definitions.Queue (QueueDefinition)
+import Database.SqlServer.Definitions.Queue (Queue)
 import Database.SqlServer.Definitions.Certificate (CertificateDefinition)
 import Database.SqlServer.Definitions.Login (LoginDefinition)
-import Database.SqlServer.Definitions.User (UserDefinition,RoleDefinition)
+import Database.SqlServer.Definitions.User (User,Role)
 import Database.SqlServer.Definitions.FullTextCatalog (FullTextCatalogDefinition)
 import Database.SqlServer.Definitions.FullTextStopList (FullTextStopListDefinition)
 import Database.SqlServer.Definitions.Function (Function)
@@ -39,10 +39,10 @@ data DatabaseDefinition = DatabaseDefinition
                           , sequenceDefinitions :: [Sequence]
                           , procedureDefinitions :: [Procedure]
                           , functionDefinitions :: [Function]
-                          , queueDefinitions :: [QueueDefinition]
+                          , queueDefinitions :: [Queue]
                           , certificateDefinitions :: [CertificateDefinition]
-                          , userDefinitions :: [UserDefinition]
-                          , roleDefinitions :: [RoleDefinition]
+                          , userDefinitions :: [User]
+                          , roleDefinitions :: [Role]
                           , loginDefinitions :: [LoginDefinition]
                           , fullTextCatalogDefinitions :: [FullTextCatalogDefinition]
                           , fullTextStopListDefinitions :: [FullTextStopListDefinition]
