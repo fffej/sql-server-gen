@@ -1,6 +1,21 @@
 # sql-server-gen
 
-The goal of this package is to generate arbitrary SQL Server databases (in the form of create statements).  Current goal is just to produce full table definitions.  Currently supported objects types are tables (partial) and sequences (full).
+The goal of this package is to generate arbitrary SQL Server databases (in the form of create statements).  
+
+Currently supported (at various degrees of completion are:
+* Tables
+* Sequences
+* Procedures
+* Functions
+* Queues
+* Certificates
+* Users
+* Roles
+* Logins
+* Full text catalogs
+* Full text stoplists
+* Credentials
+* Message types
 
 Contributers more than welcome (especially if you know enough Haskell to help me simplify the code!).
 
