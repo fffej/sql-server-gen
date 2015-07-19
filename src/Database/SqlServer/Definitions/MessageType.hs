@@ -2,7 +2,10 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE GADTs #-}
 
-module Database.SqlServer.Definitions.MessageType where
+module Database.SqlServer.Definitions.MessageType
+       (
+         MessageType
+       ) where
 
 import Database.SqlServer.Definitions.Identifiers hiding (unwrap)
 import Database.SqlServer.Definitions.User (User,Role,roleName,renderUserName)

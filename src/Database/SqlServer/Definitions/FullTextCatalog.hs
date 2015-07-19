@@ -1,7 +1,10 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE TemplateHaskell #-}
 
-module Database.SqlServer.Definitions.FullTextCatalog where
+module Database.SqlServer.Definitions.FullTextCatalog
+       (
+         FullTextCatalog
+       ) where
 
 import Database.SqlServer.Definitions.Identifiers
 import Database.SqlServer.Definitions.Entity

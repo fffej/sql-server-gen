@@ -2,7 +2,10 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE GADTs #-}
 
-module Database.SqlServer.Definitions.Function where
+module Database.SqlServer.Definitions.Function
+       (
+         Function
+       ) where
 
 import Database.SqlServer.Definitions.Identifiers hiding (unwrap)
 import Database.SqlServer.Definitions.DataTypes
@@ -81,7 +84,6 @@ data ScalarFunction = ScalarFunction
      scalarFunctionName :: RegularIdentifier
    , parameters :: [Parameter]
    , returnType :: ReturnType
-   , functionBody :: String
    , functionOption :: FunctionOption
    }
 

@@ -2,11 +2,14 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE GADTs #-}
 
-module Database.SqlServer.Definitions.Sequence where
+module Database.SqlServer.Definitions.Sequence
+       (
+         Sequence
+       ) where
 
 import Prelude hiding (cycle)
 
-import Database.SqlServer.Definitions.Identifiers (RegularIdentifier(..), renderRegularIdentifier)
+import Database.SqlServer.Definitions.Identifiers (RegularIdentifier, renderRegularIdentifier)
 import Database.SqlServer.Definitions.Entity
 
 import Text.PrettyPrint

@@ -2,7 +2,10 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE GADTs #-}
 
-module Database.SqlServer.Definitions.Credential where
+module Database.SqlServer.Definitions.Credential
+       (
+         Credential
+       ) where
 
 import Database.SqlServer.Definitions.Identifiers hiding (unwrap)
 import Database.SqlServer.Definitions.Entity

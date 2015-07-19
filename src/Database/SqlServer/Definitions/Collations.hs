@@ -1,4 +1,8 @@
-module Database.SqlServer.Definitions.Collations where
+module Database.SqlServer.Definitions.Collations
+       (
+         Collation
+       , renderCollation
+       ) where
 
 import Test.QuickCheck
 import Text.PrettyPrint

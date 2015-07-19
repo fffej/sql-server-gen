@@ -1,7 +1,10 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE TemplateHaskell #-}
 
-module Database.SqlServer.Definitions.Table where
+module Database.SqlServer.Definitions.Table
+       (
+         Table
+       ) where
 
 import Database.SqlServer.Definitions.Identifiers (RegularIdentifier, renderRegularIdentifier)
 import Database.SqlServer.Definitions.DataTypes (

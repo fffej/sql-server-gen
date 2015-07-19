@@ -1,4 +1,8 @@
-module Database.SqlServer.Definitions.Certificate where
+module Database.SqlServer.Definitions.Certificate
+       (
+         Certificate
+       , certificateName
+       ) where
 
 import Database.SqlServer.Definitions.Identifiers
 import Database.SqlServer.Definitions.Entity

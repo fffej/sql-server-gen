@@ -1,4 +1,8 @@
-module Database.SqlServer.Definitions.Entity where
+module Database.SqlServer.Definitions.Entity
+       (
+         Entity,
+         toDoc
+       ) where
 
 import Text.PrettyPrint
 

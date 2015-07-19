@@ -19,7 +19,7 @@ module Database.SqlServer.Definitions.DataTypes
        ) where
 
 import Database.SqlServer.Definitions.Collations (Collation)
-import Database.SqlServer.Definitions.Identifiers (ArbUUID(..))
+import Database.SqlServer.Definitions.Identifiers (ArbUUID)
 
 import Text.PrettyPrint
 
@@ -85,10 +85,6 @@ renderNRange (NSized r) = renderNFixedRange r
 data VarBinaryStorage = SizedRange Range
                       | MaxNoFileStream
                       | MaxFileStream
-
-renderFileStream :: VarBinaryStorage -> Doc
-renderFileStream MaxFileStream = text "FILESTREAM"
-renderFileStream _             = empty
 
 renderVarBinaryStorage :: VarBinaryStorage -> Doc
 renderVarBinaryStorage (SizedRange r)   = renderRange r

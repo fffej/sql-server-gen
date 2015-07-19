@@ -2,7 +2,15 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE GADTs #-}
 
-module Database.SqlServer.Definitions.Identifiers where
+module Database.SqlServer.Definitions.Identifiers
+       (
+         RegularIdentifier
+       , ArbUUID
+       , ParameterIdentifier        
+       , renderRegularIdentifier
+       , renderParameterIdentifier
+       , unwrap
+       ) where
 
 import Data.DeriveTH
 import Test.QuickCheck

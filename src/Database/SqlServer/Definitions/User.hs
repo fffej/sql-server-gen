@@ -1,7 +1,13 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE TemplateHaskell #-}
 
-module Database.SqlServer.Definitions.User where
+module Database.SqlServer.Definitions.User
+       (
+         User
+       , Role
+       , renderUserName
+       , roleName
+       ) where
 
 import Database.SqlServer.Definitions.Identifiers
 import Database.SqlServer.Definitions.Entity
@@ -16,8 +22,8 @@ data ForFrom = For | From
 
 -- TODO asymmetric key
 data User = CreateUserWithoutLogin RegularIdentifier
-                    | CreateUserWithCertificate RegularIdentifier ForFrom Certificate
-                    | CreateUserWithLogin RegularIdentifier ForFrom Login
+          | CreateUserWithCertificate RegularIdentifier ForFrom Certificate
+          | CreateUserWithLogin RegularIdentifier ForFrom Login
 
 
 derive makeArbitrary ''ForFrom
