@@ -1,10 +1,10 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE TemplateHaskell #-}
 
-module Database.SqlServer.Types.Table where
+module Database.SqlServer.Definitions.Table where
 
-import Database.SqlServer.Types.Identifiers (RegularIdentifier, renderRegularIdentifier)
-import Database.SqlServer.Types.DataTypes (
+import Database.SqlServer.Definitions.Identifiers (RegularIdentifier, renderRegularIdentifier)
+import Database.SqlServer.Definitions.DataTypes (
   Type(..),
   renderDataType,
   collation,
@@ -18,8 +18,8 @@ import Database.SqlServer.Types.DataTypes (
   isRowGuidCol
   )
   
-import Database.SqlServer.Types.Collations (renderCollation)
-import Database.SqlServer.Types.Entity
+import Database.SqlServer.Definitions.Collations (renderCollation)
+import Database.SqlServer.Definitions.Entity
 
 import Test.QuickCheck
 import Text.PrettyPrint

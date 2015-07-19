@@ -2,11 +2,11 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE GADTs #-}
 
-module Database.SqlServer.Types.Function where
+module Database.SqlServer.Definitions.Function where
 
-import Database.SqlServer.Types.Identifiers hiding (unwrap)
-import Database.SqlServer.Types.DataTypes
-import Database.SqlServer.Types.Entity
+import Database.SqlServer.Definitions.Identifiers hiding (unwrap)
+import Database.SqlServer.Definitions.DataTypes
+import Database.SqlServer.Definitions.Entity
 
 import Test.QuickCheck
 import Data.DeriveTH

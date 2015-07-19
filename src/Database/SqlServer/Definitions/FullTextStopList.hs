@@ -1,7 +1,7 @@
-module Database.SqlServer.Types.FullTextStopList where
+module Database.SqlServer.Definitions.FullTextStopList where
 
-import Database.SqlServer.Types.Identifiers
-import Database.SqlServer.Types.Entity
+import Database.SqlServer.Definitions.Identifiers
+import Database.SqlServer.Definitions.Entity
 
 import Test.QuickCheck
 import Text.PrettyPrint

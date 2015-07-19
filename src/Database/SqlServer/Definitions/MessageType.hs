@@ -2,11 +2,11 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE GADTs #-}
 
-module Database.SqlServer.Types.MessageType where
+module Database.SqlServer.Definitions.MessageType where
 
-import Database.SqlServer.Types.Identifiers hiding (unwrap)
-import Database.SqlServer.Types.User (UserDefinition,RoleDefinition,roleName,renderUserName)
-import Database.SqlServer.Types.Entity
+import Database.SqlServer.Definitions.Identifiers hiding (unwrap)
+import Database.SqlServer.Definitions.User (UserDefinition,RoleDefinition,roleName,renderUserName)
+import Database.SqlServer.Definitions.Entity
 
 import Test.QuickCheck
 import Data.DeriveTH

@@ -1,10 +1,10 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE TemplateHaskell #-}
 
-module Database.SqlServer.Types.Login where
+module Database.SqlServer.Definitions.Login where
 
-import Database.SqlServer.Types.Identifiers
-import Database.SqlServer.Types.Entity
+import Database.SqlServer.Definitions.Identifiers
+import Database.SqlServer.Definitions.Entity
 
 import Data.DeriveTH
 import Test.QuickCheck

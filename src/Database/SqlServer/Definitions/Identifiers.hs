@@ -2,7 +2,7 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE GADTs #-}
 
-module Database.SqlServer.Types.Identifiers where
+module Database.SqlServer.Definitions.Identifiers where
 
 import Data.DeriveTH
 import Test.QuickCheck

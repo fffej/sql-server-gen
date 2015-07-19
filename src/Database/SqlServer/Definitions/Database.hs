@@ -1,21 +1,21 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE TemplateHaskell #-}
-module Database.SqlServer.Types.Database where
+module Database.SqlServer.Definitions.Database where
 
-import Database.SqlServer.Types.Identifiers (RegularIdentifier,renderRegularIdentifier)
-import Database.SqlServer.Types.Table (TableDefinition)
-import Database.SqlServer.Types.Sequence (SequenceDefinition)
-import Database.SqlServer.Types.Procedure (ProcedureDefinition)
-import Database.SqlServer.Types.Queue (QueueDefinition)
-import Database.SqlServer.Types.Certificate (CertificateDefinition)
-import Database.SqlServer.Types.Login (LoginDefinition)
-import Database.SqlServer.Types.User (UserDefinition,RoleDefinition)
-import Database.SqlServer.Types.FullTextCatalog (FullTextCatalogDefinition)
-import Database.SqlServer.Types.FullTextStopList (FullTextStopListDefinition)
-import Database.SqlServer.Types.Function (FunctionDefinition)
-import Database.SqlServer.Types.Credential (CredentialDefinition)
-import Database.SqlServer.Types.MessageType (MessageTypeDefinition)
-import Database.SqlServer.Types.Entity
+import Database.SqlServer.Definitions.Identifiers (RegularIdentifier,renderRegularIdentifier)
+import Database.SqlServer.Definitions.Table (TableDefinition)
+import Database.SqlServer.Definitions.Sequence (SequenceDefinition)
+import Database.SqlServer.Definitions.Procedure (ProcedureDefinition)
+import Database.SqlServer.Definitions.Queue (QueueDefinition)
+import Database.SqlServer.Definitions.Certificate (CertificateDefinition)
+import Database.SqlServer.Definitions.Login (LoginDefinition)
+import Database.SqlServer.Definitions.User (UserDefinition,RoleDefinition)
+import Database.SqlServer.Definitions.FullTextCatalog (FullTextCatalogDefinition)
+import Database.SqlServer.Definitions.FullTextStopList (FullTextStopListDefinition)
+import Database.SqlServer.Definitions.Function (FunctionDefinition)
+import Database.SqlServer.Definitions.Credential (CredentialDefinition)
+import Database.SqlServer.Definitions.MessageType (MessageTypeDefinition)
+import Database.SqlServer.Definitions.Entity
 
 import Test.QuickCheck
 import Test.QuickCheck.Gen
@@ -47,7 +47,7 @@ data DatabaseDefinition = DatabaseDefinition
                           , fullTextCatalogDefinitions :: [FullTextCatalogDefinition]
                           , fullTextStopListDefinitions :: [FullTextStopListDefinition]
                           , credentials :: [CredentialDefinition]
-                          , messageTypes :: [MessageTypeDefinition]
+                          , messageDefinitions :: [MessageTypeDefinition]
                           , masterKey :: MasterKey
                           }
 
@@ -73,7 +73,7 @@ renderDatabaseDefinition  dd = text "USE master" $+$
                                renderNamedEntities (fullTextCatalogDefinitions dd) $+$
                                renderNamedEntities (fullTextStopListDefinitions dd) $+$
                                renderNamedEntities (credentials dd) $+$
-                               renderNamedEntities (messageTypes dd) $+$ 
+                               renderNamedEntities (messageDefinitions dd) $+$ 
                                text "GO"
   where
     dbName = renderRegularIdentifier (databaseName dd)

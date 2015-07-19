@@ -1,4 +1,4 @@
-module Database.SqlServer.Types.Entity where
+module Database.SqlServer.Definitions.Entity where
 
 import Text.PrettyPrint
 

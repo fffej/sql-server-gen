@@ -1,12 +1,12 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE TemplateHaskell #-}
 
-module Database.SqlServer.Types.User where
+module Database.SqlServer.Definitions.User where
 
-import Database.SqlServer.Types.Identifiers
-import Database.SqlServer.Types.Entity
-import Database.SqlServer.Types.Certificate
-import Database.SqlServer.Types.Login
+import Database.SqlServer.Definitions.Identifiers
+import Database.SqlServer.Definitions.Entity
+import Database.SqlServer.Definitions.Certificate
+import Database.SqlServer.Definitions.Login
 
 import Test.QuickCheck
 import Text.PrettyPrint
