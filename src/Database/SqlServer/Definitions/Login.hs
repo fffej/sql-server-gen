@@ -3,7 +3,7 @@
 
 module Database.SqlServer.Definitions.Login where
 
-import Database.SqlServer.Definitions.Identifiers
+import Database.SqlServer.Definitions.Identifier
 import Database.SqlServer.Definitions.Entity
 
 import Data.DeriveTH

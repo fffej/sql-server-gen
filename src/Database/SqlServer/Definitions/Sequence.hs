@@ -9,7 +9,7 @@ module Database.SqlServer.Definitions.Sequence
 
 import Prelude hiding (cycle)
 
-import Database.SqlServer.Definitions.Identifiers (RegularIdentifier, renderRegularIdentifier)
+import Database.SqlServer.Definitions.Identifier (RegularIdentifier, renderRegularIdentifier)
 import Database.SqlServer.Definitions.Entity
 
 import Text.PrettyPrint

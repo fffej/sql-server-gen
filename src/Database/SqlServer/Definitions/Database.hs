@@ -2,7 +2,7 @@
 {-# LANGUAGE TemplateHaskell #-}
 module Database.SqlServer.Definitions.Database where
 
-import Database.SqlServer.Definitions.Identifiers (RegularIdentifier,renderRegularIdentifier)
+import Database.SqlServer.Definitions.Identifier (RegularIdentifier,renderRegularIdentifier)
 import Database.SqlServer.Definitions.Table (Table)
 import Database.SqlServer.Definitions.Sequence (Sequence)
 import Database.SqlServer.Definitions.Procedure (Procedure)

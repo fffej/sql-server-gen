@@ -6,8 +6,8 @@ module Database.SqlServer.Definitions.Table
          Table
        ) where
 
-import Database.SqlServer.Definitions.Identifiers (RegularIdentifier, renderRegularIdentifier)
-import Database.SqlServer.Definitions.DataTypes (
+import Database.SqlServer.Definitions.Identifier (RegularIdentifier, renderRegularIdentifier)
+import Database.SqlServer.Definitions.DataType (
   Type,
   renderDataType,
   collation,

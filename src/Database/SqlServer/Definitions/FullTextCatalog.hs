@@ -6,7 +6,7 @@ module Database.SqlServer.Definitions.FullTextCatalog
          FullTextCatalog
        ) where
 
-import Database.SqlServer.Definitions.Identifiers
+import Database.SqlServer.Definitions.Identifier
 import Database.SqlServer.Definitions.Entity
 
 import Test.QuickCheck

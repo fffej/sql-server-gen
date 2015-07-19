@@ -7,7 +7,7 @@ module Database.SqlServer.Definitions.MessageType
          MessageType
        ) where
 
-import Database.SqlServer.Definitions.Identifiers hiding (unwrap)
+import Database.SqlServer.Definitions.Identifier hiding (unwrap)
 import Database.SqlServer.Definitions.User (User,Role,roleName,renderUserName)
 import Database.SqlServer.Definitions.Entity
 

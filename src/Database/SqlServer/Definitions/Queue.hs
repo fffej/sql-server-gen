@@ -4,7 +4,7 @@
 
 module Database.SqlServer.Definitions.Queue where
 
-import Database.SqlServer.Definitions.Identifiers hiding (unwrap)
+import Database.SqlServer.Definitions.Identifier hiding (unwrap)
 import Database.SqlServer.Definitions.Procedure
 import Database.SqlServer.Definitions.Entity
 

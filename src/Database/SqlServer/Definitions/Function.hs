@@ -7,8 +7,8 @@ module Database.SqlServer.Definitions.Function
          Function
        ) where
 
-import Database.SqlServer.Definitions.Identifiers hiding (unwrap)
-import Database.SqlServer.Definitions.DataTypes
+import Database.SqlServer.Definitions.Identifier hiding (unwrap)
+import Database.SqlServer.Definitions.DataType
 import Database.SqlServer.Definitions.Entity
 
 import Test.QuickCheck

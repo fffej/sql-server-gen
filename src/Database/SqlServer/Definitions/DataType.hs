@@ -1,7 +1,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE TemplateHaskell #-}
 
-module Database.SqlServer.Definitions.DataTypes
+module Database.SqlServer.Definitions.DataType
        (
          Type
        , renderDataType
@@ -19,7 +19,7 @@ module Database.SqlServer.Definitions.DataTypes
        ) where
 
 import Database.SqlServer.Definitions.Collations (Collation)
-import Database.SqlServer.Definitions.Identifiers (ArbUUID)
+import Database.SqlServer.Definitions.Identifier (ArbUUID)
 
 import Text.PrettyPrint
 
@@ -123,9 +123,9 @@ renderNullStorageOptions Null    = text "NULL"
 data UniqueIdentifierOptions = RowGuidCol (Maybe NullStorageOptions)
                              | UniqueIdentifierOptions (Maybe StorageOptions)
 
-uniqueIdentifierstorageOptions :: UniqueIdentifierOptions -> Maybe StorageOptions
-uniqueIdentifierstorageOptions (UniqueIdentifierOptions x) = x
-uniqueIdentifierstorageOptions (RowGuidCol x) = fmap StorageOptions x
+uniqueIdentifiertorageOptions :: UniqueIdentifierOptions -> Maybe StorageOptions
+uniqueIdentifiertorageOptions (UniqueIdentifierOptions x) = x
+uniqueIdentifiertorageOptions (RowGuidCol x) = fmap StorageOptions x
 
 isRowGuidCol :: UniqueIdentifierOptions -> Bool
 isRowGuidCol (RowGuidCol _) = True
@@ -437,7 +437,7 @@ storageOptions (NVarChar _ _ s _) = s
 storageOptions (Binary _ s _)  = s 
 storageOptions (VarBinary _ s _) = s
 storageOptions (HierarchyId s _) = s
-storageOptions (UniqueIdentifier s _) = maybe Nothing uniqueIdentifierstorageOptions s
+storageOptions (UniqueIdentifier s _) = maybe Nothing uniqueIdentifiertorageOptions s
 storageOptions (SqlVariant s _) = s
 storageOptions (Xml s _) = s
 storageOptions (Timestamp _) = Nothing

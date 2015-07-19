@@ -53,10 +53,10 @@ library
   -- Modules exported by the library.
   exposed-modules:     Database.SqlServer.Definitions.Database,
                        Database.SqlServer.Definitions.Sequence,
-                       Database.SqlServer.Definitions.Identifiers,
+                       Database.SqlServer.Definitions.Identifier,
                        Database.SqlServer.Definitions.Procedure,
                        Database.SqlServer.Definitions.Queue,
-                       Database.SqlServer.Definitions.DataTypes,
+                       Database.SqlServer.Definitions.DataType,
                        Database.SqlServer.Definitions.Table,
                        Database.SqlServer.Definitions.Collations,
                        Database.SqlServer.Definitions.Certificate,

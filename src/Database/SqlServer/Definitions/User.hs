@@ -9,7 +9,7 @@ module Database.SqlServer.Definitions.User
        , roleName
        ) where
 
-import Database.SqlServer.Definitions.Identifiers
+import Database.SqlServer.Definitions.Identifier
 import Database.SqlServer.Definitions.Entity
 import Database.SqlServer.Definitions.Certificate
 import Database.SqlServer.Definitions.Login

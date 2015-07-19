@@ -7,7 +7,7 @@ module Database.SqlServer.Definitions.Credential
          Credential
        ) where
 
-import Database.SqlServer.Definitions.Identifiers hiding (unwrap)
+import Database.SqlServer.Definitions.Identifier hiding (unwrap)
 import Database.SqlServer.Definitions.Entity
 
 import Text.PrettyPrint

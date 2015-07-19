@@ -4,7 +4,7 @@ module Database.SqlServer.Definitions.Certificate
        , certificateName
        ) where
 
-import Database.SqlServer.Definitions.Identifiers
+import Database.SqlServer.Definitions.Identifier
 import Database.SqlServer.Definitions.Entity
 
 import Text.PrettyPrint

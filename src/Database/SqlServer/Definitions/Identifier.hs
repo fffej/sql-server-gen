@@ -2,7 +2,7 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE GADTs #-}
 
-module Database.SqlServer.Definitions.Identifiers
+module Database.SqlServer.Definitions.Identifier
        (
          RegularIdentifier
        , ArbUUID
