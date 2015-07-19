@@ -15,6 +15,7 @@ import Database.SqlServer.Definition.FullTextStopList (FullTextStopList)
 import Database.SqlServer.Definition.Function (Function)
 import Database.SqlServer.Definition.Credential (Credential)
 import Database.SqlServer.Definition.MessageType (MessageType)
+import Database.SqlServer.Definition.Contract (Contract)
 import Database.SqlServer.Definition.Entity
 
 import Test.QuickCheck
@@ -48,6 +49,7 @@ data DatabaseDefinition = DatabaseDefinition
                           , fullTextStopLists :: [FullTextStopList]
                           , credentials :: [Credential]
                           , messages :: [MessageType]
+                          , contracts :: [Contract]
                           , masterKey :: MasterKey
                           }
 
@@ -73,7 +75,8 @@ renderDatabaseDefinition  dd = text "USE master" $+$
                                renderNamedEntities (fullTextCatalogs dd) $+$
                                renderNamedEntities (fullTextStopLists dd) $+$
                                renderNamedEntities (credentials dd) $+$
-                               renderNamedEntities (messages dd) $+$ 
+                               renderNamedEntities (messages dd) $+$
+                               renderNamedEntities (contracts dd) $+$
                                text "GO"
   where
     dbName = renderRegularIdentifier (databaseName dd)
