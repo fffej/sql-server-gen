@@ -1,6 +1,3 @@
-{-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE TemplateHaskell #-}
-
 module Database.SqlServer.Definitions.Certificate where
 
 import Database.SqlServer.Definitions.Identifiers
@@ -43,7 +40,7 @@ instance Arbitrary Certificate where
     str <- elements [Just (addDays x eDay), Nothing]
     ep <- arbitrary
     sub <- arbitrary
-    return $ Certificate {
+    return Certificate {
         certificateName = name
       , activeForBeginDialog = afbd
       , startDate = str

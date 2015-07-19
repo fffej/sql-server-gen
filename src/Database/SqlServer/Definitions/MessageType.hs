@@ -43,7 +43,7 @@ renderValidation WellFormedXml = text "VALIDATION = WELL_FORMED_XML"
 
 instance Entity MessageType where
   toDoc m = maybe empty renderPreRequisites (authorization m) $+$
-            text "CREATE MESSAGE TYPE" <+> (renderRegularIdentifier (messageTypeName m)) $+$
+            text "CREATE MESSAGE TYPE" <+> renderRegularIdentifier (messageTypeName m) $+$
             maybe empty renderAuthorization (authorization m) $+$
             maybe empty renderValidation (validation m) 
             

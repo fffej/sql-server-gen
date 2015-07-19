@@ -66,11 +66,11 @@ data Role = Role
 derive makeArbitrary ''Role
 
 renderAuthorization :: User -> Doc
-renderAuthorization ud = text "AUTHORIZATION" <+> (renderUserName ud)
+renderAuthorization ud = text "AUTHORIZATION" <+> renderUserName ud
 
 instance Entity Role where
   toDoc rd = maybe empty toDoc (authorization rd) $+$ text "GO" $+$
-             text "CREATE ROLE" <+> (renderRegularIdentifier $ roleName rd) <+>
+             text "CREATE ROLE" <+> renderRegularIdentifier (roleName rd) <+>
              maybe empty renderAuthorization (authorization rd) 
              
 instance Show Role where

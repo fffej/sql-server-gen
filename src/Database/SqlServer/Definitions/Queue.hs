@@ -90,7 +90,7 @@ renderActivation a = text "ACTIVATION(" <+>
 
 instance Entity Queue where
   toDoc q = maybe empty renderProc (activation q) $+$
-            text "CREATE QUEUE" <+> (renderRegularIdentifier (queueName q)) <+> options $+$ text "GO"
+            text "CREATE QUEUE" <+> renderRegularIdentifier (queueName q) <+> options $+$ text "GO"
     where
       options
         | not $ anySpecified q = empty

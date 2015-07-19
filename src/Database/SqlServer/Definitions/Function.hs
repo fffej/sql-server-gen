@@ -40,8 +40,8 @@ renderFunctionOptions f
   | not (areThereAnyOptionsSet f) = empty
   | otherwise = text "WITH" <+>
                 vcat (punctuate comma
-                  (filter (/= empty) [ if (encryption f) then (text "ENCRYPTION") else empty
-                                     , if (schemaBinding f) then (text "SCHEMABINDING") else empty
+                  (filter (/= empty) [ if encryption f then text "ENCRYPTION" else empty
+                                     , if schemaBinding f then text "SCHEMABINDING" else empty
                                      , maybe empty renderNullOption (nullOption f) ]))
 
 newtype InputType = InputType Type
@@ -67,7 +67,7 @@ derive makeArbitrary ''Parameter
 newtype ReturnType = ReturnType Type
 
 instance Arbitrary ReturnType where
-  arbitrary = liftM ReturnType $ arbitrary `suchThat` (liftM isJust renderValue)
+  arbitrary = liftM ReturnType $ arbitrary `suchThat` liftM isJust renderValue
 
 renderReturnType :: ReturnType -> Doc
 renderReturnType (ReturnType t) = renderDataType t
@@ -93,7 +93,7 @@ derive makeArbitrary ''Function
 
 instance Entity Function where
   toDoc (ScalarFunctionC f) = text "CREATE FUNCTION" <+> renderRegularIdentifier (scalarFunctionName f) <+>
-                              (parens $ hcat (punctuate comma (map renderParameter (parameters f)))) $+$
+                              parens (hcat (punctuate comma (map renderParameter (parameters f)))) $+$
                               text "RETURNS" <+> renderReturnType (returnType f) $+$
                               renderFunctionOptions (functionOption f) $+$
                               text "AS" $+$

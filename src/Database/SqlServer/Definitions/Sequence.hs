@@ -86,7 +86,7 @@ arbitraryValue (Just TinyInt)  = boundedMaybeInt (0,255)
 arbitraryValue (Just SmallInt) = boundedMaybeInt (- 32768,32767)
 arbitraryValue (Just Int)      = boundedMaybeInt (- 2147483648,214748367)
 arbitraryValue (Just BigInt)   = boundedMaybeInt (- 9223372036854775808,9223372036854775807)
-arbitraryValue _               = oneof [liftM Just $ arbitrary,return Nothing]
+arbitraryValue _               = oneof [liftM Just arbitrary,return Nothing]
 
 arbitraryCacheValue :: Gen (Maybe Integer)
 arbitraryCacheValue = frequency [(50,liftM Just $ choose (1,500)), (50,return Nothing)]
@@ -123,12 +123,12 @@ validIncrementBy' x       min' max' incr' = maybe True (\incr -> abs incr <= dif
     diff  = abs (max'' - min'')
 
 validMinimum :: Maybe NumericType -> Maybe Integer -> Bool
-validMinimum x y = case (numericBounds x) of
+validMinimum x y = case numericBounds x of
   Nothing -> True
   Just (_,max') -> maybe True (< max') y
 
 validMaximum :: Maybe NumericType -> Maybe Integer -> Bool
-validMaximum x y = case (numericBounds x) of
+validMaximum x y = case numericBounds x of
   Nothing -> True
   Just (min',_) -> maybe True (> min') y
 
@@ -136,16 +136,16 @@ instance Arbitrary Sequence where
   arbitrary = do
     nm <- arbitrary
     dataType <- arbitrary
-    minV <- arbitraryValue dataType `suchThat` (validMinimum dataType)
-    maxV <- arbitraryValue dataType `suchThat` (\x -> greaterThanMin minV x && validMaximum dataType x)
-    start <- arbitraryValue dataType `suchThat` (\x -> greaterThanMin minV x && lessThanMax maxV x)
-    increment <- arbitraryValue dataType `suchThat` (validIncrementBy dataType minV maxV)
+    minV <- arbitraryValue dataType `suchThat` validMinimum dataType
+    maxV <- arbitraryValue dataType `suchThat` \x -> greaterThanMin minV x && validMaximum dataType x
+    start <- arbitraryValue dataType `suchThat` \x -> greaterThanMin minV x && lessThanMax maxV x
+    increment <- arbitraryValue dataType `suchThat` validIncrementBy dataType minV maxV
     cyc <- arbitrary
     hasMinValue <- elements [Just, const Nothing]
     hasMaxValue <- elements [Just, const Nothing]
     hasChcValue <- elements [Just, const Nothing]    
     chc <- arbitraryCacheValue
-    return $ Sequence {
+    return Sequence {
         sequenceName = nm
       , sequenceType = dataType
       , startWith = start

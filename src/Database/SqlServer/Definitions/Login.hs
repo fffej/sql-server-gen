@@ -21,14 +21,14 @@ derive makeArbitrary ''Login
 
 renderPassword :: RegularIdentifier -> Doc
 renderPassword s = text "WITH PASSWORD = " <>
-                   (quotes (renderRegularIdentifier s))
+                   quotes (renderRegularIdentifier s)
 
 renderMustChange :: Bool -> Doc
 renderMustChange False = empty
 renderMustChange True = text "MUST_CHANGE" <> comma <> text "CHECK_EXPIRATION=ON"
 
 instance Entity Login where
-  toDoc a = text "CREATE LOGIN" <+> (renderRegularIdentifier (loginName a)) $+$
+  toDoc a = text "CREATE LOGIN" <+> renderRegularIdentifier (loginName a) $+$
             renderPassword (password a)  <+> renderMustChange (mustChange a)
             
  
