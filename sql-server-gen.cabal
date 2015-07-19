@@ -63,7 +63,11 @@ library
                        Database.SqlServer.Definitions.User,
                        Database.SqlServer.Definitions.FullTextCatalog,
                        Database.SqlServer.Definitions.FullTextStopList,
-                       Database.SqlServer.Definitions.Login
+                       Database.SqlServer.Definitions.Login,
+                       Database.SqlServer.Definitions.MessageType,
+                       Database.SqlServer.Definitions.Function,
+                       Database.SqlServer.Definitions.Credential
+
 
   ghc-options:         -Wall
   
