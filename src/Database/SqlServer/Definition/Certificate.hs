@@ -1,11 +1,11 @@
-module Database.SqlServer.Definitions.Certificate
+module Database.SqlServer.Definition.Certificate
        (
          Certificate
        , certificateName
        ) where
 
-import Database.SqlServer.Definitions.Identifier
-import Database.SqlServer.Definitions.Entity
+import Database.SqlServer.Definition.Identifier
+import Database.SqlServer.Definition.Entity
 
 import Text.PrettyPrint
 import Data.Time.Calendar

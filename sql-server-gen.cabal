@@ -51,22 +51,22 @@ cabal-version:       >=1.10
 
 library
   -- Modules exported by the library.
-  exposed-modules:     Database.SqlServer.Definitions.Database,
-                       Database.SqlServer.Definitions.Sequence,
-                       Database.SqlServer.Definitions.Identifier,
-                       Database.SqlServer.Definitions.Procedure,
-                       Database.SqlServer.Definitions.Queue,
-                       Database.SqlServer.Definitions.DataType,
-                       Database.SqlServer.Definitions.Table,
-                       Database.SqlServer.Definitions.Collations,
-                       Database.SqlServer.Definitions.Certificate,
-                       Database.SqlServer.Definitions.User,
-                       Database.SqlServer.Definitions.FullTextCatalog,
-                       Database.SqlServer.Definitions.FullTextStopList,
-                       Database.SqlServer.Definitions.Login,
-                       Database.SqlServer.Definitions.MessageType,
-                       Database.SqlServer.Definitions.Function,
-                       Database.SqlServer.Definitions.Credential
+  exposed-modules:     Database.SqlServer.Definition.Database,
+                       Database.SqlServer.Definition.Sequence,
+                       Database.SqlServer.Definition.Identifier,
+                       Database.SqlServer.Definition.Procedure,
+                       Database.SqlServer.Definition.Queue,
+                       Database.SqlServer.Definition.DataType,
+                       Database.SqlServer.Definition.Table,
+                       Database.SqlServer.Definition.Collations,
+                       Database.SqlServer.Definition.Certificate,
+                       Database.SqlServer.Definition.User,
+                       Database.SqlServer.Definition.FullTextCatalog,
+                       Database.SqlServer.Definition.FullTextStopList,
+                       Database.SqlServer.Definition.Login,
+                       Database.SqlServer.Definition.MessageType,
+                       Database.SqlServer.Definition.Function,
+                       Database.SqlServer.Definition.Credential
 
 
   ghc-options:         -Wall

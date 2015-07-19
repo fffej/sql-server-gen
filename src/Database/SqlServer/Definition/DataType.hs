@@ -1,7 +1,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE TemplateHaskell #-}
 
-module Database.SqlServer.Definitions.DataType
+module Database.SqlServer.Definition.DataType
        (
          Type
        , renderDataType
@@ -18,8 +18,8 @@ module Database.SqlServer.Definitions.DataType
        , renderValue
        ) where
 
-import Database.SqlServer.Definitions.Collations (Collation)
-import Database.SqlServer.Definitions.Identifier (ArbUUID)
+import Database.SqlServer.Definition.Collations (Collation)
+import Database.SqlServer.Definition.Identifier (ArbUUID)
 
 import Text.PrettyPrint
 

@@ -2,13 +2,13 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE GADTs #-}
 
-module Database.SqlServer.Definitions.Credential
+module Database.SqlServer.Definition.Credential
        (
          Credential
        ) where
 
-import Database.SqlServer.Definitions.Identifier hiding (unwrap)
-import Database.SqlServer.Definitions.Entity
+import Database.SqlServer.Definition.Identifier hiding (unwrap)
+import Database.SqlServer.Definition.Entity
 
 import Text.PrettyPrint
 import Test.QuickCheck

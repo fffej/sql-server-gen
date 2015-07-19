@@ -2,16 +2,16 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE GADTs #-}
 
-module Database.SqlServer.Definitions.Procedure
+module Database.SqlServer.Definition.Procedure
        (
          Procedure,
          parameters,
          procedureName
        ) where
 
-import Database.SqlServer.Definitions.Identifier hiding (unwrap)
-import Database.SqlServer.Definitions.DataType
-import Database.SqlServer.Definitions.Entity
+import Database.SqlServer.Definition.Identifier hiding (unwrap)
+import Database.SqlServer.Definition.DataType
+import Database.SqlServer.Definition.Entity
 
 import Test.QuickCheck
 import Data.DeriveTH

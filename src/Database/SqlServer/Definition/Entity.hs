@@ -1,4 +1,4 @@
-module Database.SqlServer.Definitions.Entity
+module Database.SqlServer.Definition.Entity
        (
          Entity,
          toDoc

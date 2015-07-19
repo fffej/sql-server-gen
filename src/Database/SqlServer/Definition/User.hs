@@ -1,7 +1,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE TemplateHaskell #-}
 
-module Database.SqlServer.Definitions.User
+module Database.SqlServer.Definition.User
        (
          User
        , Role
@@ -9,10 +9,10 @@ module Database.SqlServer.Definitions.User
        , roleName
        ) where
 
-import Database.SqlServer.Definitions.Identifier
-import Database.SqlServer.Definitions.Entity
-import Database.SqlServer.Definitions.Certificate
-import Database.SqlServer.Definitions.Login
+import Database.SqlServer.Definition.Identifier
+import Database.SqlServer.Definition.Entity
+import Database.SqlServer.Definition.Certificate
+import Database.SqlServer.Definition.Login
 
 import Test.QuickCheck
 import Text.PrettyPrint

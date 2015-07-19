@@ -2,11 +2,11 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE GADTs #-}
 
-module Database.SqlServer.Definitions.Queue where
+module Database.SqlServer.Definition.Queue where
 
-import Database.SqlServer.Definitions.Identifier hiding (unwrap)
-import Database.SqlServer.Definitions.Procedure
-import Database.SqlServer.Definitions.Entity
+import Database.SqlServer.Definition.Identifier hiding (unwrap)
+import Database.SqlServer.Definition.Procedure
+import Database.SqlServer.Definition.Entity
 
 import Test.QuickCheck
 import Data.DeriveTH

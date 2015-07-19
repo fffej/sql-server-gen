@@ -1,21 +1,21 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE TemplateHaskell #-}
-module Database.SqlServer.Definitions.Database where
+module Database.SqlServer.Definition.Database where
 
-import Database.SqlServer.Definitions.Identifier (RegularIdentifier,renderRegularIdentifier)
-import Database.SqlServer.Definitions.Table (Table)
-import Database.SqlServer.Definitions.Sequence (Sequence)
-import Database.SqlServer.Definitions.Procedure (Procedure)
-import Database.SqlServer.Definitions.Queue (Queue)
-import Database.SqlServer.Definitions.Certificate (Certificate)
-import Database.SqlServer.Definitions.Login (Login)
-import Database.SqlServer.Definitions.User (User,Role)
-import Database.SqlServer.Definitions.FullTextCatalog (FullTextCatalog)
-import Database.SqlServer.Definitions.FullTextStopList (FullTextStopList)
-import Database.SqlServer.Definitions.Function (Function)
-import Database.SqlServer.Definitions.Credential (Credential)
-import Database.SqlServer.Definitions.MessageType (MessageType)
-import Database.SqlServer.Definitions.Entity
+import Database.SqlServer.Definition.Identifier (RegularIdentifier,renderRegularIdentifier)
+import Database.SqlServer.Definition.Table (Table)
+import Database.SqlServer.Definition.Sequence (Sequence)
+import Database.SqlServer.Definition.Procedure (Procedure)
+import Database.SqlServer.Definition.Queue (Queue)
+import Database.SqlServer.Definition.Certificate (Certificate)
+import Database.SqlServer.Definition.Login (Login)
+import Database.SqlServer.Definition.User (User,Role)
+import Database.SqlServer.Definition.FullTextCatalog (FullTextCatalog)
+import Database.SqlServer.Definition.FullTextStopList (FullTextStopList)
+import Database.SqlServer.Definition.Function (Function)
+import Database.SqlServer.Definition.Credential (Credential)
+import Database.SqlServer.Definition.MessageType (MessageType)
+import Database.SqlServer.Definition.Entity
 
 import Test.QuickCheck
 import Test.QuickCheck.Gen

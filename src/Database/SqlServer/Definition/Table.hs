@@ -1,13 +1,13 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE TemplateHaskell #-}
 
-module Database.SqlServer.Definitions.Table
+module Database.SqlServer.Definition.Table
        (
          Table
        ) where
 
-import Database.SqlServer.Definitions.Identifier (RegularIdentifier, renderRegularIdentifier)
-import Database.SqlServer.Definitions.DataType (
+import Database.SqlServer.Definition.Identifier (RegularIdentifier, renderRegularIdentifier)
+import Database.SqlServer.Definition.DataType (
   Type,
   renderDataType,
   collation,
@@ -21,8 +21,8 @@ import Database.SqlServer.Definitions.DataType (
   isTimestamp
   )
   
-import Database.SqlServer.Definitions.Collations (renderCollation)
-import Database.SqlServer.Definitions.Entity
+import Database.SqlServer.Definition.Collations (renderCollation)
+import Database.SqlServer.Definition.Entity
 
 import Test.QuickCheck
 import Text.PrettyPrint

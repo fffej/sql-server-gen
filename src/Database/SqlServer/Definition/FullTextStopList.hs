@@ -1,10 +1,10 @@
-module Database.SqlServer.Definitions.FullTextStopList
+module Database.SqlServer.Definition.FullTextStopList
        (
          FullTextStopList
        ) where
 
-import Database.SqlServer.Definitions.Identifier
-import Database.SqlServer.Definitions.Entity
+import Database.SqlServer.Definition.Identifier
+import Database.SqlServer.Definition.Entity
 
 import Test.QuickCheck
 import Text.PrettyPrint

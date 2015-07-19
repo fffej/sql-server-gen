@@ -1,4 +1,4 @@
-module Database.SqlServer.Definitions.Collations
+module Database.SqlServer.Definition.Collations
        (
          Collation
        , renderCollation
