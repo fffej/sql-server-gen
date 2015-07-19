@@ -35,19 +35,19 @@ instance Entity MasterKey where
 data DatabaseDefinition = DatabaseDefinition
                           {
                             databaseName :: RegularIdentifier
-                          , tableDefinitions :: [Table]
-                          , sequenceDefinitions :: [Sequence]
-                          , procedureDefinitions :: [Procedure]
-                          , functionDefinitions :: [Function]
-                          , queueDefinitions :: [Queue]
-                          , certificateDefinitions :: [Certificate]
-                          , userDefinitions :: [User]
-                          , roleDefinitions :: [Role]
-                          , loginDefinitions :: [Login]
-                          , fullTextCatalogDefinitions :: [FullTextCatalog]
-                          , fullTextStopListDefinitions :: [FullTextStopList]
+                          , tables :: [Table]
+                          , sequences :: [Sequence]
+                          , procedures :: [Procedure]
+                          , functions :: [Function]
+                          , queues :: [Queue]
+                          , certificates :: [Certificate]
+                          , users :: [User]
+                          , roles :: [Role]
+                          , logins :: [Login]
+                          , fullTextCatalogs :: [FullTextCatalog]
+                          , fullTextStopLists :: [FullTextStopList]
                           , credentials :: [Credential]
-                          , messageDefinitions :: [MessageType]
+                          , messages :: [MessageType]
                           , masterKey :: MasterKey
                           }
 
@@ -61,19 +61,19 @@ renderDatabaseDefinition  dd = text "USE master" $+$
                                text "GO" $+$
                                text "USE" <+> dbName $+$
                                toDoc (masterKey dd) $+$
-                               renderNamedEntities (tableDefinitions dd) $+$
-                               renderNamedEntities (sequenceDefinitions dd) $+$
-                               renderNamedEntities (procedureDefinitions dd) $+$
-                               renderNamedEntities (functionDefinitions dd) $+$
-                               renderNamedEntities (queueDefinitions dd) $+$
-                               renderNamedEntities (certificateDefinitions dd) $+$
-                               renderNamedEntities (userDefinitions dd) $+$
-                               renderNamedEntities (roleDefinitions dd) $+$
-                               renderNamedEntities (loginDefinitions dd) $+$
-                               renderNamedEntities (fullTextCatalogDefinitions dd) $+$
-                               renderNamedEntities (fullTextStopListDefinitions dd) $+$
+                               renderNamedEntities (tables dd) $+$
+                               renderNamedEntities (sequences dd) $+$
+                               renderNamedEntities (procedures dd) $+$
+                               renderNamedEntities (functions dd) $+$
+                               renderNamedEntities (queues dd) $+$
+                               renderNamedEntities (certificates dd) $+$
+                               renderNamedEntities (users dd) $+$
+                               renderNamedEntities (roles dd) $+$
+                               renderNamedEntities (logins dd) $+$
+                               renderNamedEntities (fullTextCatalogs dd) $+$
+                               renderNamedEntities (fullTextStopLists dd) $+$
                                renderNamedEntities (credentials dd) $+$
-                               renderNamedEntities (messageDefinitions dd) $+$ 
+                               renderNamedEntities (messages dd) $+$ 
                                text "GO"
   where
     dbName = renderRegularIdentifier (databaseName dd)
