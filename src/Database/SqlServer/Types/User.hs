@@ -35,6 +35,11 @@ renderLogin :: LoginDefinition -> Doc
 renderLogin l = text "LOGIN" <+>
                 renderRegularIdentifier (loginName l)
 
+renderUserName :: UserDefinition -> Doc
+renderUserName (CreateUserWithoutLogin x) = renderRegularIdentifier x
+renderUserName (CreateUserWithCertificate x _ _) = renderRegularIdentifier x
+renderUserName (CreateUserWithLogin x _ _) = renderRegularIdentifier x
+
 instance Entity UserDefinition where
   toDoc (CreateUserWithoutLogin x) = text "CREATE USER" <+>
                                      renderRegularIdentifier x <+>
@@ -52,3 +57,21 @@ instance Entity UserDefinition where
                                          renderForFrom ff <+>
                                          renderLogin lg
 
+data RoleDefinition = RoleDefinition
+    {
+      roleName :: RegularIdentifier
+    , authorization :: Maybe UserDefinition
+    }
+
+derive makeArbitrary ''RoleDefinition
+
+renderAuthorization :: UserDefinition -> Doc
+renderAuthorization ud = text "AUTHORIZATION" <+> (renderUserName ud)
+
+instance Entity RoleDefinition where
+  toDoc rd = maybe empty toDoc (authorization rd) $+$ text "GO" $+$
+             text "CREATE ROLE" <+> (renderRegularIdentifier $ roleName rd) <+>
+             maybe empty renderAuthorization (authorization rd) 
+             
+instance Show RoleDefinition where
+  show = show . toDoc 
