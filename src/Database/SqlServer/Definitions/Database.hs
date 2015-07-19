@@ -3,9 +3,9 @@
 module Database.SqlServer.Definitions.Database where
 
 import Database.SqlServer.Definitions.Identifiers (RegularIdentifier,renderRegularIdentifier)
-import Database.SqlServer.Definitions.Table (TableDefinition)
-import Database.SqlServer.Definitions.Sequence (SequenceDefinition)
-import Database.SqlServer.Definitions.Procedure (ProcedureDefinition)
+import Database.SqlServer.Definitions.Table (Table)
+import Database.SqlServer.Definitions.Sequence (Sequence)
+import Database.SqlServer.Definitions.Procedure (Procedure)
 import Database.SqlServer.Definitions.Queue (QueueDefinition)
 import Database.SqlServer.Definitions.Certificate (CertificateDefinition)
 import Database.SqlServer.Definitions.Login (LoginDefinition)
@@ -35,9 +35,9 @@ instance Entity MasterKey where
 data DatabaseDefinition = DatabaseDefinition
                           {
                             databaseName :: RegularIdentifier
-                          , tableDefinitions :: [TableDefinition]
-                          , sequenceDefinitions :: [SequenceDefinition]
-                          , procedureDefinitions :: [ProcedureDefinition]
+                          , tableDefinitions :: [Table]
+                          , sequenceDefinitions :: [Sequence]
+                          , procedureDefinitions :: [Procedure]
                           , functionDefinitions :: [FunctionDefinition]
                           , queueDefinitions :: [QueueDefinition]
                           , certificateDefinitions :: [CertificateDefinition]

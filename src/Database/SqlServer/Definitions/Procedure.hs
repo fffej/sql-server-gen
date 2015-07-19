@@ -28,19 +28,19 @@ renderOut False = empty
 renderParameter :: Parameter -> Doc
 renderParameter p = renderParameterIdentifier (parameterName p) <+> renderDataType (dataType p) <+> renderOut (isOutput p)
 
-data ProcedureDefinition = ProcedureDefinition
+data Procedure = Procedure
   {
     procedureName :: RegularIdentifier
   , parameters    :: [Parameter]
   }
 
-derive makeArbitrary ''ProcedureDefinition
+derive makeArbitrary ''Procedure
 
 -- Generating arbitrary SQL is perhaps a bit complicated.
 statementBody :: String
 statementBody = "select 1\n"
 
-instance Entity ProcedureDefinition where
+instance Entity Procedure where
   toDoc p = text "CREATE PROCEDURE" <+> renderRegularIdentifier (procedureName p) $+$
                               hcat (punctuate comma (map renderParameter (parameters p))) <+> text "AS" $+$
                               text statementBody $+$

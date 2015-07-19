@@ -31,7 +31,7 @@ derive makeArbitrary ''NumericType
   Rules of sequence definition.
     Min value must be less than the maximum value
 -}
-data SequenceDefinition = SequenceDefinition
+data Sequence = Sequence
                   {
                     sequenceName :: RegularIdentifier
                   , sequenceType :: Maybe NumericType
@@ -55,7 +55,7 @@ renderCacheValue :: Maybe Integer -> Doc
 renderCacheValue Nothing = text "NO CACHE"
 renderCacheValue (Just n) = text "CACHE" <+> integer n
 
-instance Entity SequenceDefinition where
+instance Entity Sequence where
   toDoc s = text "CREATE SEQUENCE" <+> renderRegularIdentifier (sequenceName s) $+$
             dataType $+$ startWith' $+$ incrementBy' $+$ minValue' $+$ maxValue' $+$
             cycle' $+$ cache' $+$
@@ -132,7 +132,7 @@ validMaximum x y = case (numericBounds x) of
   Nothing -> True
   Just (min',_) -> maybe True (> min') y
 
-instance Arbitrary SequenceDefinition where
+instance Arbitrary Sequence where
   arbitrary = do
     nm <- arbitrary
     dataType <- arbitrary
@@ -145,7 +145,7 @@ instance Arbitrary SequenceDefinition where
     hasMaxValue <- elements [Just, const Nothing]
     hasChcValue <- elements [Just, const Nothing]    
     chc <- arbitraryCacheValue
-    return $ SequenceDefinition {
+    return $ Sequence {
         sequenceName = nm
       , sequenceType = dataType
       , startWith = start

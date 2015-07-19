@@ -19,11 +19,11 @@ data ExecuteAs = Self
                | Owner
 
 -- Activation procedures can not have any parameters
-newtype ZeroParamProc = ZeroParamProc { unwrap :: ProcedureDefinition }
+newtype ZeroParamProc = ZeroParamProc { unwrap :: Procedure }
 
 instance Arbitrary ZeroParamProc where
   arbitrary = do
-    proc <- arbitrary :: Gen ProcedureDefinition
+    proc <- arbitrary :: Gen Procedure
     return $ ZeroParamProc (proc { parameters = [] })
 
 data Activation = Activation
@@ -77,7 +77,7 @@ renderExecuteAs Owner = text "EXECUTE AS OWNER"
 renderProc :: Activation -> Doc
 renderProc a = toDoc (unwrap $ procedure a)
 
-renderProcedureName :: ProcedureDefinition -> Doc
+renderProcedureName :: Procedure -> Doc
 renderProcedureName a = text "PROCEDURE_NAME =" <+> renderRegularIdentifier (procedureName a)
 
 renderActivation :: Activation -> Doc

@@ -34,7 +34,7 @@ data ColumnDefinition = ColumnDefinition
 
 newtype ColumnDefinitions = ColumnDefinitions [ColumnDefinition]
 
-data TableDefinition = TableDefinition
+data Table = Table
              {
                tableName    :: RegularIdentifier
              , columnDefinitions :: ColumnDefinitions
@@ -54,11 +54,11 @@ columnConstraintsSatisfied xs = length (filter isTimeStamp xs) <= 1 &&
       (UniqueIdentifier s _) -> maybe False isRowGuidCol s -- TODO eliminate this
       _                      -> False
 
-instance Arbitrary TableDefinition where
+instance Arbitrary Table where
   arbitrary = do
     cols <- arbitrary 
     nm <- arbitrary
-    return $ TableDefinition nm cols
+    return $ Table nm cols
 
 derive makeArbitrary ''ColumnDefinition
 
@@ -83,7 +83,7 @@ renderColumnDefinition c = columnName' <+> columnType' <+> collation' <+>
     nullConstraint    = maybe empty renderNullConstraint (nullOptions (dataType c))
     rowGuidConstraint = renderRowGuidConstraint (rowGuidOptions (dataType c))
 
-instance Entity TableDefinition where
+instance Entity Table where
   toDoc t = text "CREATE TABLE" <+> tableName' $$
             parens (renderColumnDefinitions (columnDefinitions t)) $+$
             text "GO"
