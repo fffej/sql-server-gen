@@ -31,16 +31,16 @@ instance Arbitrary Secret where
 renderSecret :: Secret -> Doc
 renderSecret (Secret s)= comma <> text "SECRET =" <+> quotes (text s)
 
-data CredentialDefinition = CredentialDefintion
+data Credential = CredentialDefintion
    {
      credentialName :: RegularIdentifier
    , identity :: Identity
    , secret :: Maybe Secret
    }
 
-derive makeArbitrary ''CredentialDefinition
+derive makeArbitrary ''Credential
 
-instance Entity CredentialDefinition where
+instance Entity Credential where
   toDoc s = text "CREATE CREDENTIAL" <+> renderRegularIdentifier (credentialName s) <+>
             text "WITH IDENTITY =" <+> quotes (renderIdentity (identity s)) <+>
             maybe empty renderSecret (secret s) $+$

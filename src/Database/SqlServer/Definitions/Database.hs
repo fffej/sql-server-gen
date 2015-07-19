@@ -7,14 +7,14 @@ import Database.SqlServer.Definitions.Table (Table)
 import Database.SqlServer.Definitions.Sequence (Sequence)
 import Database.SqlServer.Definitions.Procedure (Procedure)
 import Database.SqlServer.Definitions.Queue (Queue)
-import Database.SqlServer.Definitions.Certificate (CertificateDefinition)
-import Database.SqlServer.Definitions.Login (LoginDefinition)
+import Database.SqlServer.Definitions.Certificate (Certificate)
+import Database.SqlServer.Definitions.Login (Login)
 import Database.SqlServer.Definitions.User (User,Role)
-import Database.SqlServer.Definitions.FullTextCatalog (FullTextCatalogDefinition)
-import Database.SqlServer.Definitions.FullTextStopList (FullTextStopListDefinition)
+import Database.SqlServer.Definitions.FullTextCatalog (FullTextCatalog)
+import Database.SqlServer.Definitions.FullTextStopList (FullTextStopList)
 import Database.SqlServer.Definitions.Function (Function)
-import Database.SqlServer.Definitions.Credential (CredentialDefinition)
-import Database.SqlServer.Definitions.MessageType (MessageTypeDefinition)
+import Database.SqlServer.Definitions.Credential (Credential)
+import Database.SqlServer.Definitions.MessageType (MessageType)
 import Database.SqlServer.Definitions.Entity
 
 import Test.QuickCheck
@@ -40,14 +40,14 @@ data DatabaseDefinition = DatabaseDefinition
                           , procedureDefinitions :: [Procedure]
                           , functionDefinitions :: [Function]
                           , queueDefinitions :: [Queue]
-                          , certificateDefinitions :: [CertificateDefinition]
+                          , certificateDefinitions :: [Certificate]
                           , userDefinitions :: [User]
                           , roleDefinitions :: [Role]
-                          , loginDefinitions :: [LoginDefinition]
-                          , fullTextCatalogDefinitions :: [FullTextCatalogDefinition]
-                          , fullTextStopListDefinitions :: [FullTextStopListDefinition]
-                          , credentials :: [CredentialDefinition]
-                          , messageDefinitions :: [MessageTypeDefinition]
+                          , loginDefinitions :: [Login]
+                          , fullTextCatalogDefinitions :: [FullTextCatalog]
+                          , fullTextStopListDefinitions :: [FullTextStopList]
+                          , credentials :: [Credential]
+                          , messageDefinitions :: [MessageType]
                           , masterKey :: MasterKey
                           }
 

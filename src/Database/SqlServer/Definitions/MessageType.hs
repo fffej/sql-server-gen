@@ -18,14 +18,14 @@ data Validation = None
 
 derive makeArbitrary ''Validation
 
-data MessageTypeDefinition = MessageTypeDefinition
+data MessageType = MessageType
   {
     messageTypeName :: RegularIdentifier
   , authorization :: Maybe (Either User Role)
   , validation :: Maybe Validation
   }
 
-derive makeArbitrary ''MessageTypeDefinition
+derive makeArbitrary ''MessageType
 
 -- Must be able to eliminate the duplication here
 renderPreRequisites :: Either User Role -> Doc
@@ -41,7 +41,7 @@ renderValidation None = text "VALIDATION = NONE"
 renderValidation Empty = text "VALIDATION = EMPTY"
 renderValidation WellFormedXml = text "VALIDATION = WELL_FORMED_XML"
 
-instance Entity MessageTypeDefinition where
+instance Entity MessageType where
   toDoc m = maybe empty renderPreRequisites (authorization m) $+$
             text "CREATE MESSAGE TYPE" <+> (renderRegularIdentifier (messageTypeName m)) $+$
             maybe empty renderAuthorization (authorization m) $+$

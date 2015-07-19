@@ -16,8 +16,8 @@ data ForFrom = For | From
 
 -- TODO asymmetric key
 data User = CreateUserWithoutLogin RegularIdentifier
-                    | CreateUserWithCertificate RegularIdentifier ForFrom CertificateDefinition
-                    | CreateUserWithLogin RegularIdentifier ForFrom LoginDefinition
+                    | CreateUserWithCertificate RegularIdentifier ForFrom Certificate
+                    | CreateUserWithLogin RegularIdentifier ForFrom Login
 
 
 derive makeArbitrary ''ForFrom
@@ -27,11 +27,11 @@ renderForFrom :: ForFrom -> Doc
 renderForFrom For = text "FOR"
 renderForFrom From = text "FROM"
 
-renderCertificate :: CertificateDefinition -> Doc
+renderCertificate :: Certificate -> Doc
 renderCertificate c = text "CERTIFICATE" <+>
                       renderRegularIdentifier (certificateName c)
 
-renderLogin :: LoginDefinition -> Doc
+renderLogin :: Login -> Doc
 renderLogin l = text "LOGIN" <+>
                 renderRegularIdentifier (loginName l)
 
