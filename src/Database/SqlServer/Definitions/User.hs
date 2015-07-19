@@ -1,7 +1,13 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE TemplateHaskell #-}
 
-module Database.SqlServer.Definitions.User where
+module Database.SqlServer.Definitions.User
+       (
+         User
+       , Role
+       , renderUserName
+       , roleName
+       ) where
 
 import Database.SqlServer.Definitions.Identifiers
 import Database.SqlServer.Definitions.Entity
@@ -16,8 +22,8 @@ data ForFrom = For | From
 
 -- TODO asymmetric key
 data User = CreateUserWithoutLogin RegularIdentifier
-                    | CreateUserWithCertificate RegularIdentifier ForFrom Certificate
-                    | CreateUserWithLogin RegularIdentifier ForFrom Login
+          | CreateUserWithCertificate RegularIdentifier ForFrom Certificate
+          | CreateUserWithLogin RegularIdentifier ForFrom Login
 
 
 derive makeArbitrary ''ForFrom
@@ -66,11 +72,11 @@ data Role = Role
 derive makeArbitrary ''Role
 
 renderAuthorization :: User -> Doc
-renderAuthorization ud = text "AUTHORIZATION" <+> (renderUserName ud)
+renderAuthorization ud = text "AUTHORIZATION" <+> renderUserName ud
 
 instance Entity Role where
   toDoc rd = maybe empty toDoc (authorization rd) $+$ text "GO" $+$
-             text "CREATE ROLE" <+> (renderRegularIdentifier $ roleName rd) <+>
+             text "CREATE ROLE" <+> renderRegularIdentifier (roleName rd) <+>
              maybe empty renderAuthorization (authorization rd) 
              
 instance Show Role where

@@ -1,11 +1,14 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE TemplateHaskell #-}
 
-module Database.SqlServer.Definitions.Table where
+module Database.SqlServer.Definitions.Table
+       (
+         Table
+       ) where
 
 import Database.SqlServer.Definitions.Identifiers (RegularIdentifier, renderRegularIdentifier)
 import Database.SqlServer.Definitions.DataTypes (
-  Type(..),
+  Type,
   renderDataType,
   collation,
   renderSparse,
@@ -15,7 +18,7 @@ import Database.SqlServer.Definitions.DataTypes (
   storageSize,
   renderRowGuidConstraint,
   rowGuidOptions,
-  isRowGuidCol
+  isTimestamp
   )
   
 import Database.SqlServer.Definitions.Collations (renderCollation)
@@ -41,19 +44,14 @@ data Table = Table
              }
 
 columnConstraintsSatisfied :: [ColumnDefinition] -> Bool
-columnConstraintsSatisfied xs = length (filter isTimeStamp xs) <= 1 && 
+columnConstraintsSatisfied xs = length (filter columnIsTimestamp xs) <= 1 && 
                                 totalColumnSizeBytes <= 8060 &&
-                                length (filter oneGuidCol xs) <= 1 
+                                length (filter (rowGuidOptions . dataType) xs) <= 1 
   where
     totalColumnSizeBits = (length xs * 8) + 32 + sum (map (storageSize . dataType) xs)
     totalColumnSizeBytes = totalColumnSizeBits `div` 8 + (if totalColumnSizeBits `rem` 8 /= 0 then 8 else 0)
-    isTimeStamp c = case dataType c of
-      (Timestamp _) -> True
-      _             -> False
-    oneGuidCol c = case dataType c of
-      (UniqueIdentifier s _) -> maybe False isRowGuidCol s -- TODO eliminate this
-      _                      -> False
-
+    columnIsTimestamp = isTimestamp . dataType
+    
 instance Arbitrary Table where
   arbitrary = do
     cols <- arbitrary 

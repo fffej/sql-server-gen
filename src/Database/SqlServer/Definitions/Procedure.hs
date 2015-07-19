@@ -2,7 +2,12 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE GADTs #-}
 
-module Database.SqlServer.Definitions.Procedure where
+module Database.SqlServer.Definitions.Procedure
+       (
+         Procedure,
+         parameters,
+         procedureName
+       ) where
 
 import Database.SqlServer.Definitions.Identifiers hiding (unwrap)
 import Database.SqlServer.Definitions.DataTypes

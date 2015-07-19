@@ -1,10 +1,25 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE TemplateHaskell #-}
 
-module Database.SqlServer.Definitions.DataTypes where
+module Database.SqlServer.Definitions.DataTypes
+       (
+         Type
+       , renderDataType
+       , collation
+       , renderSparse
+       , storageOptions
+       , rowGuidOptions
+       , storageSize
+       , renderRowGuidConstraint
+       , isRowGuidCol
+       , nullOptions
+       , renderNullConstraint
+       , isTimestamp
+       , renderValue
+       ) where
 
 import Database.SqlServer.Definitions.Collations (Collation)
-import Database.SqlServer.Definitions.Identifiers (ArbUUID(..))
+import Database.SqlServer.Definitions.Identifiers (ArbUUID)
 
 import Text.PrettyPrint
 
@@ -70,10 +85,6 @@ renderNRange (NSized r) = renderNFixedRange r
 data VarBinaryStorage = SizedRange Range
                       | MaxNoFileStream
                       | MaxFileStream
-
-renderFileStream :: VarBinaryStorage -> Doc
-renderFileStream MaxFileStream = text "FILESTREAM"
-renderFileStream _             = empty
 
 renderVarBinaryStorage :: VarBinaryStorage -> Doc
 renderVarBinaryStorage (SizedRange r)   = renderRange r
@@ -192,12 +203,16 @@ instance Arbitrary SQLDate where
 
 data SQLDateTime = SQLDateTime UTCTime
 
+dateBetween :: Integer -> Integer -> Gen Day
+dateBetween startYear endYear = do
+  y <- choose (startYear,endYear)
+  m <- choose (1,12)
+  d <- choose (1,31)
+  return (fromGregorian y m d)
+
 instance Arbitrary SQLDateTime where
   arbitrary = do
-    y <- choose (1753,9999)
-    m <- choose (1,12)
-    d <- choose (1,31)
-    let day = fromGregorian y m d
+    day <- dateBetween 1753 9999
     datetime <- choose (0,86400)
     return (SQLDateTime (UTCTime day (secondsToDiffTime datetime)))
 
@@ -205,10 +220,7 @@ data SQLSmallDateTime = SQLSmallDateTime UTCTime
 
 instance Arbitrary SQLSmallDateTime where
   arbitrary = do
-    y <- choose (1900,2078)
-    m <- choose (1,12)
-    d <- choose (1,31)
-    let day = fromGregorian y m d
+    day <- dateBetween 1900 2078
     datetime <- choose (0,86400)
     return (SQLSmallDateTime (UTCTime day (secondsToDiffTime datetime)))
 
@@ -275,7 +287,7 @@ data SQLVariant = SQLVariantInt Int
 instance Arbitrary SQLVariant where
   arbitrary = do
     x <- arbitrary
-    y <- elements [\y -> SQLVariantString (show y), \y -> SQLVariantInt y]
+    y <- elements [SQLVariantString . show, SQLVariantInt]
     return $ y x
 
 data SQLXml = SQLXml String
@@ -468,7 +480,7 @@ renderValue (BigInt _ v) = Just $ (text . show) v
 renderValue (Int _ v) = Just $ (text . show) v
 renderValue (TinyInt _ v) = Just $ (text . show) v
 renderValue (SmallInt _ v) = Just $ (text . show) v
-renderValue (Bit _ b) = Just $ maybe (text "NULL") (\x -> if x then int 1 else int 0) b
+renderValue (Bit _ b) = Just $ maybe (text "NULL") (\x -> int (if x then 1 else  0)) b
 renderValue (SmallMoney _ s) = Just $ text (divideBy10000 $ fromIntegral s)
 renderValue (Money _ s) = Just $ text (divideBy10000 $ fromIntegral s)
 renderValue (Date _ d) = Just $ renderSQLDate d

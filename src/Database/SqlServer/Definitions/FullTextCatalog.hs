@@ -1,7 +1,10 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE TemplateHaskell #-}
 
-module Database.SqlServer.Definitions.FullTextCatalog where
+module Database.SqlServer.Definitions.FullTextCatalog
+       (
+         FullTextCatalog
+       ) where
 
 import Database.SqlServer.Definitions.Identifiers
 import Database.SqlServer.Definitions.Entity
@@ -22,7 +25,7 @@ data FullTextCatalog = FullTextCatalog
 derive makeArbitrary ''FullTextCatalog
 
 renderFileGroup :: RegularIdentifier -> Doc
-renderFileGroup n = text "ON FILEGROUP" <+> (renderRegularIdentifier n)
+renderFileGroup n = text "ON FILEGROUP" <+> renderRegularIdentifier n
 
 renderOptions :: Bool -> Doc
 renderOptions True  = text "WITH ACCENT_SENSITIVITY = ON"
@@ -33,5 +36,5 @@ instance Entity FullTextCatalog where
               renderRegularIdentifier (catalogName ftc) $+$
               maybe empty renderFileGroup (filegroup ftc) $+$
               maybe empty renderOptions (accentSensitive ftc) $+$
-              if (asDefault ftc) then text "AS DEFAULT" else empty $+$
+              if asDefault ftc then text "AS DEFAULT" else empty $+$
               text "GO\n"

@@ -1,4 +1,7 @@
-module Database.SqlServer.Definitions.FullTextStopList where
+module Database.SqlServer.Definitions.FullTextStopList
+       (
+         FullTextStopList
+       ) where
 
 import Database.SqlServer.Definitions.Identifiers
 import Database.SqlServer.Definitions.Entity
