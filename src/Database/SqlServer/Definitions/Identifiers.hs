@@ -34,7 +34,7 @@ unwrap (RegularIdentifier x) = "UUID_" ++ xstr
 renderRegularIdentifier :: RegularIdentifier -> Doc
 renderRegularIdentifier = text . unwrap 
 
-newtype ParameterIdentifier = ParameterIdentifier { unwrapP :: RegularIdentifier }
+newtype ParameterIdentifier = ParameterIdentifier RegularIdentifier
 
 derive makeArbitrary ''ParameterIdentifier
 
