@@ -1,7 +1,22 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE TemplateHaskell #-}
 
-module Database.SqlServer.Definitions.DataTypes where
+module Database.SqlServer.Definitions.DataTypes
+       (
+         Type
+       , renderDataType
+       , collation
+       , renderSparse
+       , storageOptions
+       , rowGuidOptions
+       , storageSize
+       , renderRowGuidConstraint
+       , isRowGuidCol
+       , nullOptions
+       , renderNullConstraint
+       , isTimestamp
+       , renderValue
+       ) where
 
 import Database.SqlServer.Definitions.Collations (Collation)
 import Database.SqlServer.Definitions.Identifiers (ArbUUID(..))
