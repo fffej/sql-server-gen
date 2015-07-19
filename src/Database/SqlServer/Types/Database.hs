@@ -14,6 +14,7 @@ import Database.SqlServer.Types.FullTextCatalog (FullTextCatalogDefinition)
 import Database.SqlServer.Types.FullTextStopList (FullTextStopListDefinition)
 import Database.SqlServer.Types.Function (FunctionDefinition)
 import Database.SqlServer.Types.Credential (CredentialDefinition)
+import Database.SqlServer.Types.MessageType (MessageTypeDefinition)
 import Database.SqlServer.Types.Entity
 
 import Test.QuickCheck
@@ -46,6 +47,7 @@ data DatabaseDefinition = DatabaseDefinition
                           , fullTextCatalogDefinitions :: [FullTextCatalogDefinition]
                           , fullTextStopListDefinitions :: [FullTextStopListDefinition]
                           , credentials :: [CredentialDefinition]
+                          , messageTypes :: [MessageTypeDefinition]
                           , masterKey :: MasterKey
                           }
 
@@ -71,6 +73,7 @@ renderDatabaseDefinition  dd = text "USE master" $+$
                                renderNamedEntities (fullTextCatalogDefinitions dd) $+$
                                renderNamedEntities (fullTextStopListDefinitions dd) $+$
                                renderNamedEntities (credentials dd) $+$
+                               renderNamedEntities (messageTypes dd) $+$ 
                                text "GO"
   where
     dbName = renderRegularIdentifier (databaseName dd)
