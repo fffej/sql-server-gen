@@ -12,7 +12,7 @@ import Database.SqlServer.Definitions.Login (LoginDefinition)
 import Database.SqlServer.Definitions.User (UserDefinition,RoleDefinition)
 import Database.SqlServer.Definitions.FullTextCatalog (FullTextCatalogDefinition)
 import Database.SqlServer.Definitions.FullTextStopList (FullTextStopListDefinition)
-import Database.SqlServer.Definitions.Function (FunctionDefinition)
+import Database.SqlServer.Definitions.Function (Function)
 import Database.SqlServer.Definitions.Credential (CredentialDefinition)
 import Database.SqlServer.Definitions.MessageType (MessageTypeDefinition)
 import Database.SqlServer.Definitions.Entity
@@ -38,7 +38,7 @@ data DatabaseDefinition = DatabaseDefinition
                           , tableDefinitions :: [Table]
                           , sequenceDefinitions :: [Sequence]
                           , procedureDefinitions :: [Procedure]
-                          , functionDefinitions :: [FunctionDefinition]
+                          , functionDefinitions :: [Function]
                           , queueDefinitions :: [QueueDefinition]
                           , certificateDefinitions :: [CertificateDefinition]
                           , userDefinitions :: [UserDefinition]
