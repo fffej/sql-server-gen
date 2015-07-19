@@ -1,10 +1,10 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE TemplateHaskell #-}
 
-module Database.SqlServer.Types.DataTypes where
+module Database.SqlServer.Definitions.DataTypes where
 
-import Database.SqlServer.Types.Collations (Collation)
-import Database.SqlServer.Types.Identifiers (ArbUUID(..))
+import Database.SqlServer.Definitions.Collations (Collation)
+import Database.SqlServer.Definitions.Identifiers (ArbUUID(..))
 
 import Text.PrettyPrint
 

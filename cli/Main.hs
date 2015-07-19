@@ -3,7 +3,7 @@ module Main where
 
 import System.Console.CmdArgs
 
-import Database.SqlServer.Types.Database
+import Database.SqlServer.Definitions.Database
 
 data Arguments = Arguments
     {

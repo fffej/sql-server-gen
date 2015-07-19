@@ -1,23 +1,23 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE TemplateHaskell #-}
 
-module Database.SqlServer.Types.Login where
+module Database.SqlServer.Definitions.Login where
 
-import Database.SqlServer.Types.Identifiers
-import Database.SqlServer.Types.Entity
+import Database.SqlServer.Definitions.Identifiers
+import Database.SqlServer.Definitions.Entity
 
 import Data.DeriveTH
 import Test.QuickCheck
 import Text.PrettyPrint
 
-data LoginDefinition = LoginDefinition
+data Login = Login
    {
      loginName :: RegularIdentifier
    , password :: RegularIdentifier
    , mustChange :: Bool 
    }
 
-derive makeArbitrary ''LoginDefinition
+derive makeArbitrary ''Login
 
 renderPassword :: RegularIdentifier -> Doc
 renderPassword s = text "WITH PASSWORD = " <>
@@ -27,7 +27,7 @@ renderMustChange :: Bool -> Doc
 renderMustChange False = empty
 renderMustChange True = text "MUST_CHANGE" <> comma <> text "CHECK_EXPIRATION=ON"
 
-instance Entity LoginDefinition where
+instance Entity Login where
   toDoc a = text "CREATE LOGIN" <+> (renderRegularIdentifier (loginName a)) $+$
             renderPassword (password a)  <+> renderMustChange (mustChange a)
             

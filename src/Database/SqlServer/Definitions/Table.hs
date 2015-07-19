@@ -1,10 +1,10 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE TemplateHaskell #-}
 
-module Database.SqlServer.Types.Table where
+module Database.SqlServer.Definitions.Table where
 
-import Database.SqlServer.Types.Identifiers (RegularIdentifier, renderRegularIdentifier)
-import Database.SqlServer.Types.DataTypes (
+import Database.SqlServer.Definitions.Identifiers (RegularIdentifier, renderRegularIdentifier)
+import Database.SqlServer.Definitions.DataTypes (
   Type(..),
   renderDataType,
   collation,
@@ -18,8 +18,8 @@ import Database.SqlServer.Types.DataTypes (
   isRowGuidCol
   )
   
-import Database.SqlServer.Types.Collations (renderCollation)
-import Database.SqlServer.Types.Entity
+import Database.SqlServer.Definitions.Collations (renderCollation)
+import Database.SqlServer.Definitions.Entity
 
 import Test.QuickCheck
 import Text.PrettyPrint
@@ -34,7 +34,7 @@ data ColumnDefinition = ColumnDefinition
 
 newtype ColumnDefinitions = ColumnDefinitions [ColumnDefinition]
 
-data TableDefinition = TableDefinition
+data Table = Table
              {
                tableName    :: RegularIdentifier
              , columnDefinitions :: ColumnDefinitions
@@ -54,11 +54,11 @@ columnConstraintsSatisfied xs = length (filter isTimeStamp xs) <= 1 &&
       (UniqueIdentifier s _) -> maybe False isRowGuidCol s -- TODO eliminate this
       _                      -> False
 
-instance Arbitrary TableDefinition where
+instance Arbitrary Table where
   arbitrary = do
     cols <- arbitrary 
     nm <- arbitrary
-    return $ TableDefinition nm cols
+    return $ Table nm cols
 
 derive makeArbitrary ''ColumnDefinition
 
@@ -83,7 +83,7 @@ renderColumnDefinition c = columnName' <+> columnType' <+> collation' <+>
     nullConstraint    = maybe empty renderNullConstraint (nullOptions (dataType c))
     rowGuidConstraint = renderRowGuidConstraint (rowGuidOptions (dataType c))
 
-instance Entity TableDefinition where
+instance Entity Table where
   toDoc t = text "CREATE TABLE" <+> tableName' $$
             parens (renderColumnDefinitions (columnDefinitions t)) $+$
             text "GO"

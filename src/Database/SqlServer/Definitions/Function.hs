@@ -2,11 +2,11 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE GADTs #-}
 
-module Database.SqlServer.Types.Function where
+module Database.SqlServer.Definitions.Function where
 
-import Database.SqlServer.Types.Identifiers hiding (unwrap)
-import Database.SqlServer.Types.DataTypes
-import Database.SqlServer.Types.Entity
+import Database.SqlServer.Definitions.Identifiers hiding (unwrap)
+import Database.SqlServer.Definitions.DataTypes
+import Database.SqlServer.Definitions.Entity
 
 import Test.QuickCheck
 import Data.DeriveTH
@@ -76,7 +76,7 @@ renderReturnType (ReturnType t) = renderDataType t
 renderReturnValue :: ReturnType -> Doc
 renderReturnValue (ReturnType t) = fromJust $ renderValue t
 
-data ScalarFunctionDefinition = ScalarFunctionDefinition
+data ScalarFunction = ScalarFunction
    {
      scalarFunctionName :: RegularIdentifier
    , parameters :: [Parameter]
@@ -85,21 +85,21 @@ data ScalarFunctionDefinition = ScalarFunctionDefinition
    , functionOption :: FunctionOption
    }
 
-derive makeArbitrary ''ScalarFunctionDefinition
+derive makeArbitrary ''ScalarFunction
 
-data FunctionDefinition = ScalarFunction ScalarFunctionDefinition
+data Function = ScalarFunctionC ScalarFunction
 
-derive makeArbitrary ''FunctionDefinition
+derive makeArbitrary ''Function
 
-instance Entity FunctionDefinition where
-  toDoc (ScalarFunction f) = text "CREATE FUNCTION" <+> renderRegularIdentifier (scalarFunctionName f) <+>
-                             (parens $ hcat (punctuate comma (map renderParameter (parameters f)))) $+$
-                             text "RETURNS" <+> renderReturnType (returnType f) $+$
-                             renderFunctionOptions (functionOption f) $+$
-                             text "AS" $+$
-                             text "BEGIN" $+$
-                             text "RETURN" <+> renderReturnValue (returnType f) $+$
-                             text "END" $+$ text "GO\n"
+instance Entity Function where
+  toDoc (ScalarFunctionC f) = text "CREATE FUNCTION" <+> renderRegularIdentifier (scalarFunctionName f) <+>
+                              (parens $ hcat (punctuate comma (map renderParameter (parameters f)))) $+$
+                              text "RETURNS" <+> renderReturnType (returnType f) $+$
+                              renderFunctionOptions (functionOption f) $+$
+                              text "AS" $+$
+                              text "BEGIN" $+$
+                              text "RETURN" <+> renderReturnValue (returnType f) $+$
+                              text "END" $+$ text "GO\n"
 
-instance Show FunctionDefinition where
+instance Show Function where
   show f = show (toDoc f)

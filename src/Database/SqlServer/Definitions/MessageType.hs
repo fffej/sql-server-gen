@@ -2,11 +2,11 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE GADTs #-}
 
-module Database.SqlServer.Types.MessageType where
+module Database.SqlServer.Definitions.MessageType where
 
-import Database.SqlServer.Types.Identifiers hiding (unwrap)
-import Database.SqlServer.Types.User (UserDefinition,RoleDefinition,roleName,renderUserName)
-import Database.SqlServer.Types.Entity
+import Database.SqlServer.Definitions.Identifiers hiding (unwrap)
+import Database.SqlServer.Definitions.User (User,Role,roleName,renderUserName)
+import Database.SqlServer.Definitions.Entity
 
 import Test.QuickCheck
 import Data.DeriveTH
@@ -18,21 +18,21 @@ data Validation = None
 
 derive makeArbitrary ''Validation
 
-data MessageTypeDefinition = MessageTypeDefinition
+data MessageType = MessageType
   {
     messageTypeName :: RegularIdentifier
-  , authorization :: Maybe (Either UserDefinition RoleDefinition)
+  , authorization :: Maybe (Either User Role)
   , validation :: Maybe Validation
   }
 
-derive makeArbitrary ''MessageTypeDefinition
+derive makeArbitrary ''MessageType
 
 -- Must be able to eliminate the duplication here
-renderPreRequisites :: Either UserDefinition RoleDefinition -> Doc
+renderPreRequisites :: Either User Role -> Doc
 renderPreRequisites (Left x)  = toDoc x $+$ text "GO"
 renderPreRequisites (Right x) = toDoc x $+$ text "GO"
 
-renderAuthorization :: Either UserDefinition RoleDefinition -> Doc
+renderAuthorization :: Either User Role -> Doc
 renderAuthorization (Left x)  = text "AUTHORIZATION" <+> renderUserName x
 renderAuthorization (Right x) = text "AUTHORIZATION" <+> renderRegularIdentifier (roleName x) 
 
@@ -41,7 +41,7 @@ renderValidation None = text "VALIDATION = NONE"
 renderValidation Empty = text "VALIDATION = EMPTY"
 renderValidation WellFormedXml = text "VALIDATION = WELL_FORMED_XML"
 
-instance Entity MessageTypeDefinition where
+instance Entity MessageType where
   toDoc m = maybe empty renderPreRequisites (authorization m) $+$
             text "CREATE MESSAGE TYPE" <+> (renderRegularIdentifier (messageTypeName m)) $+$
             maybe empty renderAuthorization (authorization m) $+$

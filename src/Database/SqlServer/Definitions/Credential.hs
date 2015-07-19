@@ -2,10 +2,10 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE GADTs #-}
 
-module Database.SqlServer.Types.Credential where
+module Database.SqlServer.Definitions.Credential where
 
-import Database.SqlServer.Types.Identifiers hiding (unwrap)
-import Database.SqlServer.Types.Entity
+import Database.SqlServer.Definitions.Identifiers hiding (unwrap)
+import Database.SqlServer.Definitions.Entity
 
 import Text.PrettyPrint
 import Test.QuickCheck
@@ -31,16 +31,16 @@ instance Arbitrary Secret where
 renderSecret :: Secret -> Doc
 renderSecret (Secret s)= comma <> text "SECRET =" <+> quotes (text s)
 
-data CredentialDefinition = CredentialDefintion
+data Credential = CredentialDefintion
    {
      credentialName :: RegularIdentifier
    , identity :: Identity
    , secret :: Maybe Secret
    }
 
-derive makeArbitrary ''CredentialDefinition
+derive makeArbitrary ''Credential
 
-instance Entity CredentialDefinition where
+instance Entity Credential where
   toDoc s = text "CREATE CREDENTIAL" <+> renderRegularIdentifier (credentialName s) <+>
             text "WITH IDENTITY =" <+> quotes (renderIdentity (identity s)) <+>
             maybe empty renderSecret (secret s) $+$

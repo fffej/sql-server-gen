@@ -2,11 +2,11 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE GADTs #-}
 
-module Database.SqlServer.Types.Queue where
+module Database.SqlServer.Definitions.Queue where
 
-import Database.SqlServer.Types.Identifiers hiding (unwrap)
-import Database.SqlServer.Types.Procedure
-import Database.SqlServer.Types.Entity
+import Database.SqlServer.Definitions.Identifiers hiding (unwrap)
+import Database.SqlServer.Definitions.Procedure
+import Database.SqlServer.Definitions.Entity
 
 import Test.QuickCheck
 import Data.DeriveTH
@@ -19,11 +19,11 @@ data ExecuteAs = Self
                | Owner
 
 -- Activation procedures can not have any parameters
-newtype ZeroParamProc = ZeroParamProc { unwrap :: ProcedureDefinition }
+newtype ZeroParamProc = ZeroParamProc { unwrap :: Procedure }
 
 instance Arbitrary ZeroParamProc where
   arbitrary = do
-    proc <- arbitrary :: Gen ProcedureDefinition
+    proc <- arbitrary :: Gen Procedure
     return $ ZeroParamProc (proc { parameters = [] })
 
 data Activation = Activation
@@ -33,7 +33,7 @@ data Activation = Activation
     , procedure :: ZeroParamProc
     } 
 
-data QueueDefinition = QueueDefinition
+data Queue = Queue
     {
       queueName :: RegularIdentifier
     , queueStatus :: Maybe Bool
@@ -42,7 +42,7 @@ data QueueDefinition = QueueDefinition
     , poisonMessageHandling :: Maybe Bool
     }
 derive makeArbitrary ''ExecuteAs
-derive makeArbitrary ''QueueDefinition
+derive makeArbitrary ''Queue
 
 instance Arbitrary Activation where
   arbitrary = do
@@ -51,7 +51,7 @@ instance Arbitrary Activation where
     y <- arbitrary
     return $ Activation r x y
 
-anySpecified :: QueueDefinition -> Bool
+anySpecified :: Queue -> Bool
 anySpecified q = isJust (queueStatus q) || isJust (retention q) ||
                  isJust (activation q)  || isJust (poisonMessageHandling q)
 
@@ -77,7 +77,7 @@ renderExecuteAs Owner = text "EXECUTE AS OWNER"
 renderProc :: Activation -> Doc
 renderProc a = toDoc (unwrap $ procedure a)
 
-renderProcedureName :: ProcedureDefinition -> Doc
+renderProcedureName :: Procedure -> Doc
 renderProcedureName a = text "PROCEDURE_NAME =" <+> renderRegularIdentifier (procedureName a)
 
 renderActivation :: Activation -> Doc
@@ -88,7 +88,7 @@ renderActivation a = text "ACTIVATION(" <+>
                            , renderProcedureName (unwrap $ procedure a)
                            ]) <+> text ")"
 
-instance Entity QueueDefinition where
+instance Entity Queue where
   toDoc q = maybe empty renderProc (activation q) $+$
             text "CREATE QUEUE" <+> (renderRegularIdentifier (queueName q)) <+> options $+$ text "GO"
     where

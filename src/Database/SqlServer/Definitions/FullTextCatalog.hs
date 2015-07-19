@@ -1,16 +1,16 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE TemplateHaskell #-}
 
-module Database.SqlServer.Types.FullTextCatalog where
+module Database.SqlServer.Definitions.FullTextCatalog where
 
-import Database.SqlServer.Types.Identifiers
-import Database.SqlServer.Types.Entity
+import Database.SqlServer.Definitions.Identifiers
+import Database.SqlServer.Definitions.Entity
 
 import Test.QuickCheck
 import Text.PrettyPrint
 import Data.DeriveTH
 
-data FullTextCatalogDefinition = FullTextCatalogDefinition
+data FullTextCatalog = FullTextCatalog
   {
     catalogName :: RegularIdentifier
   , filegroup :: Maybe RegularIdentifier
@@ -19,7 +19,7 @@ data FullTextCatalogDefinition = FullTextCatalogDefinition
   -- TODO ignore users
   }
 
-derive makeArbitrary ''FullTextCatalogDefinition
+derive makeArbitrary ''FullTextCatalog
 
 renderFileGroup :: RegularIdentifier -> Doc
 renderFileGroup n = text "ON FILEGROUP" <+> (renderRegularIdentifier n)
@@ -28,7 +28,7 @@ renderOptions :: Bool -> Doc
 renderOptions True  = text "WITH ACCENT_SENSITIVITY = ON"
 renderOptions False = text "WITH ACCENT_SENSITIVITY = OFF"
 
-instance Entity FullTextCatalogDefinition where
+instance Entity FullTextCatalog where
   toDoc ftc = text "CREATE FULLTEXT CATALOG" <+>
               renderRegularIdentifier (catalogName ftc) $+$
               maybe empty renderFileGroup (filegroup ftc) $+$

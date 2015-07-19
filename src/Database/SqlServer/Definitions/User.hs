@@ -1,12 +1,12 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE TemplateHaskell #-}
 
-module Database.SqlServer.Types.User where
+module Database.SqlServer.Definitions.User where
 
-import Database.SqlServer.Types.Identifiers
-import Database.SqlServer.Types.Entity
-import Database.SqlServer.Types.Certificate
-import Database.SqlServer.Types.Login
+import Database.SqlServer.Definitions.Identifiers
+import Database.SqlServer.Definitions.Entity
+import Database.SqlServer.Definitions.Certificate
+import Database.SqlServer.Definitions.Login
 
 import Test.QuickCheck
 import Text.PrettyPrint
@@ -15,32 +15,32 @@ import Data.DeriveTH
 data ForFrom = For | From
 
 -- TODO asymmetric key
-data UserDefinition = CreateUserWithoutLogin RegularIdentifier
-                    | CreateUserWithCertificate RegularIdentifier ForFrom CertificateDefinition
-                    | CreateUserWithLogin RegularIdentifier ForFrom LoginDefinition
+data User = CreateUserWithoutLogin RegularIdentifier
+                    | CreateUserWithCertificate RegularIdentifier ForFrom Certificate
+                    | CreateUserWithLogin RegularIdentifier ForFrom Login
 
 
 derive makeArbitrary ''ForFrom
-derive makeArbitrary ''UserDefinition
+derive makeArbitrary ''User
 
 renderForFrom :: ForFrom -> Doc
 renderForFrom For = text "FOR"
 renderForFrom From = text "FROM"
 
-renderCertificate :: CertificateDefinition -> Doc
+renderCertificate :: Certificate -> Doc
 renderCertificate c = text "CERTIFICATE" <+>
                       renderRegularIdentifier (certificateName c)
 
-renderLogin :: LoginDefinition -> Doc
+renderLogin :: Login -> Doc
 renderLogin l = text "LOGIN" <+>
                 renderRegularIdentifier (loginName l)
 
-renderUserName :: UserDefinition -> Doc
+renderUserName :: User -> Doc
 renderUserName (CreateUserWithoutLogin x) = renderRegularIdentifier x
 renderUserName (CreateUserWithCertificate x _ _) = renderRegularIdentifier x
 renderUserName (CreateUserWithLogin x _ _) = renderRegularIdentifier x
 
-instance Entity UserDefinition where
+instance Entity User where
   toDoc (CreateUserWithoutLogin x) = text "CREATE USER" <+>
                                      renderRegularIdentifier x <+>
                                      text "WITHOUT LOGIN"
@@ -57,21 +57,21 @@ instance Entity UserDefinition where
                                          renderForFrom ff <+>
                                          renderLogin lg
 
-data RoleDefinition = RoleDefinition
+data Role = Role
     {
       roleName :: RegularIdentifier
-    , authorization :: Maybe UserDefinition
+    , authorization :: Maybe User
     }
 
-derive makeArbitrary ''RoleDefinition
+derive makeArbitrary ''Role
 
-renderAuthorization :: UserDefinition -> Doc
+renderAuthorization :: User -> Doc
 renderAuthorization ud = text "AUTHORIZATION" <+> (renderUserName ud)
 
-instance Entity RoleDefinition where
+instance Entity Role where
   toDoc rd = maybe empty toDoc (authorization rd) $+$ text "GO" $+$
              text "CREATE ROLE" <+> (renderRegularIdentifier $ roleName rd) <+>
              maybe empty renderAuthorization (authorization rd) 
              
-instance Show RoleDefinition where
+instance Show Role where
   show = show . toDoc 

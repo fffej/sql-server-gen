@@ -1,17 +1,17 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE TemplateHaskell #-}
 
-module Database.SqlServer.Types.Certificate where
+module Database.SqlServer.Definitions.Certificate where
 
-import Database.SqlServer.Types.Identifiers
-import Database.SqlServer.Types.Entity
+import Database.SqlServer.Definitions.Identifiers
+import Database.SqlServer.Definitions.Entity
 
 import Text.PrettyPrint
 import Data.Time.Calendar
 import Test.QuickCheck
 import Control.Monad
 
-data CertificateDefinition = CertificateDefinition
+data Certificate = Certificate
   {
     certificateName :: RegularIdentifier
   , activeForBeginDialog :: Maybe (Maybe Bool)
@@ -33,7 +33,7 @@ renderExpiryDate d = text "EXPIRY_DATE = '" <> text (filter (/= '-') (show d))  
 renderStartDate :: Day -> Doc
 renderStartDate d = text "START_DATE = '" <> text (filter (/= '-') (show d)) <> text "'"
 
-instance Arbitrary CertificateDefinition where
+instance Arbitrary Certificate where
   arbitrary = do
     name <- arbitrary
     afbd <- arbitrary
@@ -43,7 +43,7 @@ instance Arbitrary CertificateDefinition where
     str <- elements [Just (addDays x eDay), Nothing]
     ep <- arbitrary
     sub <- arbitrary
-    return $ CertificateDefinition {
+    return $ Certificate {
         certificateName = name
       , activeForBeginDialog = afbd
       , startDate = str
@@ -52,7 +52,7 @@ instance Arbitrary CertificateDefinition where
       , subject = sub
       }
 
-instance Entity CertificateDefinition where
+instance Entity Certificate where
   toDoc c = text "CREATE CERTIFICATE" <+> renderRegularIdentifier (certificateName c) $+$
             renderEncryptionByPassword (encryptPassword c) $+$
             hcat (punctuate comma $ filter (/= empty)
