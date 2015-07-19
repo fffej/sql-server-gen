@@ -28,9 +28,9 @@ data MasterKey = MasterKey
 
 derive makeArbitrary ''MasterKey
 
-instance Entity MasterKey where
-  toDoc MasterKey = text "CREATE MASTER KEY ENCRYPTION BY PASSWORD = 'weKKjwehg252t!!'" $+$
-                    text "GO"
+renderMasterKey :: MasterKey -> Doc
+renderMasterKey _ = text "CREATE MASTER KEY ENCRYPTION BY PASSWORD = 'weKKjwehg252t!!'"
+           $+$  text "GO"
                         
 data DatabaseDefinition = DatabaseDefinition
                           {
@@ -60,7 +60,7 @@ renderDatabaseDefinition  dd = text "USE master" $+$
                                text "CREATE DATABASE" <+> dbName $+$
                                text "GO" $+$
                                text "USE" <+> dbName $+$
-                               toDoc (masterKey dd) $+$
+                               renderMasterKey (masterKey dd) $+$
                                renderNamedEntities (tables dd) $+$
                                renderNamedEntities (sequences dd) $+$
                                renderNamedEntities (procedures dd) $+$

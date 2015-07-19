@@ -36,7 +36,7 @@ renderStartDate d = text "START_DATE = '" <> text (filter (/= '-') (show d)) <> 
 
 instance Arbitrary Certificate where
   arbitrary = do
-    name <- arbitrary
+    certName <- arbitrary
     afbd <- arbitrary
     eDay <- liftM3 fromGregorian (elements [2016..3000]) (choose(1,12)) (choose(1,31))
     x <- choose(- 1000,- 1)
@@ -45,7 +45,7 @@ instance Arbitrary Certificate where
     ep <- arbitrary
     sub <- arbitrary
     return Certificate {
-        certificateName = name
+        certificateName = certName
       , activeForBeginDialog = afbd
       , startDate = str
       , expiryDate = ex
@@ -54,7 +54,8 @@ instance Arbitrary Certificate where
       }
 
 instance Entity Certificate where
-  toDoc c = text "CREATE CERTIFICATE" <+> renderRegularIdentifier (certificateName c) $+$
+  name = certificateName
+  toDoc c = text "CREATE CERTIFICATE" <+> renderName c $+$
             renderEncryptionByPassword (encryptPassword c) $+$
             hcat (punctuate comma $ filter (/= empty)
                   [ renderSubject (subject c)

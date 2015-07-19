@@ -94,7 +94,8 @@ data Function = ScalarFunctionC ScalarFunction
 derive makeArbitrary ''Function
 
 instance Entity Function where
-  toDoc (ScalarFunctionC f) = text "CREATE FUNCTION" <+> renderRegularIdentifier (scalarFunctionName f) <+>
+  name (ScalarFunctionC f) = scalarFunctionName f
+  toDoc fn@(ScalarFunctionC f) = text "CREATE FUNCTION" <+> renderName fn <+>
                               parens (hcat (punctuate comma (map renderParameter (parameters f)))) $+$
                               text "RETURNS" <+> renderReturnType (returnType f) $+$
                               renderFunctionOptions (functionOption f) $+$

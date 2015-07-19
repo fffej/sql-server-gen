@@ -28,7 +28,8 @@ renderMustChange False = empty
 renderMustChange True = text "MUST_CHANGE" <> comma <> text "CHECK_EXPIRATION=ON"
 
 instance Entity Login where
-  toDoc a = text "CREATE LOGIN" <+> renderRegularIdentifier (loginName a) $+$
+  name = loginName
+  toDoc a = text "CREATE LOGIN" <+> renderName a $+$
             renderPassword (password a)  <+> renderMustChange (mustChange a)
             
  

@@ -59,6 +59,7 @@ renderCacheValue Nothing = text "NO CACHE"
 renderCacheValue (Just n) = text "CACHE" <+> integer n
 
 instance Entity Sequence where
+  name = sequenceName
   toDoc s = text "CREATE SEQUENCE" <+> renderRegularIdentifier (sequenceName s) $+$
             dataType $+$ startWith' $+$ incrementBy' $+$ minValue' $+$ maxValue' $+$
             cycle' $+$ cache' $+$

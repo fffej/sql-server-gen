@@ -46,7 +46,8 @@ statementBody :: String
 statementBody = "select 1\n"
 
 instance Entity Procedure where
-  toDoc p = text "CREATE PROCEDURE" <+> renderRegularIdentifier (procedureName p) $+$
+  name = procedureName
+  toDoc p = text "CREATE PROCEDURE" <+> renderName p $+$
                               hcat (punctuate comma (map renderParameter (parameters p))) <+> text "AS" $+$
                               text statementBody $+$
                               text "GO"

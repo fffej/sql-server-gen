@@ -23,9 +23,10 @@ instance Arbitrary FullTextStopList where
     return (FullTextStopList x y)
 
 instance Entity FullTextStopList where
+  name = stoplistName
   toDoc f = maybe empty toDoc (join (sourceStopList f)) $+$
             text "CREATE FULLTEXT STOPLIST" <+>
-            renderRegularIdentifier (stoplistName f) <+>
+            renderName f <+>
             maybe (text ";") (\q -> text "FROM" <+>
                                maybe (text "SYSTEM STOPLIST;\n") (\x -> renderRegularIdentifier (stoplistName x) <> text ";\n") q <>
                                text "GO\n") (sourceStopList f)

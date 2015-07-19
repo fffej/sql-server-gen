@@ -32,8 +32,9 @@ renderOptions True  = text "WITH ACCENT_SENSITIVITY = ON"
 renderOptions False = text "WITH ACCENT_SENSITIVITY = OFF"
 
 instance Entity FullTextCatalog where
+  name = catalogName
   toDoc ftc = text "CREATE FULLTEXT CATALOG" <+>
-              renderRegularIdentifier (catalogName ftc) $+$
+              renderName ftc $+$ 
               maybe empty renderFileGroup (filegroup ftc) $+$
               maybe empty renderOptions (accentSensitive ftc) $+$
               if asDefault ftc then text "AS DEFAULT" else empty $+$

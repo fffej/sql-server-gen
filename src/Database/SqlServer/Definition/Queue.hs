@@ -2,7 +2,10 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE GADTs #-}
 
-module Database.SqlServer.Definition.Queue where
+module Database.SqlServer.Definition.Queue
+       (
+         Queue
+       ) where
 
 import Database.SqlServer.Definition.Identifier hiding (unwrap)
 import Database.SqlServer.Definition.Procedure
@@ -89,6 +92,7 @@ renderActivation a = text "ACTIVATION(" <+>
                            ]) <+> text ")"
 
 instance Entity Queue where
+  name = queueName
   toDoc q = maybe empty renderProc (activation q) $+$
             text "CREATE QUEUE" <+> renderRegularIdentifier (queueName q) <+> options $+$ text "GO"
     where

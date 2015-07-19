@@ -82,9 +82,9 @@ renderColumnDefinition c = columnName' <+> columnType' <+> collation' <+>
     rowGuidConstraint = renderRowGuidConstraint (rowGuidOptions (dataType c))
 
 instance Entity Table where
-  toDoc t = text "CREATE TABLE" <+> tableName' $$
+  name = tableName
+  toDoc t = text "CREATE TABLE" <+> renderName t $$
             parens (renderColumnDefinitions (columnDefinitions t)) $+$
             text "GO"
-    where
-      tableName' = renderRegularIdentifier (tableName t)
+
 

@@ -5,8 +5,6 @@ module Database.SqlServer.Definition.User
        (
          User
        , Role
-       , renderUserName
-       , roleName
        ) where
 
 import Database.SqlServer.Definition.Identifier
@@ -47,6 +45,9 @@ renderUserName (CreateUserWithCertificate x _ _) = renderRegularIdentifier x
 renderUserName (CreateUserWithLogin x _ _) = renderRegularIdentifier x
 
 instance Entity User where
+  name (CreateUserWithoutLogin x) = x
+  name (CreateUserWithLogin x _ _) = x
+  name (CreateUserWithCertificate x _ _) = x
   toDoc (CreateUserWithoutLogin x) = text "CREATE USER" <+>
                                      renderRegularIdentifier x <+>
                                      text "WITHOUT LOGIN"
@@ -75,8 +76,9 @@ renderAuthorization :: User -> Doc
 renderAuthorization ud = text "AUTHORIZATION" <+> renderUserName ud
 
 instance Entity Role where
+  name = roleName
   toDoc rd = maybe empty toDoc (authorization rd) $+$ text "GO" $+$
-             text "CREATE ROLE" <+> renderRegularIdentifier (roleName rd) <+>
+             text "CREATE ROLE" <+> renderName rd <+> 
              maybe empty renderAuthorization (authorization rd) 
              
 instance Show Role where

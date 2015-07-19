@@ -44,7 +44,8 @@ data Credential = CredentialDefintion
 derive makeArbitrary ''Credential
 
 instance Entity Credential where
-  toDoc s = text "CREATE CREDENTIAL" <+> renderRegularIdentifier (credentialName s) <+>
+  name = credentialName
+  toDoc s = text "CREATE CREDENTIAL" <+> renderName s <+>
             text "WITH IDENTITY =" <+> quotes (renderIdentity (identity s)) <+>
             maybe empty renderSecret (secret s) $+$
             text "GO"
