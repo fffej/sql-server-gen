@@ -6,18 +6,13 @@ import Database.SqlServer.Definition.Identifier (RegularIdentifier,renderRegular
 import Database.SqlServer.Definition.Table (Table)
 import Database.SqlServer.Definition.Sequence (Sequence)
 import Database.SqlServer.Definition.Procedure (Procedure)
-import Database.SqlServer.Definition.Queue (Queue)
-import Database.SqlServer.Definition.Certificate (Certificate)
-import Database.SqlServer.Definition.Login (Login)
 import Database.SqlServer.Definition.User (User,Role)
 import Database.SqlServer.Definition.FullTextCatalog (FullTextCatalog)
 import Database.SqlServer.Definition.FullTextStopList (FullTextStopList)
 import Database.SqlServer.Definition.Function (Function)
 import Database.SqlServer.Definition.Credential (Credential)
 import Database.SqlServer.Definition.MessageType (MessageType)
-import Database.SqlServer.Definition.Contract (Contract)
 import Database.SqlServer.Definition.BrokerPriority (BrokerPriority)
-import Database.SqlServer.Definition.Service (Service)
 import Database.SqlServer.Definition.Entity
 
 import Test.QuickCheck
@@ -42,18 +37,13 @@ data DatabaseDefinition = DatabaseDefinition
                           , sequences :: [Sequence]
                           , procedures :: [Procedure]
                           , functions :: [Function]
-                          , queues :: [Queue]
-                          , certificates :: [Certificate]
                           , users :: [User]
                           , roles :: [Role]
-                          , logins :: [Login]
                           , fullTextCatalogs :: [FullTextCatalog]
                           , fullTextStopLists :: [FullTextStopList]
                           , credentials :: [Credential]
                           , messages :: [MessageType]
-                          , contracts :: [Contract]
                           , brokerPriorities :: [BrokerPriority]
-                          , services :: [Service]
                           , masterKey :: MasterKey
                           }
 
@@ -71,18 +61,13 @@ renderDatabaseDefinition  dd = text "USE master" $+$
                                renderNamedEntities (sequences dd) $+$
                                renderNamedEntities (procedures dd) $+$
                                renderNamedEntities (functions dd) $+$
-                               renderNamedEntities (queues dd) $+$
-                               renderNamedEntities (certificates dd) $+$
                                renderNamedEntities (users dd) $+$
                                renderNamedEntities (roles dd) $+$
-                               renderNamedEntities (logins dd) $+$
                                renderNamedEntities (fullTextCatalogs dd) $+$
                                renderNamedEntities (fullTextStopLists dd) $+$
                                renderNamedEntities (credentials dd) $+$
                                renderNamedEntities (messages dd) $+$
-                               renderNamedEntities (contracts dd) $+$
                                renderNamedEntities (brokerPriorities dd) $+$
-                               renderNamedEntities (services dd) $+$
                                text "GO"
   where
     dbName = renderRegularIdentifier (databaseName dd)
