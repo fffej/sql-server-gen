@@ -49,7 +49,6 @@ data DatabaseDefinition = DatabaseDefinition
                           , credentials :: [Credential]
                           , messages :: [MessageType]
                           , brokerPriorities :: [BrokerPriority]
-                          , services :: [Service]
                           , masterKey :: MasterKey
                           }
 
@@ -74,7 +73,6 @@ renderDatabaseDefinition  dd = text "USE master" $+$
                                renderNamedEntities (credentials dd) $+$
                                renderNamedEntities (messages dd) $+$
                                renderNamedEntities (brokerPriorities dd) $+$
-                               renderNamedEntities (services dd) $+$
                                text "GO"
   where
     dbName = renderRegularIdentifier (databaseName dd)
