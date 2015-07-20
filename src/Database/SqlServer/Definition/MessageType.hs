@@ -49,5 +49,6 @@ instance Entity MessageType where
   toDoc m = maybe empty renderPreRequisites (authorization m) $+$
             text "CREATE MESSAGE TYPE" <+> renderName m $+$
             maybe empty renderAuthorization (authorization m) $+$
-            maybe empty renderValidation (validation m) 
+            maybe empty renderValidation (validation m) $+$
+            text "GO\n"
             

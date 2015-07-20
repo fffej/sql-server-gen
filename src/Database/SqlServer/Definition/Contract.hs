@@ -72,7 +72,8 @@ instance Entity Contract where
   toDoc m = renderPrerequisites m $+$
             text "CREATE CONTRACT" <+> renderName m $+$
             maybe empty renderAuthorization (authorization m) $+$
-            parens (vcat $ punctuate comma (map renderMessageType (messageTypes m))) 
+            parens (vcat $ punctuate comma (map renderMessageType (messageTypes m))) $+$
+            text "GO\n"
 
 instance Show Contract where
   show = show . toDoc

@@ -66,10 +66,14 @@ library
                        Database.SqlServer.Definition.Login,
                        Database.SqlServer.Definition.MessageType,
                        Database.SqlServer.Definition.Function,
-                       Database.SqlServer.Definition.Credential
+                       Database.SqlServer.Definition.Credential,
+                       Database.SqlServer.Definition.Contract,
+                       Database.SqlServer.Definition.BrokerPriority,
+                       Database.SqlServer.Definition.Service,
+                       Database.SqlServer.Definition.Entity
 
 
-  ghc-options:         -Wall
+  ghc-options:         -Wall -O2 -fwarn-tabs -Werror
   
   -- Modules included in this library but not exported.
   -- other-modules:       
@@ -105,7 +109,7 @@ Test-Suite tests
                         containers >= 0.5.6.2
                                     
 executable cli
-  ghc-options:          -Wall
+  ghc-options:          -Wall -O2 -fwarn-tabs -Werror
   main-is:              Main.hs
   hs-source-dirs:       cli
   default-language:     Haskell2010
