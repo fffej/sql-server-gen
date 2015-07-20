@@ -66,7 +66,9 @@ library
                        Database.SqlServer.Definition.Login,
                        Database.SqlServer.Definition.MessageType,
                        Database.SqlServer.Definition.Function,
-                       Database.SqlServer.Definition.Credential
+                       Database.SqlServer.Definition.Credential,
+                       Database.SqlServer.Definition.Contract,
+                       Database.SqlServer.Definition.BrokerPriority
 
 
   ghc-options:         -Wall

@@ -16,6 +16,8 @@ import Database.SqlServer.Definition.Function (Function)
 import Database.SqlServer.Definition.Credential (Credential)
 import Database.SqlServer.Definition.MessageType (MessageType)
 import Database.SqlServer.Definition.Contract (Contract)
+import Database.SqlServer.Definition.BrokerPriority (BrokerPriority)
+import Database.SqlServer.Definition.Service (Service)
 import Database.SqlServer.Definition.Entity
 
 import Test.QuickCheck
@@ -50,6 +52,8 @@ data DatabaseDefinition = DatabaseDefinition
                           , credentials :: [Credential]
                           , messages :: [MessageType]
                           , contracts :: [Contract]
+                          , brokerPriorities :: [BrokerPriority]
+                          , services :: [Service]
                           , masterKey :: MasterKey
                           }
 
@@ -77,6 +81,8 @@ renderDatabaseDefinition  dd = text "USE master" $+$
                                renderNamedEntities (credentials dd) $+$
                                renderNamedEntities (messages dd) $+$
                                renderNamedEntities (contracts dd) $+$
+                               renderNamedEntities (brokerPriorities dd) $+$
+                               renderNamedEntities (services dd) $+$
                                text "GO"
   where
     dbName = renderRegularIdentifier (databaseName dd)
