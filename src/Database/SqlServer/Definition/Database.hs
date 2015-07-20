@@ -42,7 +42,6 @@ data DatabaseDefinition = DatabaseDefinition
                           , sequences :: [Sequence]
                           , procedures :: [Procedure]
                           , functions :: [Function]
-                          , queues :: [Queue]
                           , certificates :: [Certificate]
                           , users :: [User]
                           , roles :: [Role]
@@ -51,7 +50,6 @@ data DatabaseDefinition = DatabaseDefinition
                           , fullTextStopLists :: [FullTextStopList]
                           , credentials :: [Credential]
                           , messages :: [MessageType]
-                          , contracts :: [Contract]
                           , brokerPriorities :: [BrokerPriority]
                           , services :: [Service]
                           , masterKey :: MasterKey
@@ -71,7 +69,6 @@ renderDatabaseDefinition  dd = text "USE master" $+$
                                renderNamedEntities (sequences dd) $+$
                                renderNamedEntities (procedures dd) $+$
                                renderNamedEntities (functions dd) $+$
-                               renderNamedEntities (queues dd) $+$
                                renderNamedEntities (certificates dd) $+$
                                renderNamedEntities (users dd) $+$
                                renderNamedEntities (roles dd) $+$
@@ -80,7 +77,6 @@ renderDatabaseDefinition  dd = text "USE master" $+$
                                renderNamedEntities (fullTextStopLists dd) $+$
                                renderNamedEntities (credentials dd) $+$
                                renderNamedEntities (messages dd) $+$
-                               renderNamedEntities (contracts dd) $+$
                                renderNamedEntities (brokerPriorities dd) $+$
                                renderNamedEntities (services dd) $+$
                                text "GO"
