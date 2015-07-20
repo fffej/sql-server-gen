@@ -42,10 +42,8 @@ data DatabaseDefinition = DatabaseDefinition
                           , sequences :: [Sequence]
                           , procedures :: [Procedure]
                           , functions :: [Function]
-                          , certificates :: [Certificate]
                           , users :: [User]
                           , roles :: [Role]
-                          , logins :: [Login]
                           , fullTextCatalogs :: [FullTextCatalog]
                           , fullTextStopLists :: [FullTextStopList]
                           , credentials :: [Credential]
@@ -69,10 +67,8 @@ renderDatabaseDefinition  dd = text "USE master" $+$
                                renderNamedEntities (sequences dd) $+$
                                renderNamedEntities (procedures dd) $+$
                                renderNamedEntities (functions dd) $+$
-                               renderNamedEntities (certificates dd) $+$
                                renderNamedEntities (users dd) $+$
                                renderNamedEntities (roles dd) $+$
-                               renderNamedEntities (logins dd) $+$
                                renderNamedEntities (fullTextCatalogs dd) $+$
                                renderNamedEntities (fullTextStopLists dd) $+$
                                renderNamedEntities (credentials dd) $+$
