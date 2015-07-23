@@ -59,3 +59,5 @@ instance Entity PartitionFunction where
             text "AS RANGE" <+> renderRange (range a) <+> text "FOR VALUES" <+>
             renderValues (boundaryValues a)
   
+instance Show PartitionFunction where
+  show = show . toDoc
