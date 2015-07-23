@@ -16,6 +16,7 @@ module Database.SqlServer.Definition.DataType
        , renderNullConstraint
        , isTimestamp
        , renderValue
+       , isSupportedTypeForPartitionFunction
        ) where
 
 import Database.SqlServer.Definition.Collation (Collation)
@@ -545,3 +546,18 @@ renderDataType (Xml _ _) = text "xml"
 renderDataType (Geography _ _) = text "geography"
 renderDataType (Geometry _ _) =  text "geometry"
 
+{-
+  All data types are valid for use as partitioning columns, except text, 
+  ntext, image, xml, timestamp, varchar(max), nvarchar(max), varbinary(max), 
+  alias data types, or CLR user-defined data types.
+-}
+isSupportedTypeForPartitionFunction :: Type -> Bool
+isSupportedTypeForPartitionFunction Text {} = False
+isSupportedTypeForPartitionFunction NText {} = False
+isSupportedTypeForPartitionFunction Xml {} = False
+isSupportedTypeForPartitionFunction Timestamp {} = False
+isSupportedTypeForPartitionFunction Image {} = False
+isSupportedTypeForPartitionFunction VarBinary {} = False
+isSupportedTypeForPartitionFunction NVarChar {} = False
+isSupportedTypeForPartitionFunction VarChar {} = False
+isSupportedTypeForPartitionFunction _        = True
