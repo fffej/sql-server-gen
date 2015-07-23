@@ -560,4 +560,6 @@ isSupportedTypeForPartitionFunction Image {} = False
 isSupportedTypeForPartitionFunction VarBinary {} = False
 isSupportedTypeForPartitionFunction NVarChar {} = False
 isSupportedTypeForPartitionFunction VarChar {} = False
-isSupportedTypeForPartitionFunction _        = True
+isSupportedTypeForPartitionFunction Geometry {} = False
+isSupportedTypeForPartitionFunction Geography {} = False
+isSupportedTypeForPartitionFunction x = isJust $ renderValue x
