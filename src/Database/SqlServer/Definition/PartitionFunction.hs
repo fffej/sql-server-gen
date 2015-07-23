@@ -38,6 +38,7 @@ renderRange :: Range -> Doc
 renderRange Left = text "LEFT"
 renderRange Right = text "RIGHT"
 
+-- TODO boundaryValues need to all be the same type....
 data PartitionFunction = PartitionFunction
   {
     partitionFunctionName :: RegularIdentifier
