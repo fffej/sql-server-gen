@@ -145,7 +145,7 @@ instance Arbitrary SQLXml where
   arbitrary = return $ SQLXml "some xml"
 
 class SQLValue a where
-  toDoc :: a -> Doc
+  toDoc :: a -> Doc  
 
 instance SQLValue SQLDate where 
   toDoc (SQLDate d) = quotes (text $ showGregorian d)
