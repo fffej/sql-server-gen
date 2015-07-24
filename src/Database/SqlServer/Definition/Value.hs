@@ -42,15 +42,14 @@ import Data.Int
 import Data.Word
 import Data.DeriveTH
 
-type SQLInt64 = Int64
-type SQLInt32 = Int32
-type SQLInt16 = Int16
-type SQLTinyInt = Word8
-type SQLBinary = Integer
-
+newtype SQLInt64 = SQLInt64 Int64
+newtype SQLInt32 = SQLInt32 Int32
+newtype SQLInt16 = SQLInt16 Int16
+newtype SQLTinyInt = SQLTinyInt Word8
+newtype SQLBinary = SQLBinary Integer
 newtype SQLBit = SQLBit (Maybe Bool)
-newtype SQLSmallMoney = SQLSmallMoney SQLInt32
-newtype SQLMoney = SQLMoney SQLInt64
+newtype SQLSmallMoney = SQLSmallMoney Int32
+newtype SQLMoney = SQLMoney Int64
 
 data SQLDate = SQLDate Day
 
@@ -73,6 +72,11 @@ dateBetween startYear endYear = do
 derive makeArbitrary ''SQLMoney
 derive makeArbitrary ''SQLSmallMoney
 derive makeArbitrary ''SQLBit
+derive makeArbitrary ''SQLInt64
+derive makeArbitrary ''SQLInt32
+derive makeArbitrary ''SQLInt16
+derive makeArbitrary ''SQLTinyInt
+derive makeArbitrary ''SQLBinary
 
 instance Arbitrary SQLDateTime where
   arbitrary = do
@@ -223,3 +227,18 @@ instance SQLValue SQLMoney where
   
 instance SQLValue SQLBit where
   toDoc (SQLBit b) = maybe (text "NULL") (\x -> int (if x then 1 else  0)) b
+
+instance SQLValue SQLBinary where
+  toDoc (SQLBinary s) = integer s
+
+instance SQLValue SQLTinyInt where
+  toDoc (SQLTinyInt s) = (text . show) s
+
+instance SQLValue SQLInt16 where
+  toDoc (SQLInt16 s) = (text . show) s
+
+instance SQLValue SQLInt32 where
+  toDoc (SQLInt32 s) = (text . show) s
+
+instance SQLValue SQLInt64 where
+  toDoc (SQLInt64 s) = (text . show) s
