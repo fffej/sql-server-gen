@@ -1,6 +1,8 @@
 module Database.SqlServer.Definition.Value
        (
-         SQLDate
+         SQLValue
+       , toDoc
+       , SQLDate
        , SQLDateTime
        , SQLGeography
        , SQLGeometry
@@ -18,19 +20,7 @@ module Database.SqlServer.Definition.Value
        , SQLInt32
        , SQLInt64
        , SQLTinyInt
-       , renderSQLDate
-       , renderSQLString
        , renderNumeric
-       , renderSQLGeography
-       , renderSQLGeometry
-       , renderSQLDateTime
-       , renderSQLSmallDateTime
-       , renderSQLTime
-       , renderSQLFloat
-       , renderSQLHierarchyID
-       , renderSQLUniqueIdentifier
-       , renderSQLVariant
-       , renderSQLXml
        ) where
 
 import Database.SqlServer.Definition.Identifier (ArbUUID)
@@ -51,8 +41,6 @@ type SQLInt32 = Int32
 type SQLInt16 = Int16
 type SQLBit = Maybe Bool
 type SQLTinyInt = Word8
-
-
 
 data SQLDate = SQLDate Day
 
@@ -85,7 +73,6 @@ instance Arbitrary SQLSmallDateTime where
     day <- dateBetween 1900 2078
     datetime <- choose (0,86400)
     return (SQLSmallDateTime (UTCTime day (secondsToDiffTime datetime)))
-
 
 data SQLTime = SQLTime DiffTime
 
@@ -157,11 +144,14 @@ data SQLXml = SQLXml String
 instance Arbitrary SQLXml where
   arbitrary = return $ SQLXml "some xml"
 
-renderSQLDate :: SQLDate -> Doc
-renderSQLDate (SQLDate d) = quotes (text $ showGregorian d)
+class SQLValue a where
+  toDoc :: a -> Doc
 
-renderSQLString :: SQLString -> Doc
-renderSQLString (SQLString s) = quotes $ text s
+instance SQLValue SQLDate where 
+  toDoc (SQLDate d) = quotes (text $ showGregorian d)
+
+instance SQLValue SQLString where
+  toDoc (SQLString s) = quotes $ text s
 
 -- https://msdn.microsoft.com/en-us/library/ms190476.aspx
 renderNumeric :: Maybe (Int,Int) -> SQLNumeric -> Doc
@@ -172,33 +162,33 @@ renderNumeric (Just (p,s)) (SQLNumeric n) = text num
     len = length v
     num = take (len - s) v ++ "." ++ drop (len - s) v
 
-renderSQLGeography :: SQLGeography -> Doc
-renderSQLGeography (SQLGeography x) = quotes $ text x
+instance SQLValue SQLGeography where
+  toDoc (SQLGeography x) = quotes $ text x
 
-renderSQLGeometry :: SQLGeometry -> Doc
-renderSQLGeometry (SQLGeometry x) = quotes $ text x
+instance SQLValue SQLGeometry where
+  toDoc (SQLGeometry x) = quotes $ text x
 
-renderSQLDateTime :: SQLDateTime -> Doc
-renderSQLDateTime (SQLDateTime s) = quotes $ text (formatISO8601Millis s)
+instance SQLValue SQLDateTime where
+  toDoc (SQLDateTime s) = quotes $ text (formatISO8601Millis s)
 
-renderSQLSmallDateTime :: SQLSmallDateTime -> Doc
-renderSQLSmallDateTime (SQLSmallDateTime s) = quotes $ text (formatISO8601Millis s)
+instance SQLValue SQLSmallDateTime where
+  toDoc (SQLSmallDateTime s) = quotes $ text (formatISO8601Millis s)
 
-renderSQLTime :: SQLTime -> Doc
-renderSQLTime (SQLTime t) =  quotes $ text (show $ timeToTimeOfDay t)
+instance SQLValue SQLTime where 
+  toDoc (SQLTime t) =  quotes $ text (show $ timeToTimeOfDay t)
 
-renderSQLFloat :: SQLFloat -> Doc
-renderSQLFloat (SQLFloat f) = float f
+instance SQLValue SQLFloat where
+  toDoc (SQLFloat f) = float f
 
-renderSQLHierarchyID :: SQLHierarchyID -> Doc
-renderSQLHierarchyID (SQLHierarchyID x) = quotes $ text x
+instance SQLValue SQLHierarchyID where
+  toDoc (SQLHierarchyID x) = quotes $ text x
 
-renderSQLUniqueIdentifier :: SQLUniqueIdentifier -> Doc
-renderSQLUniqueIdentifier (SQLUniqueIdentifier s) = (quotes . text  . show) s
+instance SQLValue SQLUniqueIdentifier where
+  toDoc (SQLUniqueIdentifier s) = (quotes . text  . show) s
 
-renderSQLVariant :: SQLVariant -> Doc
-renderSQLVariant (SQLVariantInt s) = int s
-renderSQLVariant (SQLVariantString s) = text s
+instance SQLValue SQLVariant where
+  toDoc (SQLVariantInt s) = int s
+  toDoc (SQLVariantString s) = text s
 
-renderSQLXml :: SQLXml -> Doc
-renderSQLXml (SQLXml s) = quotes $ text s
+instance SQLValue SQLXml where
+  toDoc (SQLXml s) = quotes $ text s

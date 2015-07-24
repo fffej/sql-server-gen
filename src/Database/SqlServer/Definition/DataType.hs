@@ -19,7 +19,7 @@ module Database.SqlServer.Definition.DataType
        , isSupportedTypeForPartitionFunction
        ) where
 
-import Database.SqlServer.Definition.Value
+import Database.SqlServer.Definition.Value 
 import Database.SqlServer.Definition.Collation (Collation)
 
 import Text.PrettyPrint
@@ -359,26 +359,26 @@ renderValue (SmallInt _ v) = Just $ (text . show) v
 renderValue (Bit _ b) = Just $ maybe (text "NULL") (\x -> int (if x then 1 else  0)) b
 renderValue (SmallMoney _ s) = Just $ text (divideBy10000 $ fromIntegral s)
 renderValue (Money _ s) = Just $ text (divideBy10000 $ fromIntegral s)
-renderValue (Date _ d) = Just $ renderSQLDate d
-renderValue (Geography _ x) = Just $ renderSQLGeography x
-renderValue (Geometry _ x) = Just $ renderSQLGeometry x
+renderValue (Date _ d) = Just $ toDoc d
+renderValue (Geography _ x) = Just $ toDoc x
+renderValue (Geometry _ x) = Just $ toDoc x
 renderValue (Binary _ _ x) = Just $ integer x
 renderValue (VarBinary _ _ x) = Just $ integer x
-renderValue (Char _ _ _ s) = Just $ renderSQLString s
-renderValue (NChar _ _ _ s) = Just $ renderSQLString s
-renderValue (VarChar _ _ _ s) = Just $ renderSQLString s
-renderValue (NVarChar _ _ _ s) = Just $ renderSQLString s
-renderValue (DateTime _ x) = Just $ renderSQLDateTime x
-renderValue (DateTime2 _ _ x) = Just $ renderSQLDateTime x
-renderValue (DateTimeOffset _ _ x) = Just $ renderSQLDateTime x
-renderValue (SmallDateTime _ s) = Just $ renderSQLSmallDateTime s 
-renderValue (Time _ _ t) = Just $ renderSQLTime t
-renderValue (Float _ _ f) = Just $ renderSQLFloat f 
-renderValue (Real _ f) = Just $ renderSQLFloat f
-renderValue (HierarchyId _ x) = Just $ renderSQLHierarchyID x
-renderValue (UniqueIdentifier _ s) = Just $ renderSQLUniqueIdentifier s
-renderValue (SqlVariant _ s) = Just $ renderSQLVariant s
-renderValue (Xml _ s) = Just $ renderSQLXml s
+renderValue (Char _ _ _ s) = Just $ toDoc s
+renderValue (NChar _ _ _ s) = Just $ toDoc s
+renderValue (VarChar _ _ _ s) = Just $ toDoc s
+renderValue (NVarChar _ _ _ s) = Just $ toDoc s
+renderValue (DateTime _ x) = Just $ toDoc x
+renderValue (DateTime2 _ _ x) = Just $ toDoc x
+renderValue (DateTimeOffset _ _ x) = Just $ toDoc x
+renderValue (SmallDateTime _ s) = Just $ toDoc s 
+renderValue (Time _ _ t) = Just $ toDoc t
+renderValue (Float _ _ f) = Just $ toDoc f 
+renderValue (Real _ f) = Just $ toDoc f
+renderValue (HierarchyId _ x) = Just $ toDoc x
+renderValue (UniqueIdentifier _ s) = Just $ toDoc s
+renderValue (SqlVariant _ s) = Just $ toDoc s
+renderValue (Xml _ s) = Just $ toDoc s
 renderValue (Text _ _) = Nothing -- Text type invalid for local variables, function returns
 renderValue (NText _ _) = Nothing -- NText type invalid for local variables, function returns
 renderValue (Image _) = Nothing -- Image type invalid for local variable, function returns
