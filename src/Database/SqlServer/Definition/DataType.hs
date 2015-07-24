@@ -340,15 +340,6 @@ storageOptions (Geometry _ _) = Nothing
 asInt :: NumericStorage -> (Int,Int)
 asInt n = (precision n, maybe 18 id (scale n))
 
-
-divideBy10000 :: Integer -> String
-divideBy10000 n
-  | length s < 5 = s
-  | otherwise    = take (len - 4) s ++ "." ++ drop (len - 4) s
-  where
-    s = show n
-    len = length s
-
 renderValue :: Type -> Maybe Doc
 renderValue (Numeric _ n s) = Just $ renderNumeric (fmap asInt n) s 
 renderValue (Decimal _ n s) = Just $ renderNumeric (fmap asInt n) s
@@ -357,8 +348,8 @@ renderValue (Int _ v) = Just $ (text . show) v
 renderValue (TinyInt _ v) = Just $ (text . show) v
 renderValue (SmallInt _ v) = Just $ (text . show) v
 renderValue (Bit _ b) = Just $ maybe (text "NULL") (\x -> int (if x then 1 else  0)) b
-renderValue (SmallMoney _ s) = Just $ text (divideBy10000 $ fromIntegral s)
-renderValue (Money _ s) = Just $ text (divideBy10000 $ fromIntegral s)
+renderValue (SmallMoney _ s) = Just $ toDoc s
+renderValue (Money _ s) = Just $ toDoc s
 renderValue (Date _ d) = Just $ toDoc d
 renderValue (Geography _ x) = Just $ toDoc x
 renderValue (Geometry _ x) = Just $ toDoc x

@@ -1,3 +1,5 @@
+{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE TemplateHaskell #-}
 module Database.SqlServer.Definition.Value
        (
          SQLValue
@@ -38,6 +40,7 @@ import Data.Time.LocalTime
 
 import Data.Int
 import Data.Word
+import Data.DeriveTH
 
 type SQLInt64 = Int64
 type SQLInt32 = Int32
@@ -45,8 +48,9 @@ type SQLInt16 = Int16
 type SQLBit = Maybe Bool
 type SQLTinyInt = Word8
 type SQLBinary = Integer
-type SQLSmallMoney = SQLInt32
-type SQLMoney = SQLInt64
+
+newtype SQLSmallMoney = SQLSmallMoney SQLInt32
+newtype SQLMoney = SQLMoney SQLInt64
 
 data SQLDate = SQLDate Day
 
@@ -65,6 +69,9 @@ dateBetween startYear endYear = do
   m <- choose (1,12)
   d <- choose (1,31)
   return (fromGregorian y m d)
+
+derive makeArbitrary ''SQLMoney
+derive makeArbitrary ''SQLSmallMoney
 
 instance Arbitrary SQLDateTime where
   arbitrary = do
@@ -168,6 +175,14 @@ renderNumeric (Just (p,s)) (SQLNumeric n) = text num
     len = length v
     num = take (len - s) v ++ "." ++ drop (len - s) v
 
+divideBy10000 :: Integer -> String
+divideBy10000 n
+  | length s < 5 = s
+  | otherwise    = take (len - 4) s ++ "." ++ drop (len - 4) s
+  where
+    s = show n
+    len = length s
+
 instance SQLValue SQLGeography where
   toDoc (SQLGeography x) = quotes $ text x
 
@@ -198,3 +213,10 @@ instance SQLValue SQLVariant where
 
 instance SQLValue SQLXml where
   toDoc (SQLXml s) = quotes $ text s
+
+instance SQLValue SQLSmallMoney where
+  toDoc (SQLSmallMoney s) = text (divideBy10000 $ fromIntegral s)
+
+instance SQLValue SQLMoney where
+  toDoc (SQLMoney s) = text (divideBy10000 $ fromIntegral s)
+  
