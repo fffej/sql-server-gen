@@ -210,8 +210,8 @@ data Type = BigInt (Maybe StorageOptions) SQLInt64
           | NChar (Maybe NFixedRange) (Maybe Collation) (Maybe StorageOptions) SQLString
           | NVarChar (Maybe NRange) (Maybe Collation) (Maybe StorageOptions) SQLString
           | NText (Maybe Collation) (Maybe NullStorageOptions)
-          | Binary (Maybe FixedRange) (Maybe StorageOptions) Integer
-          | VarBinary (Maybe VarBinaryStorage) (Maybe StorageOptions) Integer
+          | Binary (Maybe FixedRange) (Maybe StorageOptions) SQLBinary
+          | VarBinary (Maybe VarBinaryStorage) (Maybe StorageOptions) SQLBinary
           | Image (Maybe NullStorageOptions)
           | Timestamp (Maybe NullStorageOptions)
           | HierarchyId (Maybe StorageOptions) SQLHierarchyID

@@ -2,6 +2,7 @@ module Database.SqlServer.Definition.Value
        (
          SQLValue
        , toDoc
+       , SQLBinary
        , SQLDate
        , SQLDateTime
        , SQLGeography
@@ -41,8 +42,11 @@ type SQLInt32 = Int32
 type SQLInt16 = Int16
 type SQLBit = Maybe Bool
 type SQLTinyInt = Word8
+type SQLBinary = Integer
 
 data SQLDate = SQLDate Day
+
+
 
 instance Arbitrary SQLDate where
   arbitrary = do
