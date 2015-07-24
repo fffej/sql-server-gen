@@ -3,7 +3,7 @@
 module Database.SqlServer.Definition.Value
        (
          SQLValue
-       , toDoc
+       , renderValue
        ) where
 
 import Database.SqlServer.Definition.Identifier (ArbUUID)
@@ -155,25 +155,25 @@ divideBy10000 n
     s = show n
     len = length s
 
-toDoc :: SQLValue -> Doc
-toDoc (SQLDate d) = quotes (text $ showGregorian d)
-toDoc (SQLString s) = quotes $ text s
-toDoc (SQLGeography x) = quotes $ text x
-toDoc (SQLGeometry x) = quotes $ text x
-toDoc (SQLDateTime s) = quotes $ text (formatISO8601Millis s)
-toDoc (SQLSmallDateTime s) = quotes $ text (formatISO8601Millis s)
-toDoc (SQLTime t) =  quotes $ text (show $ timeToTimeOfDay t)
-toDoc (SQLFloat f) = float f
-toDoc (SQLHierarchyID x) = quotes $ text x
-toDoc (SQLUniqueIdentifier s) = (quotes . text  . show) s
-toDoc (SQLVariant s) = variantToDoc s
-toDoc (SQLXml s) = quotes $ text s
-toDoc (SQLSmallMoney s) = text (divideBy10000 $ fromIntegral s)
-toDoc (SQLMoney s) = text (divideBy10000 $ fromIntegral s)
-toDoc (SQLBit b) = maybe (text "NULL") (\x -> int (if x then 1 else  0)) b
-toDoc (SQLBinary s) = integer s
-toDoc (SQLTinyInt s) = (text . show) s
-toDoc (SQLInt16 s) = (text . show) s
-toDoc (SQLInt32 s) = (text . show) s
-toDoc (SQLInt64 s) = (text . show) s
-toDoc (SQLNumeric s) = (text . show) s
+renderValue :: SQLValue -> Doc
+renderValue (SQLDate d) = quotes (text $ showGregorian d)
+renderValue (SQLString s) = quotes $ text s
+renderValue (SQLGeography x) = quotes $ text x
+renderValue (SQLGeometry x) = quotes $ text x
+renderValue (SQLDateTime s) = quotes $ text (formatISO8601Millis s)
+renderValue (SQLSmallDateTime s) = quotes $ text (formatISO8601Millis s)
+renderValue (SQLTime t) =  quotes $ text (show $ timeToTimeOfDay t)
+renderValue (SQLFloat f) = float f
+renderValue (SQLHierarchyID x) = quotes $ text x
+renderValue (SQLUniqueIdentifier s) = (quotes . text  . show) s
+renderValue (SQLVariant s) = variantToDoc s
+renderValue (SQLXml s) = quotes $ text s
+renderValue (SQLSmallMoney s) = text (divideBy10000 $ fromIntegral s)
+renderValue (SQLMoney s) = text (divideBy10000 $ fromIntegral s)
+renderValue (SQLBit b) = maybe (text "NULL") (\x -> int (if x then 1 else  0)) b
+renderValue (SQLBinary s) = integer s
+renderValue (SQLTinyInt s) = (text . show) s
+renderValue (SQLInt16 s) = (text . show) s
+renderValue (SQLInt32 s) = (text . show) s
+renderValue (SQLInt64 s) = (text . show) s
+renderValue (SQLNumeric s) = (text . show) s

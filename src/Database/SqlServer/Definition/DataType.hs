@@ -4,6 +4,7 @@
 module Database.SqlServer.Definition.DataType
        (
          Type
+       , value
        , renderDataType
        , collation
        , renderSparse
@@ -26,8 +27,6 @@ import Text.PrettyPrint
 import Test.QuickCheck hiding (scale)
 import Control.Monad 
 import Data.DeriveTH
-
-import Data.Maybe
 
 -- Size of arbitrary data (>= 1 && <= 8000)
 newtype FixedRange = FixedRange Int
@@ -388,3 +387,6 @@ isSupportedTypeForPartitionFunction VarChar {} = False
 isSupportedTypeForPartitionFunction Geometry {} = False
 isSupportedTypeForPartitionFunction Geography {} = False
 isSupportedTypeForPartitionFunction _ = True
+
+value :: Type -> Maybe (Gen SQLValue)
+value = undefined

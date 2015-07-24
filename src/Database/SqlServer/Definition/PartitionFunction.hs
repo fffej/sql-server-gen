@@ -11,9 +11,9 @@ import Prelude hiding (Left,Right)
 
 import Database.SqlServer.Definition.Identifier hiding (unwrap)
 import Database.SqlServer.Definition.DataType
+import Database.SqlServer.Definition.Value
 import Database.SqlServer.Definition.Entity
 
-import Data.Maybe (fromJust)
 import Data.DeriveTH
 import Text.PrettyPrint
 import Test.QuickCheck
@@ -44,11 +44,11 @@ data PartitionFunction = PartitionFunction
     partitionFunctionName :: RegularIdentifier
   , inputType :: InputParameterType
   , range :: Range
-  , boundaryValues :: [Type]
+  , boundaryValues :: [SQLValue]
   }
 
-renderValues :: [Type] -> Doc
-renderValues xs = parens (vcat (punctuate comma $ map (fromJust . renderValue) xs))
+renderValues :: [SQLValue] -> Doc
+renderValues xs = parens (vcat (punctuate comma $ map renderValue xs))
 
 derive makeArbitrary ''PartitionFunction
 
