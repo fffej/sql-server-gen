@@ -192,10 +192,10 @@ data Type = BigInt (Maybe StorageOptions) SQLInt64
           | Numeric (Maybe StorageOptions) (Maybe NumericStorage) SQLNumeric
           | SmallInt (Maybe StorageOptions) SQLInt16
           | Decimal (Maybe StorageOptions) (Maybe NumericStorage) SQLNumeric
-          | SmallMoney (Maybe StorageOptions) SQLInt32
+          | SmallMoney (Maybe StorageOptions) SQLSmallMoney
           | Int (Maybe StorageOptions) SQLInt32
           | TinyInt (Maybe StorageOptions) SQLTinyInt
-          | Money (Maybe StorageOptions) SQLInt64
+          | Money (Maybe StorageOptions) SQLMoney
           | Float (Maybe StorageOptions) (Maybe PrecisionStorage) SQLFloat
           | Real (Maybe StorageOptions) SQLFloat
           | Date (Maybe StorageOptions) SQLDate
