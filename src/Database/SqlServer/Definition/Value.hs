@@ -13,6 +13,11 @@ module Database.SqlServer.Definition.Value
        , SQLNumeric
        , SQLSmallDateTime
        , SQLHierarchyID
+       , SQLBit
+       , SQLInt16
+       , SQLInt32
+       , SQLInt64
+       , SQLTinyInt
        , renderSQLDate
        , renderSQLString
        , renderNumeric
@@ -37,6 +42,17 @@ import Data.Time.Calendar
 import Data.Time.Clock
 import Data.Time.ISO8601
 import Data.Time.LocalTime
+
+import Data.Int
+import Data.Word
+
+type SQLInt64 = Int64
+type SQLInt32 = Int32
+type SQLInt16 = Int16
+type SQLBit = Maybe Bool
+type SQLTinyInt = Word8
+
+
 
 data SQLDate = SQLDate Day
 

@@ -27,8 +27,6 @@ import Text.PrettyPrint
 import Test.QuickCheck hiding (scale)
 import Control.Monad 
 import Data.DeriveTH
-import Data.Int
-import Data.Word
 
 import Data.Maybe
 
@@ -189,15 +187,15 @@ instance Arbitrary FractionalSecondsPrecision where
     return (FractionalSecondsPrecision p)
 
 -- https://msdn.microsoft.com/en-us/library/ms187752.aspx
-data Type = BigInt (Maybe StorageOptions) Int64
-          | Bit (Maybe StorageOptions) (Maybe Bool)
+data Type = BigInt (Maybe StorageOptions) SQLInt64
+          | Bit (Maybe StorageOptions) SQLBit
           | Numeric (Maybe StorageOptions) (Maybe NumericStorage) SQLNumeric
-          | SmallInt (Maybe StorageOptions) Int16
+          | SmallInt (Maybe StorageOptions) SQLInt16
           | Decimal (Maybe StorageOptions) (Maybe NumericStorage) SQLNumeric
-          | SmallMoney (Maybe StorageOptions) Int32
-          | Int (Maybe StorageOptions) Int32
-          | TinyInt (Maybe StorageOptions) Word8
-          | Money (Maybe StorageOptions) Int64
+          | SmallMoney (Maybe StorageOptions) SQLInt32
+          | Int (Maybe StorageOptions) SQLInt32
+          | TinyInt (Maybe StorageOptions) SQLTinyInt
+          | Money (Maybe StorageOptions) SQLInt64
           | Float (Maybe StorageOptions) (Maybe PrecisionStorage) SQLFloat
           | Real (Maybe StorageOptions) SQLFloat
           | Date (Maybe StorageOptions) SQLDate
@@ -222,7 +220,6 @@ data Type = BigInt (Maybe StorageOptions) Int64
           | Xml (Maybe StorageOptions) SQLXml
           | Geography (Maybe NullStorageOptions) SQLGeography
           | Geometry  (Maybe NullStorageOptions) SQLGeometry
-
 
 isTimestamp :: Type -> Bool
 isTimestamp (Timestamp _) = True
