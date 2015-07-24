@@ -19,8 +19,8 @@ module Database.SqlServer.Definition.DataType
        , isSupportedTypeForPartitionFunction
        ) where
 
+import Database.SqlServer.Definition.Value
 import Database.SqlServer.Definition.Collation (Collation)
-import Database.SqlServer.Definition.Identifier (ArbUUID)
 
 import Text.PrettyPrint
 
@@ -31,11 +31,6 @@ import Data.Int
 import Data.Word
 
 import Data.Maybe
-
-import Data.Time.Calendar
-import Data.Time.Clock
-import Data.Time.ISO8601
-import Data.Time.LocalTime
 
 -- Size of arbitrary data (>= 1 && <= 8000)
 newtype FixedRange = FixedRange Int
@@ -142,11 +137,6 @@ data NumericStorage = NumericStorage
                       , scale :: Maybe Int 
                       }
 
-renderNumericStorage :: NumericStorage -> Doc
-renderNumericStorage ns = lparen <> int (precision ns) <> scale' <> rparen
-  where
-    scale' = maybe empty (\x -> comma <+> int x) (scale ns)
-
 {- The scale must be less than or equal to the precision -}
 instance Arbitrary NumericStorage where                      
   arbitrary = do
@@ -154,22 +144,10 @@ instance Arbitrary NumericStorage where
     s <- elements (Nothing : map Just [1..p])
     return $ NumericStorage p s
 
-data PrecisionStorage = PrecisionStorage Int
-
-instance Arbitrary PrecisionStorage where
-  arbitrary = do
-    p <- choose(1,53)
-    return (PrecisionStorage p)
-
-renderPrecisionStorage :: PrecisionStorage -> Doc
-renderPrecisionStorage (PrecisionStorage n) = lparen <> int n <> rparen
-
-data FractionalSecondsPrecision = FractionalSecondsPrecision Int
-
-instance Arbitrary FractionalSecondsPrecision where
-  arbitrary = do
-    p <- choose (0,7)
-    return (FractionalSecondsPrecision p)
+renderNumericStorage :: NumericStorage -> Doc
+renderNumericStorage ns = lparen <> int (precision ns) <> scale' <> rparen
+  where
+    scale' = maybe empty (\x -> comma <+> int x) (scale ns)
 
 renderFractionalSecondsPrecision :: FractionalSecondsPrecision -> Doc
 renderFractionalSecondsPrecision (FractionalSecondsPrecision n) = lparen <> int n <> rparen
@@ -193,108 +171,22 @@ timeStorageSize (FractionalSecondsPrecision n)
   | n < 5     = 4 * 8
   | otherwise = 5 * 8
 
-data SQLDate = SQLDate Day
+data PrecisionStorage = PrecisionStorage Int
 
-instance Arbitrary SQLDate where
+instance Arbitrary PrecisionStorage where
   arbitrary = do
-    y <- choose (0,9999)
-    m <- choose (1,12)
-    d <- choose (1,31)
-    return $ SQLDate (fromGregorian y m d) -- clipping handled by time package
+    p <- choose(1,53)
+    return (PrecisionStorage p)
 
-data SQLDateTime = SQLDateTime UTCTime
+renderPrecisionStorage :: PrecisionStorage -> Doc
+renderPrecisionStorage (PrecisionStorage n) = lparen <> int n <> rparen
 
-dateBetween :: Integer -> Integer -> Gen Day
-dateBetween startYear endYear = do
-  y <- choose (startYear,endYear)
-  m <- choose (1,12)
-  d <- choose (1,31)
-  return (fromGregorian y m d)
+data FractionalSecondsPrecision = FractionalSecondsPrecision Int
 
-instance Arbitrary SQLDateTime where
+instance Arbitrary FractionalSecondsPrecision where
   arbitrary = do
-    day <- dateBetween 1753 9999
-    datetime <- choose (0,86400)
-    return (SQLDateTime (UTCTime day (secondsToDiffTime datetime)))
-
-data SQLSmallDateTime = SQLSmallDateTime UTCTime
-
-instance Arbitrary SQLSmallDateTime where
-  arbitrary = do
-    day <- dateBetween 1900 2078
-    datetime <- choose (0,86400)
-    return (SQLSmallDateTime (UTCTime day (secondsToDiffTime datetime)))
-
-
-data SQLTime = SQLTime DiffTime
-
-instance Arbitrary SQLTime where
-  arbitrary = do
-    time <- choose (0,86400)
-    return (SQLTime (secondsToDiffTime time))
-
-data SQLGeography = SQLGeography String
-
-instance Arbitrary SQLGeography where
-  arbitrary = do
-    a <- choose (- 90, 90) :: Gen Float
-    b <- choose (- 90, 90) :: Gen Float
-    c <- choose (- 90, 90) :: Gen Float
-    d <- choose (- 90, 90) :: Gen Float
-
-    return $ SQLGeography ("LINESTRING(" ++ show a ++ " " ++ show b ++ "," ++ show c ++ " " ++ show d ++ ")")
-  
-data SQLGeometry = SQLGeometry String
-
--- Deliberate duplication so I can customize this
-instance Arbitrary SQLGeometry where
-  arbitrary = do
-    a <- arbitrary :: Gen Float
-    b <- arbitrary :: Gen Float
-    c <- arbitrary :: Gen Float
-    d <- arbitrary :: Gen Float
-    return $ SQLGeometry ("LINESTRING(" ++ show a ++ " " ++ show b ++ "," ++ show c ++ " " ++ show d ++ ")")
-
-
-data SQLString = SQLString String
-
-instance Arbitrary SQLString where
-  arbitrary = liftM SQLString $ listOf $ elements ['a' .. 'z']
-
-data SQLNumeric = SQLNumeric Integer
-
-instance Arbitrary SQLNumeric where
-  arbitrary = liftM SQLNumeric arbitrary
-
-data SQLFloat = SQLFloat Float
-
-instance Arbitrary SQLFloat where
-  arbitrary = liftM SQLFloat arbitrary
-
-data SQLHierarchyID = SQLHierarchyID String
-
--- Just pick one of the examples from MSDN
-instance Arbitrary SQLHierarchyID where
-  arbitrary = liftM SQLHierarchyID $ elements ["/","/1/","/0.3.-7/","/1/3/","/0.1/0.2/"]
-
-data SQLUniqueIdentifier = SQLUniqueIdentifier ArbUUID
-
-instance Arbitrary SQLUniqueIdentifier where
-  arbitrary = liftM SQLUniqueIdentifier arbitrary
-
-data SQLVariant = SQLVariantInt Int
-                | SQLVariantString String
-
-instance Arbitrary SQLVariant where
-  arbitrary = do
-    x <- arbitrary
-    y <- elements [SQLVariantString . show, SQLVariantInt]
-    return $ y x
-
-data SQLXml = SQLXml String
-
-instance Arbitrary SQLXml where
-  arbitrary = return $ SQLXml "some xml"
+    p <- choose (0,7)
+    return (FractionalSecondsPrecision p)
 
 -- https://msdn.microsoft.com/en-us/library/ms187752.aspx
 data Type = BigInt (Maybe StorageOptions) Int64
@@ -448,35 +340,12 @@ storageOptions (Image _) = Nothing
 storageOptions (Geography _ _) = Nothing
 storageOptions (Geometry _ _) = Nothing
 
-
-divideBy10000 :: Integer -> String
-divideBy10000 n
-  | length s < 5 = s
-  | otherwise    = take (len - 4) s ++ "." ++ drop (len - 4) s
-  where
-    s = show n
-    len = length s
-
-renderSQLDate :: SQLDate -> Doc
-renderSQLDate (SQLDate d) = quotes (text $ showGregorian d)
-
-renderSQLString :: SQLString -> Doc
-renderSQLString (SQLString s) = quotes $ text s
-
--- https://msdn.microsoft.com/en-us/library/ms190476.aspx
-renderNumeric :: Maybe NumericStorage -> SQLNumeric -> Doc
-renderNumeric Nothing s                = renderNumeric (Just (NumericStorage 18 (Just 18))) s
-renderNumeric (Just ns) (SQLNumeric n) = text num
-  where
-    v = take p (show (abs n))
-    len = length v
-    num = take (len - s) v ++ "." ++ drop (len - s) v
-    p = precision ns
-    s = fromMaybe 18 $ scale ns
+asInt :: NumericStorage -> (Int,Int)
+asInt n = (precision n, maybe 18 id (scale n))
 
 renderValue :: Type -> Maybe Doc
-renderValue (Numeric _ n s) = Just $ renderNumeric n s 
-renderValue (Decimal _ n s) = Just $ renderNumeric n s
+renderValue (Numeric _ n s) = Just $ renderNumeric (fmap asInt n) s 
+renderValue (Decimal _ n s) = Just $ renderNumeric (fmap asInt n) s
 renderValue (BigInt _ v) = Just $ (text . show) v
 renderValue (Int _ v) = Just $ (text . show) v
 renderValue (TinyInt _ v) = Just $ (text . show) v
@@ -485,26 +354,25 @@ renderValue (Bit _ b) = Just $ maybe (text "NULL") (\x -> int (if x then 1 else 
 renderValue (SmallMoney _ s) = Just $ text (divideBy10000 $ fromIntegral s)
 renderValue (Money _ s) = Just $ text (divideBy10000 $ fromIntegral s)
 renderValue (Date _ d) = Just $ renderSQLDate d
-renderValue (Geography _ (SQLGeography x)) = Just $ quotes (text x)
-renderValue (Geometry _ (SQLGeometry x)) = Just $ quotes (text x)
+renderValue (Geography _ x) = Just $ renderSQLGeography x
+renderValue (Geometry _ x) = Just $ renderSQLGeometry x
 renderValue (Binary _ _ x) = Just $ integer x
 renderValue (VarBinary _ _ x) = Just $ integer x
 renderValue (Char _ _ _ s) = Just $ renderSQLString s
 renderValue (NChar _ _ _ s) = Just $ renderSQLString s
 renderValue (VarChar _ _ _ s) = Just $ renderSQLString s
 renderValue (NVarChar _ _ _ s) = Just $ renderSQLString s
-renderValue (DateTime _ (SQLDateTime s)) = Just $ quotes $ text (formatISO8601Millis s)
-renderValue (DateTime2 _ _ (SQLDateTime s)) = Just $ quotes $ text (formatISO8601Millis s)
-renderValue (DateTimeOffset _ _ (SQLDateTime s)) = Just $ quotes $ text (formatISO8601Millis s)
-renderValue (SmallDateTime _ (SQLSmallDateTime s)) = Just $ quotes $ text (formatISO8601Millis s)
-renderValue (Time _ _ (SQLTime t)) = Just $ quotes $ text (show $ timeToTimeOfDay t)
-renderValue (Float _ _ (SQLFloat f)) = Just $ float f
-renderValue (Real _ (SQLFloat f)) = Just $ float f
-renderValue (HierarchyId _ (SQLHierarchyID x)) = Just $ quotes $ text x
-renderValue (UniqueIdentifier _ (SQLUniqueIdentifier s)) = Just $ (quotes . text  . show) s
-renderValue (SqlVariant _ (SQLVariantInt n)) = Just $ int n
-renderValue (SqlVariant _ (SQLVariantString s)) = Just $ quotes $ text s
-renderValue (Xml _ (SQLXml s)) = Just $ quotes $ text s
+renderValue (DateTime _ x) = Just $ renderSQLDateTime x
+renderValue (DateTime2 _ _ x) = Just $ renderSQLDateTime x
+renderValue (DateTimeOffset _ _ x) = Just $ renderSQLDateTime x
+renderValue (SmallDateTime _ s) = Just $ renderSQLSmallDateTime s 
+renderValue (Time _ _ t) = Just $ renderSQLTime t
+renderValue (Float _ _ f) = Just $ renderSQLFloat f 
+renderValue (Real _ f) = Just $ renderSQLFloat f
+renderValue (HierarchyId _ x) = Just $ renderSQLHierarchyID x
+renderValue (UniqueIdentifier _ s) = Just $ renderSQLUniqueIdentifier s
+renderValue (SqlVariant _ s) = Just $ renderSQLVariant s
+renderValue (Xml _ s) = Just $ renderSQLXml s
 renderValue (Text _ _) = Nothing -- Text type invalid for local variables, function returns
 renderValue (NText _ _) = Nothing -- NText type invalid for local variables, function returns
 renderValue (Image _) = Nothing -- Image type invalid for local variable, function returns
