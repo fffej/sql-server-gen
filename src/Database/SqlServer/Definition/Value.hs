@@ -45,10 +45,10 @@ import Data.DeriveTH
 type SQLInt64 = Int64
 type SQLInt32 = Int32
 type SQLInt16 = Int16
-type SQLBit = Maybe Bool
 type SQLTinyInt = Word8
 type SQLBinary = Integer
 
+newtype SQLBit = SQLBit (Maybe Bool)
 newtype SQLSmallMoney = SQLSmallMoney SQLInt32
 newtype SQLMoney = SQLMoney SQLInt64
 
@@ -72,6 +72,7 @@ dateBetween startYear endYear = do
 
 derive makeArbitrary ''SQLMoney
 derive makeArbitrary ''SQLSmallMoney
+derive makeArbitrary ''SQLBit
 
 instance Arbitrary SQLDateTime where
   arbitrary = do
@@ -220,3 +221,5 @@ instance SQLValue SQLSmallMoney where
 instance SQLValue SQLMoney where
   toDoc (SQLMoney s) = text (divideBy10000 $ fromIntegral s)
   
+instance SQLValue SQLBit where
+  toDoc (SQLBit b) = maybe (text "NULL") (\x -> int (if x then 1 else  0)) b
