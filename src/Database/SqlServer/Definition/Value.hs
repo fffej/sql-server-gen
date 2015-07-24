@@ -26,7 +26,6 @@ module Database.SqlServer.Definition.Value
        , renderSQLUniqueIdentifier
        , renderSQLVariant
        , renderSQLXml
-       , divideBy10000         
        ) where
 
 import Database.SqlServer.Definition.Identifier (ArbUUID)
@@ -141,14 +140,6 @@ data SQLXml = SQLXml String
 
 instance Arbitrary SQLXml where
   arbitrary = return $ SQLXml "some xml"
-
-divideBy10000 :: Integer -> String
-divideBy10000 n
-  | length s < 5 = s
-  | otherwise    = take (len - 4) s ++ "." ++ drop (len - 4) s
-  where
-    s = show n
-    len = length s
 
 renderSQLDate :: SQLDate -> Doc
 renderSQLDate (SQLDate d) = quotes (text $ showGregorian d)

@@ -343,6 +343,15 @@ storageOptions (Geometry _ _) = Nothing
 asInt :: NumericStorage -> (Int,Int)
 asInt n = (precision n, maybe 18 id (scale n))
 
+
+divideBy10000 :: Integer -> String
+divideBy10000 n
+  | length s < 5 = s
+  | otherwise    = take (len - 4) s ++ "." ++ drop (len - 4) s
+  where
+    s = show n
+    len = length s
+
 renderValue :: Type -> Maybe Doc
 renderValue (Numeric _ n s) = Just $ renderNumeric (fmap asInt n) s 
 renderValue (Decimal _ n s) = Just $ renderNumeric (fmap asInt n) s
