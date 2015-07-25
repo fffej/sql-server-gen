@@ -394,6 +394,7 @@ isSupportedTypeForPartitionFunction NVarChar {} = False
 isSupportedTypeForPartitionFunction VarChar {} = False
 isSupportedTypeForPartitionFunction Geometry {} = False
 isSupportedTypeForPartitionFunction Geography {} = False
+isSupportedTypeForPartitionFunction HierarchyId {} = False
 isSupportedTypeForPartitionFunction _ = True
 
 value :: Type -> Maybe (Gen SQLValue)
