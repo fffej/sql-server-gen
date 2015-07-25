@@ -71,6 +71,7 @@ renderDatabaseDefinition  dd = text "USE master" $+$
                                renderNamedEntities (credentials dd) $+$
                                renderNamedEntities (messages dd) $+$
                                renderNamedEntities (brokerPriorities dd) $+$
+                               renderNamedEntities (partitionFunctions dd) $+$
                                text "GO"
   where
     dbName = renderRegularIdentifier (databaseName dd)
