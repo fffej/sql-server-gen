@@ -400,7 +400,7 @@ value :: Type -> Maybe (Gen SQLValue)
 value BigInt {} = Just arbitrarySQLInt64
 value Bit {} = Just arbitrarySQLBit
 value Numeric {} = Just arbitrarySQLNumeric
-value SmallInt {} = Just arbitrarySQLInt16
+value SmallInt {} = Just arbitrarySQLSmallInt
 value Decimal {} = Just arbitrarySQLNumeric
 value SmallMoney {}= Just arbitrarySQLSmallMoney
 value Int {} = Just arbitrarySQLInt32

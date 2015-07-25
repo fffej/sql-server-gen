@@ -6,7 +6,7 @@ module Database.SqlServer.Definition.Value
        , renderValue
        , arbitrarySQLInt64 -- I realize this is smelly
        , arbitrarySQLInt32 -- I can't think of a better way
-       , arbitrarySQLInt16 -- `suchThat` isOfAppropriateType could take forever?
+       , arbitrarySQLSmallInt -- `suchThat` isOfAppropriateType could take forever?
        , arbitrarySQLTinyInt
        , arbitrarySQLBinary
        , arbitrarySQLBit
@@ -42,7 +42,7 @@ import Data.Word
 
 data SQLValue = SQLInt64 Int64
               | SQLInt32 Int32
-              | SQLInt16 Int16
+              | SQLSmallInt Int16
               | SQLTinyInt Word8
               | SQLBinary Integer
               | SQLBit (Maybe Bool)
@@ -80,8 +80,8 @@ arbitrarySQLInt64 = liftM SQLInt64 arbitrary
 arbitrarySQLInt32 :: Gen SQLValue
 arbitrarySQLInt32 = liftM SQLInt32 arbitrary
 
-arbitrarySQLInt16 :: Gen SQLValue
-arbitrarySQLInt16 = liftM SQLInt16 arbitrary
+arbitrarySQLSmallInt :: Gen SQLValue
+arbitrarySQLSmallInt = liftM SQLSmallInt arbitrary
 
 arbitrarySQLTinyInt :: Gen SQLValue
 arbitrarySQLTinyInt = liftM SQLTinyInt arbitrary
@@ -205,7 +205,7 @@ renderValue (SQLMoney s) = text (divideBy10000 $ fromIntegral s)
 renderValue (SQLBit b) = maybe (text "NULL") (\x -> int (if x then 1 else  0)) b
 renderValue (SQLBinary s) = integer s
 renderValue (SQLTinyInt s) = (text . show) s
-renderValue (SQLInt16 s) = (text . show) s
+renderValue (SQLSmallInt s) = (text . show) s
 renderValue (SQLInt32 s) = (text . show) s
 renderValue (SQLInt64 s) = (text . show) s
 renderValue (SQLNumeric s) = (text . show) s
