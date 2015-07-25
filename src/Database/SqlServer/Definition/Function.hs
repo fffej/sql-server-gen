@@ -15,7 +15,7 @@ import Database.SqlServer.Definition.Entity
 import Test.QuickCheck
 import Data.DeriveTH
 import Text.PrettyPrint
-import Data.Maybe (isJust)
+import Data.Maybe (fromJust, isJust)
 import Control.Monad
 
 data NullOption = ReturnsNullOnNullInput
@@ -71,7 +71,10 @@ derive makeArbitrary ''Parameter
 data ReturnType = ReturnType Type SQLValue
 
 instance Arbitrary ReturnType where
-  arbitrary = undefined -- liftM ReturnType $ arbitrary `suchThat` liftM isJust renderValue
+  arbitrary = do
+    t <- arbitrary `suchThat` (\x -> isJust $ value x)
+    v <- fromJust $ value t
+    return (ReturnType t v)
 
 renderReturnType :: ReturnType -> Doc
 renderReturnType (ReturnType t _) = renderDataType t
