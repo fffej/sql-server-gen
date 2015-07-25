@@ -4,7 +4,6 @@
 module Database.SqlServer.Definition.DataType
        (
          Type
-       , value
        , renderDataType
        , collation
        , renderSparse
@@ -17,6 +16,7 @@ module Database.SqlServer.Definition.DataType
        , renderNullConstraint
        , isTimestamp
        , isSupportedTypeForPartitionFunction
+       , value
        ) where
 
 import Database.SqlServer.Definition.Value 
@@ -55,6 +55,10 @@ instance Arbitrary NFixedRange where
 data Range = Sized FixedRange
            | Max
 
+rangeSize :: Range -> Int
+rangeSize Max = 8000
+rangeSize (Sized (FixedRange n)) = n
+
 rangeStorageSize :: Range -> Int
 rangeStorageSize (Sized x) = fixedRangeStorage x
 rangeStorageSize _         = 0 
@@ -65,6 +69,10 @@ renderRange (Sized r) = renderFixedRange r
 
 data NRange = NSized NFixedRange
             | NMax
+
+nRangeSize :: NRange -> Int
+nRangeSize NMax = 4000
+nRangeSize (NSized (NFixedRange n)) = n
 
 nRangeStorageSize :: NRange -> Int
 nRangeStorageSize (NSized x) = nfixedRangeStorage x
@@ -389,4 +397,37 @@ isSupportedTypeForPartitionFunction Geography {} = False
 isSupportedTypeForPartitionFunction _ = True
 
 value :: Type -> Maybe (Gen SQLValue)
-value = undefined
+value BigInt {} = Just arbitrarySQLInt64
+value Bit {} = Just arbitrarySQLBit
+value Numeric {} = Just arbitrarySQLNumeric
+value SmallInt {} = Just arbitrarySQLInt16
+value Decimal {} = Just arbitrarySQLNumeric
+value SmallMoney {}= Just arbitrarySQLSmallMoney
+value Int {} = Just arbitrarySQLInt32
+value TinyInt {} = Just arbitrarySQLTinyInt
+value Money {} = Just arbitrarySQLMoney
+value Float {} = Just arbitrarySQLFloat
+value Real {} = Just arbitrarySQLFloat
+value Date {} = Just arbitrarySQLDate
+value DateTimeOffset {} = Just arbitrarySQLDateTime
+value DateTime2 {} = Just arbitrarySQLDateTime
+value SmallDateTime {} = Just arbitrarySQLSmallDateTime
+value DateTime {} = Just arbitrarySQLDateTime
+value Time {} = Just arbitrarySQLTime
+value (Char n _ _) = Just $ arbitrarySQLString (maybe 1 (\(FixedRange r) -> r) n)
+value (VarChar n _ _) = Just $ arbitrarySQLString (rangeSize n)
+value Text {} = Nothing
+value (NChar n _ _) = Just $ arbitrarySQLString (maybe 1 (\(NFixedRange r) -> r) n)
+value (NVarChar n _ _) = Just $ arbitrarySQLString (maybe 1 nRangeSize n)
+value NText {} = Nothing
+value Binary {}  = Just arbitrarySQLBinary
+value VarBinary {} = Just arbitrarySQLBinary
+value Image {} = Nothing
+value Timestamp {} = Nothing
+value HierarchyId {} = Just arbitrarySQLHierarchyID
+value UniqueIdentifier {} = Just arbitrarySQLUniqueIdentifier
+value SqlVariant {} = Just arbitrarySQLVariant
+value Xml {} = Just arbitrarySQLXml
+value Geography {} = Just arbitrarySQLGeography
+value Geometry {} = Just arbitrarySQLGeometry
+

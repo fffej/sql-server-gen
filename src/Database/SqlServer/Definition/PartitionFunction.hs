@@ -14,9 +14,12 @@ import Database.SqlServer.Definition.DataType
 import Database.SqlServer.Definition.Value
 import Database.SqlServer.Definition.Entity
 
+import Data.List (nub)
 import Data.DeriveTH
 import Text.PrettyPrint
 import Test.QuickCheck
+
+import Data.Maybe (fromJust)
 
 {-
   All data types are valid for use as partitioning columns, except text, 
@@ -50,7 +53,15 @@ data PartitionFunction = PartitionFunction
 renderValues :: [SQLValue] -> Doc
 renderValues xs = parens (vcat (punctuate comma $ map renderValue xs))
 
-derive makeArbitrary ''PartitionFunction
+instance Arbitrary PartitionFunction where
+  arbitrary = do
+    n <- arbitrary
+    t <- arbitrary
+    r <- arbitrary
+    let b = fromJust $ value (unwrap t) -- otherwise an error in my code
+    bv <- listOf b
+    return $ PartitionFunction n t r (nub bv)
+    
 
 instance Entity PartitionFunction where
   name = partitionFunctionName

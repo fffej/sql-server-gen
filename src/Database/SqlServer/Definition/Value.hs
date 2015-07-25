@@ -4,6 +4,27 @@ module Database.SqlServer.Definition.Value
        (
          SQLValue
        , renderValue
+       , arbitrarySQLInt64 -- I realize this is smelly
+       , arbitrarySQLInt32 -- I can't think of a better way
+       , arbitrarySQLInt16 -- `suchThat` isOfAppropriateType could take forever?
+       , arbitrarySQLTinyInt
+       , arbitrarySQLBinary
+       , arbitrarySQLBit
+       , arbitrarySQLSmallMoney
+       , arbitrarySQLMoney
+       , arbitrarySQLDate
+       , arbitrarySQLDateTime
+       , arbitrarySQLSmallDateTime
+       , arbitrarySQLTime
+       , arbitrarySQLGeography
+       , arbitrarySQLGeometry
+       , arbitrarySQLString
+       , arbitrarySQLFloat
+       , arbitrarySQLHierarchyID
+       , arbitrarySQLVariant
+       , arbitrarySQLXml
+       , arbitrarySQLUniqueIdentifier
+       , arbitrarySQLNumeric
        ) where
 
 import Database.SqlServer.Definition.Identifier (ArbUUID)
@@ -15,6 +36,7 @@ import Data.Time.Clock
 import Data.Time.ISO8601
 import Data.Time.LocalTime
 
+import Control.Monad
 import Data.Int
 import Data.Word
 
@@ -24,7 +46,7 @@ data SQLValue = SQLInt64 Int64
               | SQLTinyInt Word8
               | SQLBinary Integer
               | SQLBit (Maybe Bool)
-              | SQLSmallMoney Int32
+              | SQLSmallMoney Int32                
               | SQLMoney Int64
               | SQLDate Day
               | SQLDateTime UTCTime
@@ -39,104 +61,114 @@ data SQLValue = SQLInt64 Int64
               | SQLXml String
               | SQLUniqueIdentifier ArbUUID
               | SQLNumeric Integer
-
-instance Arbitrary SQLValue where
-  arbitrary = undefined
+                deriving (Eq)
 
 data Variant = SQLVariantInt Integer
              | SQLVariantString String
+               deriving (Eq)
 
 variantToDoc :: Variant -> Doc
 variantToDoc (SQLVariantString s) = quotes (text s)
 variantToDoc (SQLVariantInt n) = integer n
 
-{-
-instance Arbitrary SQLDate where
-  arbitrary = do
+arbitrarySQLBit :: Gen SQLValue
+arbitrarySQLBit = liftM SQLBit arbitrary
+
+arbitrarySQLInt64 :: Gen SQLValue
+arbitrarySQLInt64 = liftM SQLInt64 arbitrary
+
+arbitrarySQLInt32 :: Gen SQLValue
+arbitrarySQLInt32 = liftM SQLInt32 arbitrary
+
+arbitrarySQLInt16 :: Gen SQLValue
+arbitrarySQLInt16 = liftM SQLInt16 arbitrary
+
+arbitrarySQLTinyInt :: Gen SQLValue
+arbitrarySQLTinyInt = liftM SQLTinyInt arbitrary
+
+arbitrarySQLBinary :: Gen SQLValue
+arbitrarySQLBinary = liftM SQLBinary arbitrary
+
+arbitrarySQLSmallMoney :: Gen SQLValue
+arbitrarySQLSmallMoney = liftM SQLSmallMoney arbitrary
+
+arbitrarySQLMoney :: Gen SQLValue
+arbitrarySQLMoney = liftM SQLMoney arbitrary
+
+arbitrarySQLDate :: Gen SQLValue
+arbitrarySQLDate = do
     y <- choose (0,9999)
     m <- choose (1,12)
     d <- choose (1,31)
     return $ SQLDate (fromGregorian y m d) -- clipping handled by time package
--}
 
-{-
 dateBetween :: Integer -> Integer -> Gen Day
 dateBetween startYear endYear = do
   y <- choose (startYear,endYear)
   m <- choose (1,12)
   d <- choose (1,31)
   return (fromGregorian y m d)
--}
-{-
-instance Arbitrary SQLDateTime where
-  arbitrary = do
-    day <- dateBetween 1753 9999
-    datetime <- choose (0,86400)
-    return (SQLDateTime (UTCTime day (secondsToDiffTime datetime)))
--}
 
-{-
-instance Arbitrary SQLSmallDateTime where
-  arbitrary = do
-    day <- dateBetween 1900 2078
-    datetime <- choose (0,86400)
-    return (SQLSmallDateTime (UTCTime day (secondsToDiffTime datetime)))
--}
+arbitrarySQLDateTime :: Gen SQLValue
+arbitrarySQLDateTime = do
+  day <- dateBetween 1753 9999
+  datetime <- choose (0,86400)
+  return (SQLDateTime (UTCTime day (secondsToDiffTime datetime)))
 
-{-
-instance Arbitrary SQLTime where
-  arbitrary = do
-    time <- choose (0,86400)
-    return (SQLTime (secondsToDiffTime time))
--}
+arbitrarySQLSmallDateTime :: Gen SQLValue
+arbitrarySQLSmallDateTime = do
+  day <- dateBetween 1900 2078
+  datetime <- choose (0,86400)
+  return (SQLSmallDateTime (UTCTime day (secondsToDiffTime datetime)))
 
-{-
-instance Arbitrary SQLGeography where
-  arbitrary = do
-    a <- choose (- 90, 90) :: Gen Float
-    b <- choose (- 90, 90) :: Gen Float
-    c <- choose (- 90, 90) :: Gen Float
-    d <- choose (- 90, 90) :: Gen Float
+arbitrarySQLTime :: Gen SQLValue
+arbitrarySQLTime = do
+  time <- choose (0,86400)
+  return (SQLTime (secondsToDiffTime time))
 
-    return $ SQLGeography ("LINESTRING(" ++ show a ++ " " ++ show b ++ "," ++ show c ++ " " ++ show d ++ ")")
--}
-
+arbitrarySQLGeography :: Gen SQLValue
+arbitrarySQLGeography = do
+  a <- choose (- 90, 90) :: Gen Float
+  b <- choose (- 90, 90) :: Gen Float
+  c <- choose (- 90, 90) :: Gen Float
+  d <- choose (- 90, 90) :: Gen Float
+  return $ SQLGeography ("LINESTRING(" ++ show a ++ " " ++ show b ++ "," ++ show c ++ " " ++ show d ++ ")")
 
 -- Deliberate duplication so I can customize this
-{-instance Arbitrary SQLGeometry where
-  arbitrary = do
-    a <- arbitrary :: Gen Float
-    b <- arbitrary :: Gen Float
-    c <- arbitrary :: Gen Float
-    d <- arbitrary :: Gen Float
-    return $ SQLGeometry ("LINESTRING(" ++ show a ++ " " ++ show b ++ "," ++ show c ++ " " ++ show d ++ ")")
--}
-{-
-instance Arbitrary SQLString where
-  arbitrary = liftM SQLString $ listOf $ elements ['a' .. 'z']
+arbitrarySQLGeometry :: Gen SQLValue
+arbitrarySQLGeometry = do
+  a <- arbitrary :: Gen Float
+  b <- arbitrary :: Gen Float
+  c <- arbitrary :: Gen Float
+  d <- arbitrary :: Gen Float
+  return $ SQLGeometry ("LINESTRING(" ++ show a ++ " " ++ show b ++ "," ++ show c ++ " " ++ show d ++ ")")
 
-instance Arbitrary SQLNumeric where
-  arbitrary = liftM SQLNumeric arbitrary
+arbitrarySQLString :: Int -> Gen SQLValue
+arbitrarySQLString n = do
+  c <- listOf $ elements ['a' .. 'z']
+  return $ SQLString (take n c)
 
-instance Arbitrary SQLFloat where
-  arbitrary = liftM SQLFloat arbitrary
+arbitrarySQLNumeric :: Gen SQLValue
+arbitrarySQLNumeric = liftM SQLNumeric arbitrary
+
+arbitrarySQLFloat :: Gen SQLValue
+arbitrarySQLFloat = liftM SQLFloat arbitrary
 
 -- Just pick one of the examples from MSDN
-instance Arbitrary SQLHierarchyID where
-  arbitrary = liftM SQLHierarchyID $ elements ["/","/1/","/0.3.-7/","/1/3/","/0.1/0.2/"]
+arbitrarySQLHierarchyID :: Gen SQLValue
+arbitrarySQLHierarchyID = liftM SQLHierarchyID $ elements ["/","/1/","/0.3.-7/","/1/3/","/0.1/0.2/"]
 
-instance Arbitrary SQLUniqueIdentifier where
-  arbitrary = liftM SQLUniqueIdentifier arbitrary
+arbitrarySQLUniqueIdentifier :: Gen SQLValue
+arbitrarySQLUniqueIdentifier  = liftM SQLUniqueIdentifier arbitrary
 
-instance Arbitrary SQLVariant where
-  arbitrary = do
-    x <- arbitrary
-    y <- elements [SQLVariantString . show, SQLVariantInt]
-    return $ y x
+arbitrarySQLVariant :: Gen SQLValue
+arbitrarySQLVariant = do
+  x <- arbitrary
+  y <- elements [SQLVariantString . show, SQLVariantInt]
+  return $ SQLVariant (y x)
 
-instance Arbitrary SQLXml where
-  arbitrary = return $ SQLXml "some xml"
--}
+arbitrarySQLXml :: Gen SQLValue
+arbitrarySQLXml = return $ SQLXml "some xml"
 
 -- https://msdn.microsoft.com/en-us/library/ms190476.aspx
 {-renderNumeric :: Maybe (Int,Int) -> SQLNumeric -> Doc
