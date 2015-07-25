@@ -156,9 +156,12 @@ arbitrarySQLString n = do
   return $ SQLString (take n c)
 
 arbitrarySQLNumeric :: SQLNumericOptions -> Gen SQLValue
-arbitrarySQLNumeric s = do
-  x <- arbitrary
-  return (SQLNumeric x s)
+arbitrarySQLNumeric no = do
+  let s = scale no
+  xs <- replicateM s (choose (0,9))
+  b <- arbitrary
+  let num = foldl (\x y -> y + x * 10) 0 xs
+  return (SQLNumeric (if b then num else (- num)) no)
 
 arbitrarySQLFloat :: Gen SQLValue
 arbitrarySQLFloat = liftM SQLFloat arbitrary
@@ -181,13 +184,10 @@ arbitrarySQLXml = return $ SQLXml "some xml"
 
 -- https://msdn.microsoft.com/en-us/library/ms190476.aspx
 renderNumeric :: SQLNumericOptions -> Integer -> Doc
-renderNumeric no n = text num
+renderNumeric no n = double num
   where
+    num = fromIntegral n / (10.0 ^ p)
     p = precision no
-    s = scale no
-    v = take p (show (abs n))
-    len = length v
-    num = take (len - s) v ++ "." ++ drop (len - s) v
 
 divideBy10000 :: Integer -> String
 divideBy10000 n

@@ -144,7 +144,7 @@ data NumericStorage = NumericStorage
 numericStorage :: Maybe NumericStorage -> SQLNumericOptions
 numericStorage ns = SQLNumericOptions p s
   where
-    (p,s) =  maybe (18,18) (\n -> (precision n,maybe 18 id (scale n))) ns
+    (p,s) =  maybe (18,0) (\n -> (precision n,maybe 0 id (scale n))) ns
 
 {- The scale must be less than or equal to the precision -}
 instance Arbitrary NumericStorage where                      
