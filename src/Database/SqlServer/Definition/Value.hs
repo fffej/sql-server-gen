@@ -4,7 +4,7 @@ module Database.SqlServer.Definition.Value
        (
          SQLValue
        , renderValue
-       , arbitrarySQLInt64 -- I realize this is smelly
+       , arbitrarySQLBigInt -- I realize this is smelly
        , arbitrarySQLInt -- I can't think of a better way
        , arbitrarySQLSmallInt -- `suchThat` isOfAppropriateType could take forever?
        , arbitrarySQLTinyInt
@@ -40,7 +40,7 @@ import Control.Monad
 import Data.Int
 import Data.Word
 
-data SQLValue = SQLInt64 Int64
+data SQLValue = SQLBigInt Int64
               | SQLInt Int32
               | SQLSmallInt Int16
               | SQLTinyInt Word8
@@ -74,8 +74,8 @@ variantToDoc (SQLVariantInt n) = integer n
 arbitrarySQLBit :: Gen SQLValue
 arbitrarySQLBit = liftM SQLBit arbitrary
 
-arbitrarySQLInt64 :: Gen SQLValue
-arbitrarySQLInt64 = liftM SQLInt64 arbitrary
+arbitrarySQLBigInt :: Gen SQLValue
+arbitrarySQLBigInt = liftM SQLBigInt arbitrary
 
 arbitrarySQLInt :: Gen SQLValue
 arbitrarySQLInt = liftM SQLInt arbitrary
@@ -207,5 +207,5 @@ renderValue (SQLBinary s) = integer s
 renderValue (SQLTinyInt s) = (text . show) s
 renderValue (SQLSmallInt s) = (text . show) s
 renderValue (SQLInt s) = (text . show) s
-renderValue (SQLInt64 s) = (text . show) s
+renderValue (SQLBigInt s) = (text . show) s
 renderValue (SQLNumeric s) = (text . show) s

@@ -397,7 +397,7 @@ isSupportedTypeForPartitionFunction Geography {} = False
 isSupportedTypeForPartitionFunction _ = True
 
 value :: Type -> Maybe (Gen SQLValue)
-value BigInt {} = Just arbitrarySQLInt64
+value BigInt {} = Just arbitrarySQLBigInt
 value Bit {} = Just arbitrarySQLBit
 value Numeric {} = Just arbitrarySQLNumeric
 value SmallInt {} = Just arbitrarySQLSmallInt
