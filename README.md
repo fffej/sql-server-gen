@@ -19,6 +19,7 @@ Currently supported (at various degrees of completion) are:
 * Contracts
 * Services
 * Broker Priorties
+* Partition Functio
 
 Contributers more than welcome (especially if you know enough Haskell to help me simplify the code!).
 
