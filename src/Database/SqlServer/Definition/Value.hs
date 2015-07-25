@@ -3,6 +3,7 @@
 module Database.SqlServer.Definition.Value
        (
          SQLValue
+       , SQLNumericOptions(..)
        , renderValue
        , arbitrarySQLBigInt -- I realize this is smelly
        , arbitrarySQLInt -- I can't think of a better way
@@ -30,7 +31,7 @@ module Database.SqlServer.Definition.Value
 import Database.SqlServer.Definition.Identifier (ArbUUID)
 
 import Text.PrettyPrint
-import Test.QuickCheck
+import Test.QuickCheck hiding (scale)
 import Data.Time.Calendar
 import Data.Time.Clock
 import Data.Time.ISO8601
@@ -39,6 +40,12 @@ import Data.Time.LocalTime
 import Control.Monad
 import Data.Int
 import Data.Word
+
+data SQLNumericOptions = SQLNumericOptions
+  {
+    scale :: Int
+  , precision :: Int
+  } deriving (Eq)
 
 data SQLValue = SQLBigInt Int64
               | SQLInt Int32
@@ -55,12 +62,12 @@ data SQLValue = SQLBigInt Int64
               | SQLGeography String
               | SQLGeometry String
               | SQLString String
-              | SQLFloat Float
+              | SQLFloat Float 
               | SQLHierarchyID String
               | SQLVariant Variant
               | SQLXml String
               | SQLUniqueIdentifier ArbUUID
-              | SQLNumeric Integer
+              | SQLNumeric Integer SQLNumericOptions
                 deriving (Eq)
 
 data Variant = SQLVariantInt Integer
@@ -148,8 +155,10 @@ arbitrarySQLString n = do
   c <- listOf $ elements ['a' .. 'z']
   return $ SQLString (take n c)
 
-arbitrarySQLNumeric :: Gen SQLValue
-arbitrarySQLNumeric = liftM SQLNumeric arbitrary
+arbitrarySQLNumeric :: SQLNumericOptions -> Gen SQLValue
+arbitrarySQLNumeric s = do
+  x <- arbitrary
+  return (SQLNumeric x s)
 
 arbitrarySQLFloat :: Gen SQLValue
 arbitrarySQLFloat = liftM SQLFloat arbitrary
@@ -171,14 +180,15 @@ arbitrarySQLXml :: Gen SQLValue
 arbitrarySQLXml = return $ SQLXml "some xml"
 
 -- https://msdn.microsoft.com/en-us/library/ms190476.aspx
-{-renderNumeric :: Maybe (Int,Int) -> SQLNumeric -> Doc
-renderNumeric Nothing s                = renderNumeric (Just (18,18)) s
-renderNumeric (Just (p,s)) (SQLNumeric n) = text num
+renderNumeric :: SQLNumericOptions -> Integer -> Doc
+renderNumeric no n = text num
   where
+    p = precision no
+    s = scale no
     v = take p (show (abs n))
     len = length v
     num = take (len - s) v ++ "." ++ drop (len - s) v
--}
+
 divideBy10000 :: Integer -> String
 divideBy10000 n
   | length s < 5 = s
@@ -208,4 +218,4 @@ renderValue (SQLTinyInt s) = (text . show) s
 renderValue (SQLSmallInt s) = (text . show) s
 renderValue (SQLInt s) = (text . show) s
 renderValue (SQLBigInt s) = (text . show) s
-renderValue (SQLNumeric s) = (text . show) s
+renderValue (SQLNumeric n no) = renderNumeric no n

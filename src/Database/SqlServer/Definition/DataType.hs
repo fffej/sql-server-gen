@@ -19,7 +19,7 @@ module Database.SqlServer.Definition.DataType
        , value
        ) where
 
-import Database.SqlServer.Definition.Value 
+import Database.SqlServer.Definition.Value hiding (precision,scale)
 import Database.SqlServer.Definition.Collation (Collation)
 
 import Text.PrettyPrint
@@ -140,6 +140,11 @@ data NumericStorage = NumericStorage
                         precision :: Int
                       , scale :: Maybe Int 
                       }
+
+numericStorage :: Maybe NumericStorage -> SQLNumericOptions
+numericStorage ns = SQLNumericOptions p s
+  where
+    (p,s) =  maybe (18,18) (\n -> (precision n,maybe 18 id (scale n))) ns
 
 {- The scale must be less than or equal to the precision -}
 instance Arbitrary NumericStorage where                      
@@ -400,9 +405,9 @@ isSupportedTypeForPartitionFunction _ = True
 value :: Type -> Maybe (Gen SQLValue)
 value BigInt {} = Just arbitrarySQLBigInt
 value Bit {} = Just arbitrarySQLBit
-value Numeric {} = Just arbitrarySQLNumeric
+value (Numeric _ n) = Just $ arbitrarySQLNumeric (numericStorage n)
+value (Decimal _ n) = Just $ arbitrarySQLNumeric (numericStorage n)
 value SmallInt {} = Just arbitrarySQLSmallInt
-value Decimal {} = Just arbitrarySQLNumeric
 value SmallMoney {}= Just arbitrarySQLSmallMoney
 value Int {} = Just arbitrarySQLInt
 value TinyInt {} = Just arbitrarySQLTinyInt
