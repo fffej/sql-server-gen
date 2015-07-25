@@ -9,12 +9,13 @@ module Database.SqlServer.Definition.Function
 
 import Database.SqlServer.Definition.Identifier hiding (unwrap)
 import Database.SqlServer.Definition.DataType
+import Database.SqlServer.Definition.Value
 import Database.SqlServer.Definition.Entity
 
 import Test.QuickCheck
 import Data.DeriveTH
 import Text.PrettyPrint
-import Data.Maybe (isJust,fromJust)
+import Data.Maybe (fromJust, isJust)
 import Control.Monad
 
 data NullOption = ReturnsNullOnNullInput
@@ -67,17 +68,20 @@ renderParameter p = renderParameterIdentifier (parameterName p) <+> renderInputD
 
 derive makeArbitrary ''Parameter
 
-newtype ReturnType = ReturnType Type
+data ReturnType = ReturnType Type SQLValue
 
 instance Arbitrary ReturnType where
-  arbitrary = liftM ReturnType $ arbitrary `suchThat` liftM isJust renderValue
+  arbitrary = do
+    t <- arbitrary `suchThat` (\x -> isJust $ value x)
+    v <- fromJust $ value t
+    return (ReturnType t v)
 
 renderReturnType :: ReturnType -> Doc
-renderReturnType (ReturnType t) = renderDataType t
+renderReturnType (ReturnType t _) = renderDataType t
 
 -- Safe because of instance of Arbitrary above
 renderReturnValue :: ReturnType -> Doc
-renderReturnValue (ReturnType t) = fromJust $ renderValue t
+renderReturnValue (ReturnType _ v) = renderValue v
 
 data ScalarFunction = ScalarFunction
    {

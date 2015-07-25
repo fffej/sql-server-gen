@@ -70,6 +70,7 @@ library
                        Database.SqlServer.Definition.Contract,
                        Database.SqlServer.Definition.BrokerPriority,
                        Database.SqlServer.Definition.Service,
+                       Database.SqlServer.Definition.PartitionFunction,
                        Database.SqlServer.Definition.Entity
 
 

@@ -13,7 +13,9 @@ import Database.SqlServer.Definition.Function (Function)
 import Database.SqlServer.Definition.Credential (Credential)
 import Database.SqlServer.Definition.MessageType (MessageType)
 import Database.SqlServer.Definition.BrokerPriority (BrokerPriority)
+import Database.SqlServer.Definition.PartitionFunction (PartitionFunction)
 import Database.SqlServer.Definition.Entity
+
 
 import Test.QuickCheck
 import Test.QuickCheck.Gen
@@ -44,6 +46,7 @@ data DatabaseDefinition = DatabaseDefinition
                           , credentials :: [Credential]
                           , messages :: [MessageType]
                           , brokerPriorities :: [BrokerPriority]
+                          , partitionFunctions :: [PartitionFunction]
                           , masterKey :: MasterKey
                           }
 
@@ -68,6 +71,7 @@ renderDatabaseDefinition  dd = text "USE master" $+$
                                renderNamedEntities (credentials dd) $+$
                                renderNamedEntities (messages dd) $+$
                                renderNamedEntities (brokerPriorities dd) $+$
+                               renderNamedEntities (partitionFunctions dd) $+$
                                text "GO"
   where
     dbName = renderRegularIdentifier (databaseName dd)
