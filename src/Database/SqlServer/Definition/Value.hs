@@ -5,7 +5,7 @@ module Database.SqlServer.Definition.Value
          SQLValue
        , renderValue
        , arbitrarySQLInt64 -- I realize this is smelly
-       , arbitrarySQLInt32 -- I can't think of a better way
+       , arbitrarySQLInt -- I can't think of a better way
        , arbitrarySQLSmallInt -- `suchThat` isOfAppropriateType could take forever?
        , arbitrarySQLTinyInt
        , arbitrarySQLBinary
@@ -41,7 +41,7 @@ import Data.Int
 import Data.Word
 
 data SQLValue = SQLInt64 Int64
-              | SQLInt32 Int32
+              | SQLInt Int32
               | SQLSmallInt Int16
               | SQLTinyInt Word8
               | SQLBinary Integer
@@ -77,8 +77,8 @@ arbitrarySQLBit = liftM SQLBit arbitrary
 arbitrarySQLInt64 :: Gen SQLValue
 arbitrarySQLInt64 = liftM SQLInt64 arbitrary
 
-arbitrarySQLInt32 :: Gen SQLValue
-arbitrarySQLInt32 = liftM SQLInt32 arbitrary
+arbitrarySQLInt :: Gen SQLValue
+arbitrarySQLInt = liftM SQLInt arbitrary
 
 arbitrarySQLSmallInt :: Gen SQLValue
 arbitrarySQLSmallInt = liftM SQLSmallInt arbitrary
@@ -206,6 +206,6 @@ renderValue (SQLBit b) = maybe (text "NULL") (\x -> int (if x then 1 else  0)) b
 renderValue (SQLBinary s) = integer s
 renderValue (SQLTinyInt s) = (text . show) s
 renderValue (SQLSmallInt s) = (text . show) s
-renderValue (SQLInt32 s) = (text . show) s
+renderValue (SQLInt s) = (text . show) s
 renderValue (SQLInt64 s) = (text . show) s
 renderValue (SQLNumeric s) = (text . show) s
