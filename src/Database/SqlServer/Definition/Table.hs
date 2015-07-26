@@ -24,11 +24,6 @@ import Database.SqlServer.Definition.Entity
 import Test.QuickCheck
 import Text.PrettyPrint
 
-data TableConstraint = TableConstraint
-  {
-
-  }
-
 data ColumnDefinition = ColumnDefinition
   {
     columnName :: RegularIdentifier
@@ -42,6 +37,18 @@ instance Arbitrary ColumnDefinition where
     return $ ColumnDefinition n t    
 
 newtype ColumnDefinitions = ColumnDefinitions [ColumnDefinition]
+
+
+data TableConstraint = TableConstraint
+  {
+    constraintName :: RegularIdentifier
+  }
+
+generateTableConstraint :: ColumnDefinitions -> Gen (Maybe TableConstraint)
+generateTableConstraint = undefined
+
+renderTableConstraint :: TableConstraint -> Doc
+renderTableConstraint t = comma <+> text "CONSTRAINT" <+> renderRegularIdentifier (constraintName t)
 
 data Table = Table
   {
@@ -63,7 +70,8 @@ instance Arbitrary Table where
   arbitrary = do
     cols <- arbitrary 
     nm <- arbitrary
-    return $ Table nm cols Nothing
+    f <- generateTableConstraint cols
+    return $ Table nm cols f
 
 instance Arbitrary ColumnDefinitions where
   arbitrary = do
@@ -90,6 +98,7 @@ instance Entity Table where
   name = tableName
   toDoc t = text "CREATE TABLE" <+> renderName t $$
             parens (renderColumnDefinitions (columnDefinitions t)) $+$
+            maybe empty renderTableConstraint (tableConstraint t) $+$
             text "GO"
 
 
