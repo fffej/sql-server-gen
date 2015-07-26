@@ -30,18 +30,18 @@ import Text.PrettyPrint
 import Data.DeriveTH
 
 data ColumnDefinition = ColumnDefinition
-                        {
-                          columnName :: RegularIdentifier
-                        , dataType   :: Type
-                        }
+  {
+    columnName :: RegularIdentifier
+  , dataType   :: Type
+  }
 
 newtype ColumnDefinitions = ColumnDefinitions [ColumnDefinition]
 
 data Table = Table
-             {
-               tableName    :: RegularIdentifier
-             , columnDefinitions :: ColumnDefinitions
-             }
+  {
+    tableName    :: RegularIdentifier
+  , columnDefinitions :: ColumnDefinitions
+  }
 
 columnConstraintsSatisfied :: [ColumnDefinition] -> Bool
 columnConstraintsSatisfied xs = length (filter columnIsTimestamp xs) <= 1 && 
