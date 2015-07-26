@@ -24,7 +24,7 @@ import Database.SqlServer.Definition.Entity
 import Test.QuickCheck
 import Text.PrettyPrint
 
-data ColumnConstraint = ColumnConstraint
+data TableConstraint = TableConstraint
   {
 
   }
@@ -33,15 +33,13 @@ data ColumnDefinition = ColumnDefinition
   {
     columnName :: RegularIdentifier
   , dataType   :: Type
-  , constraint :: Maybe ColumnConstraint
   }
 
 instance Arbitrary ColumnDefinition where
   arbitrary = do
     n <- arbitrary
     t <- arbitrary
-    return $ ColumnDefinition n t Nothing
-    
+    return $ ColumnDefinition n t    
 
 newtype ColumnDefinitions = ColumnDefinitions [ColumnDefinition]
 
@@ -49,6 +47,7 @@ data Table = Table
   {
     tableName    :: RegularIdentifier
   , columnDefinitions :: ColumnDefinitions
+  , tableConstraint :: Maybe TableConstraint
   }
 
 columnConstraintsSatisfied :: [ColumnDefinition] -> Bool
@@ -64,7 +63,7 @@ instance Arbitrary Table where
   arbitrary = do
     cols <- arbitrary 
     nm <- arbitrary
-    return $ Table nm cols
+    return $ Table nm cols Nothing
 
 instance Arbitrary ColumnDefinitions where
   arbitrary = do
