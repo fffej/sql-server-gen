@@ -1,3 +1,6 @@
+{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE TemplateHaskell #-}
+
 module Database.SqlServer.Definition.Table
        (
          Table
@@ -15,12 +18,14 @@ import Database.SqlServer.Definition.DataType (
   storageSize,
   renderRowGuidConstraint,
   rowGuidOptions,
-  isTimestamp
+  isTimestamp,
+  isTypeForIndex
   )
   
 import Database.SqlServer.Definition.Collation (renderCollation)
 import Database.SqlServer.Definition.Entity
 
+import Data.DeriveTH
 import Test.QuickCheck
 import Text.PrettyPrint
 
@@ -38,17 +43,45 @@ instance Arbitrary ColumnDefinition where
 
 newtype ColumnDefinitions = ColumnDefinitions [ColumnDefinition]
 
+data IndexType = PrimaryKey | Unique
+
+derive makeArbitrary ''IndexType
+
+renderIndexType :: IndexType -> Doc
+renderIndexType PrimaryKey = text "PRIMARY KEY"
+renderIndexType Unique = text "UNIQUE"
 
 data TableConstraint = TableConstraint
   {
     constraintName :: RegularIdentifier
+  , indexType :: IndexType
+  , column :: RegularIdentifier
   }
 
 generateTableConstraint :: ColumnDefinitions -> Gen (Maybe TableConstraint)
-generateTableConstraint = undefined
+generateTableConstraint (ColumnDefinitions cd) = case filter (isTypeForIndex . dataType) cd of
+  [] -> return Nothing
+  xs -> do
+    n <- arbitrary
+    c <- columnName <$> elements xs
+    it <- arbitrary
+    frequency
+      [
+        (0, return Nothing),
+        (100, return $ Just (TableConstraint
+           {
+             constraintName = n
+           , indexType = it
+           , column = c
+           }))
+      ]
+  
 
 renderTableConstraint :: TableConstraint -> Doc
-renderTableConstraint t = comma <+> text "CONSTRAINT" <+> renderRegularIdentifier (constraintName t)
+renderTableConstraint t = comma <+> text "CONSTRAINT" <+>
+                          renderRegularIdentifier (constraintName t) <+>
+                          renderIndexType (indexType t) <+>
+                          parens (renderRegularIdentifier (column t))
 
 data Table = Table
   {
@@ -97,8 +130,9 @@ renderColumnDefinition c = columnName' <+> columnType' <+> collation' <+>
 instance Entity Table where
   name = tableName
   toDoc t = text "CREATE TABLE" <+> renderName t $$
-            parens (renderColumnDefinitions (columnDefinitions t)) $+$
-            maybe empty renderTableConstraint (tableConstraint t) $+$
+            parens ((renderColumnDefinitions (columnDefinitions t)) <>
+            maybe empty renderTableConstraint (tableConstraint t)) $+$
             text "GO"
 
-
+instance Show Table where
+  show = show . toDoc

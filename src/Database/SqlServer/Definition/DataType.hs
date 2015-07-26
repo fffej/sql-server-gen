@@ -17,6 +17,7 @@ module Database.SqlServer.Definition.DataType
        , isTimestamp
        , isSupportedTypeForPartitionFunction
        , value
+       , isTypeForIndex
        ) where
 
 import Database.SqlServer.Definition.Value hiding (precision,scale)
@@ -103,6 +104,14 @@ data StorageOptions = Sparse
 
 data NullStorageOptions = NotNull | Null
 
+isNull :: NullStorageOptions -> Bool
+isNull Null = True
+isNull NotNull = False
+
+isSparse :: StorageOptions -> Bool
+isSparse Sparse = True
+isSparse SparseNull = True
+isSparse _ = False
 
 nullStorageFromStorageOptions :: StorageOptions -> Maybe NullStorageOptions
 nullStorageFromStorageOptions (StorageOptions x) = Just x
@@ -305,7 +314,6 @@ storageSize Geography {} = 0
 storageSize SqlVariant {} = 0
 storageSize Xml {} = 0
 
-
 nullOptions :: Type -> Maybe NullStorageOptions
 nullOptions t = maybe Nothing nullStorageFromStorageOptions (storageOptions t)
 
@@ -401,6 +409,21 @@ isSupportedTypeForPartitionFunction Geometry {} = False
 isSupportedTypeForPartitionFunction Geography {} = False
 isSupportedTypeForPartitionFunction HierarchyId {} = False
 isSupportedTypeForPartitionFunction _ = True
+
+isTypeForIndex :: Type -> Bool
+isTypeForIndex Xml {} = False
+isTypeForIndex VarBinary {} = False
+isTypeForIndex VarChar {} = False
+isTypeForIndex NVarChar {} = False
+isTypeForIndex SqlVariant {} = False
+isTypeForIndex Image {} = False
+isTypeForIndex Geography {} = False
+isTypeForIndex Geometry {} = False
+isTypeForIndex Text {} = False
+isTypeForIndex NText {} = False
+isTypeForIndex t = maybe True (not . isNull) (nullOptions t) &&  -- can not be null
+                   maybe True (not . isSparse) (storageOptions t) && -- can not be sparse
+                   storageSize t < 900 -- index key size cannot exceed 900 bytes 
 
 value :: Type -> Maybe (Gen SQLValue)
 value BigInt {} = Just arbitrarySQLBigInt
