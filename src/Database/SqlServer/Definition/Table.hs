@@ -18,30 +18,77 @@ import Database.SqlServer.Definition.DataType (
   storageSize,
   renderRowGuidConstraint,
   rowGuidOptions,
-  isTimestamp
+  isTimestamp,
+  isTypeForIndex
   )
   
 import Database.SqlServer.Definition.Collation (renderCollation)
 import Database.SqlServer.Definition.Entity
 
+import Data.DeriveTH
 import Test.QuickCheck
 import Text.PrettyPrint
 
-import Data.DeriveTH
-
 data ColumnDefinition = ColumnDefinition
-                        {
-                          columnName :: RegularIdentifier
-                        , dataType   :: Type
-                        }
+  {
+    columnName :: RegularIdentifier
+  , dataType   :: Type
+  }
+
+instance Arbitrary ColumnDefinition where
+  arbitrary = do
+    n <- arbitrary
+    t <- arbitrary
+    return $ ColumnDefinition n t    
 
 newtype ColumnDefinitions = ColumnDefinitions [ColumnDefinition]
 
+data IndexType = PrimaryKey | Unique
+
+derive makeArbitrary ''IndexType
+
+renderIndexType :: IndexType -> Doc
+renderIndexType PrimaryKey = text "PRIMARY KEY"
+renderIndexType Unique = text "UNIQUE"
+
+data TableConstraint = TableConstraint
+  {
+    constraintName :: RegularIdentifier
+  , indexType :: IndexType
+  , column :: RegularIdentifier
+  }
+
+generateTableConstraint :: ColumnDefinitions -> Gen (Maybe TableConstraint)
+generateTableConstraint (ColumnDefinitions cd) = case filter (isTypeForIndex . dataType) cd of
+  [] -> return Nothing
+  xs -> do
+    n <- arbitrary
+    c <- columnName <$> elements xs
+    it <- arbitrary
+    frequency
+      [
+        (0, return Nothing),
+        (100, return $ Just (TableConstraint
+           {
+             constraintName = n
+           , indexType = it
+           , column = c
+           }))
+      ]
+  
+
+renderTableConstraint :: TableConstraint -> Doc
+renderTableConstraint t = comma <+> text "CONSTRAINT" <+>
+                          renderRegularIdentifier (constraintName t) <+>
+                          renderIndexType (indexType t) <+>
+                          parens (renderRegularIdentifier (column t))
+
 data Table = Table
-             {
-               tableName    :: RegularIdentifier
-             , columnDefinitions :: ColumnDefinitions
-             }
+  {
+    tableName    :: RegularIdentifier
+  , columnDefinitions :: ColumnDefinitions
+  , tableConstraint :: Maybe TableConstraint
+  }
 
 columnConstraintsSatisfied :: [ColumnDefinition] -> Bool
 columnConstraintsSatisfied xs = length (filter columnIsTimestamp xs) <= 1 && 
@@ -56,9 +103,8 @@ instance Arbitrary Table where
   arbitrary = do
     cols <- arbitrary 
     nm <- arbitrary
-    return $ Table nm cols
-
-derive makeArbitrary ''ColumnDefinition
+    f <- generateTableConstraint cols
+    return $ Table nm cols f
 
 instance Arbitrary ColumnDefinitions where
   arbitrary = do
@@ -84,7 +130,9 @@ renderColumnDefinition c = columnName' <+> columnType' <+> collation' <+>
 instance Entity Table where
   name = tableName
   toDoc t = text "CREATE TABLE" <+> renderName t $$
-            parens (renderColumnDefinitions (columnDefinitions t)) $+$
+            parens ((renderColumnDefinitions (columnDefinitions t)) <>
+            maybe empty renderTableConstraint (tableConstraint t)) $+$
             text "GO"
 
-
+instance Show Table where
+  show = show . toDoc
