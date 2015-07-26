@@ -1,6 +1,3 @@
-{-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE TemplateHaskell #-}
-
 module Database.SqlServer.Definition.Table
        (
          Table
@@ -27,8 +24,6 @@ import Database.SqlServer.Definition.Entity
 import Test.QuickCheck
 import Text.PrettyPrint
 
-import Data.DeriveTH
-
 data ColumnConstraint = ColumnConstraint
   {
 
@@ -38,7 +33,15 @@ data ColumnDefinition = ColumnDefinition
   {
     columnName :: RegularIdentifier
   , dataType   :: Type
+  , constraint :: Maybe ColumnConstraint
   }
+
+instance Arbitrary ColumnDefinition where
+  arbitrary = do
+    n <- arbitrary
+    t <- arbitrary
+    return $ ColumnDefinition n t Nothing
+    
 
 newtype ColumnDefinitions = ColumnDefinitions [ColumnDefinition]
 
@@ -62,8 +65,6 @@ instance Arbitrary Table where
     cols <- arbitrary 
     nm <- arbitrary
     return $ Table nm cols
-
-derive makeArbitrary ''ColumnDefinition
 
 instance Arbitrary ColumnDefinitions where
   arbitrary = do
