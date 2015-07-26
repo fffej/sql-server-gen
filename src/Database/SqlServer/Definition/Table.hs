@@ -29,6 +29,11 @@ import Text.PrettyPrint
 
 import Data.DeriveTH
 
+data ColumnConstraint = ColumnConstraint
+  {
+
+  }
+
 data ColumnDefinition = ColumnDefinition
   {
     columnName :: RegularIdentifier
