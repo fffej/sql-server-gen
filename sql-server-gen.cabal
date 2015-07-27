@@ -71,7 +71,8 @@ library
                        Database.SqlServer.Definition.BrokerPriority,
                        Database.SqlServer.Definition.Service,
                        Database.SqlServer.Definition.PartitionFunction,
-                       Database.SqlServer.Definition.Entity
+                       Database.SqlServer.Definition.Entity,
+                       Database.SqlServer.Definition.Value
 
 
   ghc-options:         -Wall -O2 -fwarn-tabs -Werror
