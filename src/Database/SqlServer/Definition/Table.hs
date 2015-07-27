@@ -28,6 +28,8 @@ import Database.SqlServer.Definition.Entity
 import Data.DeriveTH
 import Test.QuickCheck
 import Text.PrettyPrint
+import Data.Maybe (isJust)
+import Control.Monad
 
 data ColumnDefinition = ColumnDefinition
   {
@@ -45,17 +47,70 @@ newtype ColumnDefinitions = ColumnDefinitions [ColumnDefinition]
 
 data IndexType = PrimaryKey | Unique
 
+data SortOrder = Ascending | Descending
+
+newtype FillFactor = FillFactor Int
+
+data IndexOption = IndexOption
+  {
+    padIndex :: Maybe Bool
+  , ignoreDupKey :: Maybe Bool
+  , statisticsNoRecompute :: Maybe Bool
+  , allowRowLocks :: Maybe Bool
+  , allowPageLocks :: Maybe Bool
+  , indexFillFactor :: Maybe FillFactor
+  }
+  
+instance Arbitrary FillFactor where
+  arbitrary = liftM FillFactor $ choose (1,100)
+
 derive makeArbitrary ''IndexType
+derive makeArbitrary ''SortOrder
+derive makeArbitrary ''IndexOption
 
 renderIndexType :: IndexType -> Doc
 renderIndexType PrimaryKey = text "PRIMARY KEY"
 renderIndexType Unique = text "UNIQUE"
+
+renderSortOrder :: SortOrder -> Doc
+renderSortOrder Ascending = text "ASC"
+renderSortOrder Descending = text "DESC"
+
+renderOption :: Bool -> Doc
+renderOption False = text "OFF"
+renderOption True = text "ON"
+
+renderIndexOption :: IndexOption -> Doc
+renderIndexOption i
+  | null vs   = empty
+  | otherwise = text "WITH" <+> (parens $ vcat (punctuate comma vs))
+  where
+    vs = filter (/= empty) xs
+    xs =
+      [
+        maybe empty (\x -> text "PAD_INDEX = " <+> renderOption x) (padIndex i)
+      , maybe empty (\x -> text "IGNORE_DUP_KEY = " <+> renderOption x) (ignoreDupKey i)
+      , maybe empty (\x -> text "STATISTICS_NORECOMPUTE = " <+> renderOption x) (statisticsNoRecompute i)
+      , maybe empty (\x -> text "ALLOW_ROW_LOCKS = " <+> renderOption x) (allowRowLocks i)
+      , maybe empty (\x -> text "ALLOW_PAGE_LOCKS = " <+> renderOption x) (allowPageLocks i)
+      , maybe empty (\(FillFactor x) -> text "FILLFACTOR = " <+> int x) (indexFillFactor i)
+      ]
+
+atLeastOneOptionSet :: IndexOption -> Bool
+atLeastOneOptionSet i = isJust (padIndex i) ||
+                        isJust (ignoreDupKey i) ||
+                        isJust (statisticsNoRecompute i) ||
+                        isJust (allowRowLocks i) ||
+                        isJust (allowPageLocks i) ||
+                        isJust (indexFillFactor i)
 
 data TableConstraint = TableConstraint
   {
     constraintName :: RegularIdentifier
   , indexType :: IndexType
   , column :: RegularIdentifier
+  , sortOrder :: Maybe SortOrder
+  , indexOption :: Maybe IndexOption
   }
 
 generateTableConstraint :: ColumnDefinitions -> Gen (Maybe TableConstraint)
@@ -65,6 +120,8 @@ generateTableConstraint (ColumnDefinitions cd) = case filter (isTypeForIndex . d
     n <- arbitrary
     c <- columnName <$> elements xs
     it <- arbitrary
+    so <- arbitrary
+    io <- arbitrary `suchThatMaybe` atLeastOneOptionSet
     frequency
       [
         (0, return Nothing),
@@ -73,15 +130,20 @@ generateTableConstraint (ColumnDefinitions cd) = case filter (isTypeForIndex . d
              constraintName = n
            , indexType = it
            , column = c
+           , sortOrder = so
+           , indexOption = io
            }))
       ]
   
 
 renderTableConstraint :: TableConstraint -> Doc
-renderTableConstraint t = comma <+> text "CONSTRAINT" <+>
+renderTableConstraint t = text "CONSTRAINT" <+>
                           renderRegularIdentifier (constraintName t) <+>
                           renderIndexType (indexType t) <+>
-                          parens (renderRegularIdentifier (column t))
+                          parens (
+                            renderRegularIdentifier (column t) <+>
+                            maybe empty renderSortOrder (sortOrder t)) <+>
+                          maybe empty renderIndexOption (indexOption t)
 
 data Table = Table
   {
@@ -111,8 +173,8 @@ instance Arbitrary ColumnDefinitions where
     cols <- listOf1 arbitrary `suchThat` columnConstraintsSatisfied
     return $ ColumnDefinitions cols
 
-renderColumnDefinitions :: ColumnDefinitions -> Doc
-renderColumnDefinitions (ColumnDefinitions xs) = vcat (punctuate comma cols)
+renderColumnDefinitions :: ColumnDefinitions -> [Doc]
+renderColumnDefinitions (ColumnDefinitions xs) = cols
   where
     cols = map renderColumnDefinition xs
 
@@ -130,9 +192,11 @@ renderColumnDefinition c = columnName' <+> columnType' <+> collation' <+>
 instance Entity Table where
   name = tableName
   toDoc t = text "CREATE TABLE" <+> renderName t $$
-            parens ((renderColumnDefinitions (columnDefinitions t)) <>
-            maybe empty renderTableConstraint (tableConstraint t)) $+$
+            parens (vcat $ punctuate comma (col ++ con)) $+$
             text "GO"
+    where
+      col = renderColumnDefinitions (columnDefinitions t)
+      con = maybe [] (\x -> [renderTableConstraint x]) (tableConstraint t)
 
 instance Show Table where
   show = show . toDoc
