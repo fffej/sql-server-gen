@@ -78,10 +78,11 @@ renderDatabaseDefinition  dd = text "USE master" $+$
 
 derive makeArbitrary ''DatabaseDefinition
 
-dumpExamples :: Int -> FilePath -> IO ()
-dumpExamples m p = do
-  x <- generate (sequence [resize n (arbitrary :: Gen DatabaseDefinition) | n <- [0..m] ])
-  writeFile p (unlines $ map show x)
+generateExamples :: (Show a) => Int -> Gen a -> IO [a]
+generateExamples m a = generate (sequence [resize n a | n <- [0..m] ])
+
+saveExamples :: (Show a) => FilePath -> [a] -> IO ()
+saveExamples p xs = writeFile p (unlines $ map show xs)
 
 instance Show DatabaseDefinition where
   show = render . renderDatabaseDefinition

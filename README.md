@@ -47,6 +47,12 @@ Building Haskell on Windows is a minor pain in the bottom.  You'll need to insta
 This'll create a sandbox environment, download and install all the dependencies and then open up a REPL with the code loaded.  From here you should be able to experiment with the code, for example:
 
     x <- sample' (arbitrary :: Gen DatabaseDefinition)
+
+Using `generateExamples` and `saveExamples` you can have an interactive session to target particular SQL Server object types.  For example.
+
+    > generateExamples 100 (arbitrary :: Table) >>= saveExamples "foo.sql"
+
+Will create a file called `foo.sql` containing 100 tables of increasing complexity.
     
 # Usage
 
