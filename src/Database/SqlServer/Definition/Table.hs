@@ -28,6 +28,7 @@ import Database.SqlServer.Definition.Entity
 import Data.DeriveTH
 import Test.QuickCheck
 import Text.PrettyPrint
+import Data.Maybe (isJust)
 import Control.Monad
 
 data ColumnDefinition = ColumnDefinition
@@ -95,6 +96,14 @@ renderIndexOption i
       , maybe empty (\(FillFactor x) -> text "FILLFACTOR = " <+> int x) (indexFillFactor i)
       ]
 
+atLeastOneOptionSet :: IndexOption -> Bool
+atLeastOneOptionSet i = isJust (padIndex i) ||
+                        isJust (ignoreDupKey i) ||
+                        isJust (statisticsNoRecompute i) ||
+                        isJust (allowRowLocks i) ||
+                        isJust (allowPageLocks i) ||
+                        isJust (indexFillFactor i)
+
 data TableConstraint = TableConstraint
   {
     constraintName :: RegularIdentifier
@@ -112,7 +121,7 @@ generateTableConstraint (ColumnDefinitions cd) = case filter (isTypeForIndex . d
     c <- columnName <$> elements xs
     it <- arbitrary
     so <- arbitrary
-    io <- arbitrary
+    io <- arbitrary `suchThatMaybe` atLeastOneOptionSet
     frequency
       [
         (0, return Nothing),
@@ -183,10 +192,11 @@ renderColumnDefinition c = columnName' <+> columnType' <+> collation' <+>
 instance Entity Table where
   name = tableName
   toDoc t = text "CREATE TABLE" <+> renderName t $$
-            parens (vcat $ punctuate comma
-                    (renderColumnDefinitions (columnDefinitions t) ++
-                    [maybe empty renderTableConstraint (tableConstraint t)])) $+$
+            parens (vcat $ punctuate comma (col ++ con)) $+$
             text "GO"
+    where
+      col = renderColumnDefinitions (columnDefinitions t)
+      con = maybe [] (\x -> [renderTableConstraint x]) (tableConstraint t)
 
 instance Show Table where
   show = show . toDoc
