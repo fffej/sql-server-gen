@@ -28,6 +28,7 @@ import Database.SqlServer.Definition.Entity
 import Data.DeriveTH
 import Test.QuickCheck
 import Text.PrettyPrint
+import Control.Monad
 
 data ColumnDefinition = ColumnDefinition
   {
@@ -47,6 +48,11 @@ data IndexType = PrimaryKey | Unique
 
 data SortOrder = Ascending | Descending
 
+newtype FillFactor = FillFactor Int
+
+instance Arbitrary FillFactor where
+  arbitrary = liftM FillFactor $ choose (1,100)
+
 derive makeArbitrary ''IndexType
 
 derive makeArbitrary ''SortOrder
@@ -59,12 +65,16 @@ renderSortOrder :: SortOrder -> Doc
 renderSortOrder Ascending = text "ASC"
 renderSortOrder Descending = text "DESC"
 
+renderFillFactor :: FillFactor -> Doc
+renderFillFactor (FillFactor f) = text "WITH FILLFACTOR =" <+> int f
+
 data TableConstraint = TableConstraint
   {
     constraintName :: RegularIdentifier
   , indexType :: IndexType
   , column :: RegularIdentifier
   , sortOrder :: Maybe SortOrder
+  , fillFactor :: Maybe FillFactor
   }
 
 generateTableConstraint :: ColumnDefinitions -> Gen (Maybe TableConstraint)
@@ -75,6 +85,7 @@ generateTableConstraint (ColumnDefinitions cd) = case filter (isTypeForIndex . d
     c <- columnName <$> elements xs
     it <- arbitrary
     so <- arbitrary
+    ff <- arbitrary
     frequency
       [
         (0, return Nothing),
@@ -84,6 +95,7 @@ generateTableConstraint (ColumnDefinitions cd) = case filter (isTypeForIndex . d
            , indexType = it
            , column = c
            , sortOrder = so
+           , fillFactor = ff
            }))
       ]
   
@@ -94,7 +106,8 @@ renderTableConstraint t = comma <+> text "CONSTRAINT" <+>
                           renderIndexType (indexType t) <+>
                           parens (
                             renderRegularIdentifier (column t) <+>
-                            maybe empty renderSortOrder (sortOrder t))
+                            maybe empty renderSortOrder (sortOrder t)) <+>
+                          maybe empty renderFillFactor (fillFactor t)
 
 data Table = Table
   {
