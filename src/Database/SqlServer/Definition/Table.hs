@@ -45,17 +45,26 @@ newtype ColumnDefinitions = ColumnDefinitions [ColumnDefinition]
 
 data IndexType = PrimaryKey | Unique
 
+data SortOrder = Ascending | Descending
+
 derive makeArbitrary ''IndexType
+
+derive makeArbitrary ''SortOrder
 
 renderIndexType :: IndexType -> Doc
 renderIndexType PrimaryKey = text "PRIMARY KEY"
 renderIndexType Unique = text "UNIQUE"
+
+renderSortOrder :: SortOrder -> Doc
+renderSortOrder Ascending = text "ASC"
+renderSortOrder Descending = text "DESC"
 
 data TableConstraint = TableConstraint
   {
     constraintName :: RegularIdentifier
   , indexType :: IndexType
   , column :: RegularIdentifier
+  , sortOrder :: Maybe SortOrder
   }
 
 generateTableConstraint :: ColumnDefinitions -> Gen (Maybe TableConstraint)
@@ -65,6 +74,7 @@ generateTableConstraint (ColumnDefinitions cd) = case filter (isTypeForIndex . d
     n <- arbitrary
     c <- columnName <$> elements xs
     it <- arbitrary
+    so <- arbitrary
     frequency
       [
         (0, return Nothing),
@@ -73,6 +83,7 @@ generateTableConstraint (ColumnDefinitions cd) = case filter (isTypeForIndex . d
              constraintName = n
            , indexType = it
            , column = c
+           , sortOrder = so
            }))
       ]
   
@@ -81,7 +92,9 @@ renderTableConstraint :: TableConstraint -> Doc
 renderTableConstraint t = comma <+> text "CONSTRAINT" <+>
                           renderRegularIdentifier (constraintName t) <+>
                           renderIndexType (indexType t) <+>
-                          parens (renderRegularIdentifier (column t))
+                          parens (
+                            renderRegularIdentifier (column t) <+>
+                            maybe empty renderSortOrder (sortOrder t))
 
 data Table = Table
   {
