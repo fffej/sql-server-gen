@@ -4,6 +4,7 @@ module Database.SqlServer.Definition.Database where
 
 import Database.SqlServer.Definition.Identifier (RegularIdentifier,renderRegularIdentifier)
 import Database.SqlServer.Definition.Table (Table)
+import Database.SqlServer.Definition.View (View)
 import Database.SqlServer.Definition.Sequence (Sequence)
 import Database.SqlServer.Definition.Procedure (Procedure)
 import Database.SqlServer.Definition.User (User,Role)
@@ -36,6 +37,7 @@ data DatabaseDefinition = DatabaseDefinition
                           {
                             databaseName :: RegularIdentifier
                           , tables :: [Table]
+                          , views :: [View]
                           , sequences :: [Sequence]
                           , procedures :: [Procedure]
                           , functions :: [Function]
@@ -61,6 +63,7 @@ renderDatabaseDefinition  dd = text "USE master" $+$
                                text "USE" <+> dbName $+$
                                renderMasterKey (masterKey dd) $+$
                                renderNamedEntities (tables dd) $+$
+                               renderNamedEntities (views dd) $+$
                                renderNamedEntities (sequences dd) $+$
                                renderNamedEntities (procedures dd) $+$
                                renderNamedEntities (functions dd) $+$

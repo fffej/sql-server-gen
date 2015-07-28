@@ -4,6 +4,7 @@ The goal of this package is to generate arbitrary SQL Server databases (in the f
 
 Currently supported (at various degrees of completion) are:
 * Tables (including unique, primary key constraints and index options)
+* Views (currently only very basic support)
 * Sequences
 * Procedures
 * Functions

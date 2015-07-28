@@ -58,6 +58,7 @@ library
                        Database.SqlServer.Definition.Queue,
                        Database.SqlServer.Definition.DataType,
                        Database.SqlServer.Definition.Table,
+                       Database.SqlServer.Definition.View,
                        Database.SqlServer.Definition.Collation,
                        Database.SqlServer.Definition.Certificate,
                        Database.SqlServer.Definition.User,

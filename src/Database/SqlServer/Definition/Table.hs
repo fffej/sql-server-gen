@@ -4,6 +4,11 @@
 module Database.SqlServer.Definition.Table
        (
          Table
+       , ColumnDefinition
+       , columnName
+       , columnCount
+       , columnDefinitions
+       , unpack
        ) where
 
 import Database.SqlServer.Definition.Identifier (RegularIdentifier, renderRegularIdentifier)
@@ -43,7 +48,7 @@ instance Arbitrary ColumnDefinition where
     t <- arbitrary
     return $ ColumnDefinition n t    
 
-newtype ColumnDefinitions = ColumnDefinitions [ColumnDefinition]
+newtype ColumnDefinitions = ColumnDefinitions { unpack :: [ColumnDefinition] }
 
 data IndexType = PrimaryKey | Unique
 
@@ -151,6 +156,10 @@ data Table = Table
   , columnDefinitions :: ColumnDefinitions
   , tableConstraint :: Maybe TableConstraint
   }
+
+columnCount :: Table -> Int
+columnCount t = case (columnDefinitions t) of
+                  (ColumnDefinitions xs) -> length xs
 
 columnConstraintsSatisfied :: [ColumnDefinition] -> Bool
 columnConstraintsSatisfied xs = length (filter columnIsTimestamp xs) <= 1 && 
