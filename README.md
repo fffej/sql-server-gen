@@ -57,6 +57,10 @@ Using `generateExamples` and `saveExamples` you can have an interactive session 
     > generateExamples 100 (arbitrary :: Table) >>= saveExamples "foo.sql"
 
 Will create a file called `foo.sql` containing 100 tables of increasing complexity.
+
+If you want more control, then you can use `generateEntity`
+
+   > generateEntity (Options { size = 100, seed = 22 }) :: Certificate
     
 # Usage
 
