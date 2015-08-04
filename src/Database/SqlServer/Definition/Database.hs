@@ -2,7 +2,7 @@
 {-# LANGUAGE TemplateHaskell #-}
 module Database.SqlServer.Definition.Database where
 
-import Database.SqlServer.Definition.Identifier (RegularIdentifier,renderRegularIdentifier)
+import Database.SqlServer.Definition.Identifier (RegularIdentifier)
 import Database.SqlServer.Definition.Table (Table)
 import Database.SqlServer.Definition.View (View)
 import Database.SqlServer.Definition.Sequence (Sequence)
@@ -81,7 +81,7 @@ renderDatabaseDefinition  dd = text "USE master" $+$
                                renderNamedEntities (partitionFunctions dd) $+$
                                text "GO"
   where
-    dbName = renderRegularIdentifier (databaseName dd)
+    dbName = renderName dd
 
 derive makeArbitrary ''DatabaseDefinition
 
