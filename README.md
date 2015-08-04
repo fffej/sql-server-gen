@@ -26,38 +26,45 @@ Contributers more than welcome (especially if you know enough Haskell to help me
 
 # Build instructions
 
-## Linux
-
-Download all the stuff you need. (GHC 7.10.1 from https://www.haskell.org/ghc/download_ghc_7_10_1 and cabal-install from https://www.haskell.org/cabal/download.html).  Clone this project and open up a command prompt in the root directory of the cloned project.  Running the following series of commands ought to get you somewhere close to working.
+Download the Haskell platform (GHC 7.10.2 version available from https://www.haskell.org/platform/).  Clone this project and open up a command prompt in the root directory of the cloned project.  Running the following series of commands ought to get you to a REPL with everything working.
 
     cabal update
     cabal sandbox init
     cabal install --dependencies-only
     cabal repl
 
-## Windows
+One you've got a REPL, you can now generate different types.
 
-Building Haskell on Windows is a minor pain in the bottom.  You'll need to install MinGW (http://sourceforge.net/projects/mingw/?source=typ_redirect) and install the packages (make sure gcc is selected).  Once you've done this, find the install directory and run  `msys.bat`.  Do all of this in the command prompt that pops up.
+    x <- sample' (arbitrary :: Gen Database)
 
-    cabal update
-    cabal sandbox init
-    cabal install happy
-    cabal install --dependencies-only
-    cabal repl
+A `Database` is the top level container, generating a uniquely named database with random amounts of entities.  To see the currently supported object types you can do
 
-This'll create a sandbox environment, download and install all the dependencies and then open up a REPL with the code loaded.  From here you should be able to experiment with the code, for example:
-
-    x <- sample' (arbitrary :: Gen DatabaseDefinition)
+    > :i Entity
+    *snip*
+    instance Entity PartitionFunction
+      -- Defined at src\Database\SqlServer\Definition\PartitionFunction.hs:66:10
+    instance Entity BrokerPriority
+      -- Defined at src\Database\SqlServer\Definition\BrokerPriority.hs:58:10
+    instance Entity MessageType
+      -- Defined at src\Database\SqlServer\Definition\MessageType.hs:47:10
+    instance Entity Credential
+      -- Defined at src\Database\SqlServer\Definition\Credential.hs:46:10
+    instance Entity Function
+      -- Defined at src\Database\SqlServer\Definition\Function.hs:100:10
 
 Using `generateExamples` and `saveExamples` you can have an interactive session to target particular SQL Server object types.  For example.
 
     > generateExamples 100 (arbitrary :: Table) >>= saveExamples "foo.sql"
 
 Will create a file called `foo.sql` containing 100 tables of increasing complexity.
+
+If you want more control, then you can use `generateEntity`
+
+   > generateEntity (Options { size = 100, seed = 22 }) :: Certificate
     
 # Usage
 
-There's a command line interface then
+There's a command line interface you can use too, which will generate arbitrary database definitions.  You might use this to build automated performance tests or soak tests.
 
     cabal build cli
     ./cli --help    

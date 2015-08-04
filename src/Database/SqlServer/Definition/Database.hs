@@ -2,7 +2,7 @@
 {-# LANGUAGE TemplateHaskell #-}
 module Database.SqlServer.Definition.Database where
 
-import Database.SqlServer.Definition.Identifier (RegularIdentifier,renderRegularIdentifier)
+import Database.SqlServer.Definition.Identifier (RegularIdentifier)
 import Database.SqlServer.Definition.Table (Table)
 import Database.SqlServer.Definition.View (View)
 import Database.SqlServer.Definition.Sequence (Sequence)
@@ -15,8 +15,9 @@ import Database.SqlServer.Definition.Credential (Credential)
 import Database.SqlServer.Definition.MessageType (MessageType)
 import Database.SqlServer.Definition.BrokerPriority (BrokerPriority)
 import Database.SqlServer.Definition.PartitionFunction (PartitionFunction)
+import Database.SqlServer.Definition.Contract (Contract)
+import Database.SqlServer.Definition.Login (Login)
 import Database.SqlServer.Definition.Entity
-
 
 import Test.QuickCheck
 import Test.QuickCheck.Gen
@@ -33,53 +34,60 @@ renderMasterKey :: MasterKey -> Doc
 renderMasterKey _ = text "CREATE MASTER KEY ENCRYPTION BY PASSWORD = 'weKKjwehg252t!!'"
            $+$  text "GO"
                         
-data DatabaseDefinition = DatabaseDefinition
-                          {
-                            databaseName :: RegularIdentifier
-                          , tables :: [Table]
-                          , views :: [View]
-                          , sequences :: [Sequence]
-                          , procedures :: [Procedure]
-                          , functions :: [Function]
-                          , users :: [User]
-                          , roles :: [Role]
-                          , fullTextCatalogs :: [FullTextCatalog]
-                          , fullTextStopLists :: [FullTextStopList]
-                          , credentials :: [Credential]
-                          , messages :: [MessageType]
-                          , brokerPriorities :: [BrokerPriority]
-                          , partitionFunctions :: [PartitionFunction]
-                          , masterKey :: MasterKey
-                          }
+data Database = Database
+  {
+    databaseName :: RegularIdentifier
+  , tables :: [Table]
+  , views :: [View]
+  , sequences :: [Sequence]
+  , procedures :: [Procedure]
+  , functions :: [Function]
+  , users :: [User]
+  , roles :: [Role]
+  , fullTextCatalogs :: [FullTextCatalog]
+  , fullTextStopLists :: [FullTextStopList]
+  , credentials :: [Credential]
+  , messages :: [MessageType]
+  , brokerPriorities :: [BrokerPriority]
+  , partitionFunctions :: [PartitionFunction]
+  , logins :: [Login]
+  , contracts :: [Contract]
+  , masterKey :: MasterKey
+}
+
+instance Entity Database where
+  name = databaseName
+  toDoc = renderDatabase
 
 renderNamedEntities :: Entity a => [a] -> Doc
 renderNamedEntities xs = vcat (map toDoc xs)
 
-renderDatabaseDefinition :: DatabaseDefinition -> Doc
-renderDatabaseDefinition  dd = text "USE master" $+$
-                               text "GO" $+$
-                               text "CREATE DATABASE" <+> dbName $+$
-                               text "GO" $+$
-                               text "USE" <+> dbName $+$
-                               renderMasterKey (masterKey dd) $+$
-                               renderNamedEntities (tables dd) $+$
-                               renderNamedEntities (views dd) $+$
-                               renderNamedEntities (sequences dd) $+$
-                               renderNamedEntities (procedures dd) $+$
-                               renderNamedEntities (functions dd) $+$
-                               renderNamedEntities (users dd) $+$
-                               renderNamedEntities (roles dd) $+$
-                               renderNamedEntities (fullTextCatalogs dd) $+$
-                               renderNamedEntities (fullTextStopLists dd) $+$
-                               renderNamedEntities (credentials dd) $+$
-                               renderNamedEntities (messages dd) $+$
-                               renderNamedEntities (brokerPriorities dd) $+$
-                               renderNamedEntities (partitionFunctions dd) $+$
-                               text "GO"
+-- Note that some parts aren't rendered to avoid bloat
+renderDatabase :: Database -> Doc
+renderDatabase dd = text "USE master" $+$
+                    text "GO" $+$
+                    text "CREATE DATABASE" <+> dbName $+$
+                    text "GO" $+$
+                    text "USE" <+> dbName $+$
+                    renderMasterKey (masterKey dd) $+$
+                    renderNamedEntities (tables dd) $+$
+                    renderNamedEntities (views dd) $+$
+                    renderNamedEntities (sequences dd) $+$
+                    renderNamedEntities (procedures dd) $+$
+                    renderNamedEntities (functions dd) $+$
+                    renderNamedEntities (users dd) $+$
+                    renderNamedEntities (roles dd) $+$
+                    renderNamedEntities (fullTextCatalogs dd) $+$
+                    renderNamedEntities (fullTextStopLists dd) $+$
+                    renderNamedEntities (credentials dd) $+$
+                    renderNamedEntities (messages dd) $+$
+                    renderNamedEntities (brokerPriorities dd) $+$
+                    renderNamedEntities (partitionFunctions dd) $+$
+                    text "GO"
   where
-    dbName = renderRegularIdentifier (databaseName dd)
+    dbName = renderName dd
 
-derive makeArbitrary ''DatabaseDefinition
+derive makeArbitrary ''Database
 
 generateExamples :: (Show a) => Int -> Gen a -> IO [a]
 generateExamples m a = generate (sequence [resize n a | n <- [0..m] ])
@@ -87,8 +95,14 @@ generateExamples m a = generate (sequence [resize n a | n <- [0..m] ])
 saveExamples :: (Show a) => FilePath -> [a] -> IO ()
 saveExamples p xs = writeFile p (unlines $ map show xs)
 
-instance Show DatabaseDefinition where
-  show = render . renderDatabaseDefinition
+instance Show Database where
+  show = render . renderDatabase
 
-seededDatabase :: Int -> Int -> DatabaseDefinition
-seededDatabase seed = unGen arbitrary (mkQCGen seed) 
+data GenerateOptions = GenerateOptions
+  {
+    size :: Int
+  , seed :: Int
+  }
+
+generateEntity :: (Arbitrary a, Entity a) => GenerateOptions -> a
+generateEntity go = unGen arbitrary (mkQCGen (seed go)) (size go)

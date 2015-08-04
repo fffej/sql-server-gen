@@ -64,6 +64,9 @@ instance Entity User where
                                          renderForFrom ff <+>
                                          renderLogin lg
 
+instance Show User where
+  show = show . toDoc
+
 data Role = Role
     {
       roleName :: RegularIdentifier
