@@ -52,6 +52,10 @@ data DatabaseDefinition = DatabaseDefinition
                           , masterKey :: MasterKey
                           }
 
+instance Entity DatabaseDefinition where
+  name = databaseName
+  toDoc = renderDatabaseDefinition
+
 renderNamedEntities :: Entity a => [a] -> Doc
 renderNamedEntities xs = vcat (map toDoc xs)
 
