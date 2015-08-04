@@ -32,4 +32,5 @@ instance Entity Login where
   toDoc a = text "CREATE LOGIN" <+> renderName a $+$
             renderPassword (password a)  <+> renderMustChange (mustChange a)
             
- 
+instance Show Login where
+  show = show . toDoc 
