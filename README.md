@@ -37,6 +37,8 @@ One you've got a REPL, you can now generate different types.
 
     x <- sample' (arbitrary :: Gen Database)
 
+If you wanted to save this into a file see examples further down.
+
 A `Database` is the top level container, generating a uniquely named database with random amounts of entities.  To see the currently supported object types you can do
 
     > :i Entity
@@ -54,19 +56,20 @@ A `Database` is the top level container, generating a uniquely named database wi
 
 Using `generateExamples` and `saveExamples` you can have an interactive session to target particular SQL Server object types.  For example.
 
-    > generateExamples 100 (arbitrary :: Table) >>= saveExamples "foo.sql"
+    > generateExamples 100 (arbitrary :: Gen Table) >>= saveExamples "foo.sql"
 
-Will create a file called `foo.sql` containing 100 tables of increasing complexity.
+Will create a file called `foo.sql` containing 100 tables of increasing complexity.  Note it will overwrite existing files without warning.  It will also create required dependant objects, for example creating Views will create the tables they depend on.
 
 If you want more control, then you can use `generateEntity`
 
-    > generateEntity (Options { size = 100, seed = 22 }) :: Certificate
+    > generateEntity (GenerateOptions { size = 100, seed = 22 }) :: User
     
 # Usage
 
-There's a command line interface you can use too, which will generate arbitrary database definitions.  You might use this to build automated performance tests or soak tests.
+There's a command line interface you can use too, which will generate arbitrary database definitions.  You might use this to build automated performance tests or soak tests.  Run the following from the command line:
 
     cabal build cli
+    cd dist/build/cli
     ./cli --help    
 
 Should produce the documentation.  
