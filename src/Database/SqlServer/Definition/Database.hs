@@ -17,6 +17,7 @@ import Database.SqlServer.Definition.BrokerPriority (BrokerPriority)
 import Database.SqlServer.Definition.PartitionFunction (PartitionFunction)
 import Database.SqlServer.Definition.Contract (Contract)
 import Database.SqlServer.Definition.Login (Login)
+import Database.SqlServer.Definition.Certificate (Certificate)
 import Database.SqlServer.Definition.Entity
 
 import Test.QuickCheck
@@ -52,6 +53,7 @@ data Database = Database
   , partitionFunctions :: [PartitionFunction]
   , logins :: [Login]
   , contracts :: [Contract]
+  , certificates :: [Certificate]
   , masterKey :: MasterKey
 }
 
