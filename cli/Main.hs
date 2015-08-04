@@ -3,7 +3,7 @@ module Main where
 
 import System.Console.CmdArgs
 
-import Database.SqlServer.Definition.Database
+import qualified Database.SqlServer.Definition.Database as D
 
 data Arguments = Arguments
     {
@@ -24,8 +24,11 @@ defaultArgs = Arguments
       &= help "Generate arbitrary SQL Server databases"
       &= details msg
 
+convert :: Arguments -> D.GenerateOptions
+convert a = D.GenerateOptions { D.seed = seed a, D.size = size a }
+
 main :: IO ()
 main = do
   a <- cmdArgs defaultArgs
-  print $ seededDatabase (seed a) (size a) 
+  print $ (D.generateEntity (convert a) :: D.Database)
   return ()

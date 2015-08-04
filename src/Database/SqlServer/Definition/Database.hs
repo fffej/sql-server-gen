@@ -15,6 +15,8 @@ import Database.SqlServer.Definition.Credential (Credential)
 import Database.SqlServer.Definition.MessageType (MessageType)
 import Database.SqlServer.Definition.BrokerPriority (BrokerPriority)
 import Database.SqlServer.Definition.PartitionFunction (PartitionFunction)
+import Database.SqlServer.Definition.Contract (Contract)
+import Database.SqlServer.Definition.Login (Login)
 import Database.SqlServer.Definition.Entity
 
 import Test.QuickCheck
@@ -48,6 +50,8 @@ data Database = Database
   , messages :: [MessageType]
   , brokerPriorities :: [BrokerPriority]
   , partitionFunctions :: [PartitionFunction]
+  , logins :: [Login]
+  , contracts :: [Contract]
   , masterKey :: MasterKey
 }
 
@@ -58,6 +62,7 @@ instance Entity Database where
 renderNamedEntities :: Entity a => [a] -> Doc
 renderNamedEntities xs = vcat (map toDoc xs)
 
+-- Note that some parts aren't rendered to avoid bloat
 renderDatabase :: Database -> Doc
 renderDatabase dd = text "USE master" $+$
                     text "GO" $+$
@@ -93,5 +98,11 @@ saveExamples p xs = writeFile p (unlines $ map show xs)
 instance Show Database where
   show = render . renderDatabase
 
-seededDatabase :: Int -> Int -> Database
-seededDatabase seed = unGen arbitrary (mkQCGen seed) 
+data GenerateOptions = GenerateOptions
+  {
+    size :: Int
+  , seed :: Int
+  }
+
+generateEntity :: (Arbitrary a, Entity a) => GenerateOptions -> a
+generateEntity go = unGen arbitrary (mkQCGen (seed go)) (size go)
