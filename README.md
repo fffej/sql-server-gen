@@ -56,13 +56,13 @@ A `Database` is the top level container, generating a uniquely named database wi
 
 Using `generateExamples` and `saveExamples` you can have an interactive session to target particular SQL Server object types.  For example.
 
-    > generateExamples 100 (arbitrary :: Gen Table) >>= saveExamples "foo.sql"
+    > generateExamples 10 (arbitrary :: Gen Table) >>= saveExamples "foo.sql"
 
 Will create a file called `foo.sql` containing 100 tables of increasing complexity.  Note it will overwrite existing files without warning.  It will also create required dependant objects, for example creating Views will create the tables they depend on.
 
 If you want more control, then you can use `generateEntity`
 
-    > generateEntity (GenerateOptions { size = 100, seed = 22 }) :: User
+    > generateEntity (GenerateOptions { size = 10, seed = 22 }) :: User
     
 # Usage
 
