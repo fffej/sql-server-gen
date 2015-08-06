@@ -12,6 +12,7 @@ import Database.SqlServer.Definition.Entity
 import Database.SqlServer.Definition.Certificate
 import Database.SqlServer.Definition.Login
 
+import Control.Monad
 import Test.QuickCheck
 import Text.PrettyPrint
 import Data.DeriveTH
@@ -25,7 +26,10 @@ data User = CreateUserWithoutLogin RegularIdentifier
 
 
 derive makeArbitrary ''ForFrom
-derive makeArbitrary ''User
+
+-- derive makeArbitrary ''User
+instance Arbitrary User where
+  arbitrary = liftM CreateUserWithoutLogin arbitrary
 
 renderForFrom :: ForFrom -> Doc
 renderForFrom For = text "FOR"
