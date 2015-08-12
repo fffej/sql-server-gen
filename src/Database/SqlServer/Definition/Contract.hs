@@ -1,7 +1,3 @@
-{-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE GADTs #-}
-
 module Database.SqlServer.Definition.Contract
        (
          Contract
@@ -13,27 +9,28 @@ import Database.SqlServer.Definition.Identifier hiding (unwrap)
 import Database.SqlServer.Definition.Entity
 
 import Test.QuickCheck
-import Data.DeriveTH
 import Text.PrettyPrint
 
 data SentByConstraint = Initiator | Target | Any
+
+instance Arbitrary SentByConstraint where
+  arbitrary = elements [Initiator,Target,Any]
 
 isInitiatorOrAny :: SentByConstraint -> Bool
 isInitiatorOrAny Initiator = True
 isInitiatorOrAny Target = False
 isInitiatorOrAny Any = True
 
-derive makeArbitrary ''SentByConstraint
-
 data Constraint = Constraint MessageType SentByConstraint
+
+instance Arbitrary Constraint where
+  arbitrary = Constraint <$> arbitrary <*> arbitrary
 
 messageType :: Constraint -> MessageType
 messageType (Constraint m _) = m
 
 sentBy :: Constraint -> SentByConstraint
 sentBy (Constraint _ s) = s
-
-derive makeArbitrary ''Constraint
 
 data Contract = Contract
   {

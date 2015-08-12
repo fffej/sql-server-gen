@@ -1,7 +1,3 @@
-{-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE GADTs #-}
-
 module Database.SqlServer.Definition.MessageType
        (
          MessageType
@@ -12,14 +8,14 @@ import Database.SqlServer.Definition.User (User,Role)
 import Database.SqlServer.Definition.Entity
 
 import Test.QuickCheck
-import Data.DeriveTH
 import Text.PrettyPrint
 
 data Validation = None
                 | Empty
                 | WellFormedXml -- TODO valid XML
 
-derive makeArbitrary ''Validation
+instance Arbitrary Validation where
+  arbitrary = elements [None,Empty,WellFormedXml]
 
 data MessageType = MessageType
   {
@@ -28,7 +24,8 @@ data MessageType = MessageType
   , validation :: Maybe Validation
   }
 
-derive makeArbitrary ''MessageType
+instance Arbitrary MessageType where
+  arbitrary = MessageType <$> arbitrary <*> arbitrary <*> arbitrary
 
 -- Must be able to eliminate the duplication here
 renderPreRequisites :: Either User Role -> Doc

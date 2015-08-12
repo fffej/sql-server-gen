@@ -1,7 +1,3 @@
-{-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE GADTs #-}
-
 module Database.SqlServer.Definition.BrokerPriority
        (
          BrokerPriority
@@ -14,7 +10,6 @@ import Database.SqlServer.Definition.Entity
 
 import Test.QuickCheck
 import Text.PrettyPrint
-import Data.DeriveTH
 
 data PriorityLevel = PriorityLevel Int
 
@@ -32,7 +27,8 @@ data BrokerPriority = BrokerPriority
   , priorityLevel :: Maybe PriorityLevel
   }
 
-derive makeArbitrary ''BrokerPriority
+instance Arbitrary BrokerPriority where
+  arbitrary = BrokerPriority <$> arbitrary <*> arbitrary <*> arbitrary <*> arbitrary <*> arbitrary
 
 renderMaybeOrAny :: Maybe RegularIdentifier -> Doc
 renderMaybeOrAny = maybe (text "ANY") (quotes . renderRegularIdentifier)

@@ -1,7 +1,3 @@
-{-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE GADTs #-}
-
 module Database.SqlServer.Definition.Queue
        (
          Queue
@@ -12,7 +8,6 @@ import Database.SqlServer.Definition.Procedure
 import Database.SqlServer.Definition.Entity
 
 import Test.QuickCheck
-import Data.DeriveTH
 import Data.Word (Word16)
 import Text.PrettyPrint
 import Data.Maybe (isJust)
@@ -44,8 +39,12 @@ data Queue = Queue
     , activation :: Maybe Activation
     , poisonMessageHandling :: Maybe Bool
     }
-derive makeArbitrary ''ExecuteAs
-derive makeArbitrary ''Queue
+
+instance Arbitrary ExecuteAs where
+  arbitrary = elements [Self,Owner]
+
+instance Arbitrary Queue where
+  arbitrary = Queue <$> arbitrary <*> arbitrary <*> arbitrary <*> arbitrary <*> arbitrary
 
 instance Arbitrary Activation where
   arbitrary = do

@@ -1,7 +1,3 @@
-{-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE GADTs #-}
-
 module Database.SqlServer.Definition.Service
        (
          Service
@@ -14,7 +10,6 @@ import Database.SqlServer.Definition.Entity
 
 import Test.QuickCheck
 import Text.PrettyPrint
-import Data.DeriveTH
 
 -- An entity of type service cannot be owned by
 -- a role, a group, or by principals mapped to
@@ -27,8 +22,8 @@ data Service = Service
     }
 
 -- TODO Owner
-
-derive makeArbitrary ''Service
+instance Arbitrary Service where
+  arbitrary = Service <$> arbitrary <*> arbitrary <*> arbitrary
 
 renderContracts :: [Contract] -> Doc
 renderContracts [] = empty

@@ -1,6 +1,3 @@
-{-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE TemplateHaskell #-}
-
 module Database.SqlServer.Definition.DataType
        (
          Type
@@ -27,7 +24,6 @@ import Text.PrettyPrint
 
 import Test.QuickCheck hiding (scale)
 import Control.Monad 
-import Data.DeriveTH
 
 -- Size of arbitrary data (>= 1 && <= 8000)
 newtype FixedRange = FixedRange Int
@@ -56,6 +52,9 @@ instance Arbitrary NFixedRange where
 data Range = Sized FixedRange
            | Max
 
+instance Arbitrary Range where
+  arbitrary = oneof [Sized <$> arbitrary, return Max]
+
 rangeSize :: Range -> Int
 rangeSize Max = 8000
 rangeSize (Sized (FixedRange n)) = n
@@ -70,6 +69,9 @@ renderRange (Sized r) = renderFixedRange r
 
 data NRange = NSized NFixedRange
             | NMax
+
+instance Arbitrary NRange where
+  arbitrary = oneof [NSized <$> arbitrary, return NMax]
 
 nRangeSize :: NRange -> Int
 nRangeSize NMax = 4000
@@ -87,6 +89,9 @@ data VarBinaryStorage = SizedRange Range
                       | MaxNoFileStream
                       | MaxFileStream
 
+instance Arbitrary VarBinaryStorage where
+  arbitrary = oneof [SizedRange <$> arbitrary, return MaxNoFileStream, return MaxFileStream]
+
 renderVarBinaryStorage :: VarBinaryStorage -> Doc
 renderVarBinaryStorage (SizedRange r)   = renderRange r
 renderVarBinaryStorage MaxFileStream    = text "(max)"
@@ -102,7 +107,13 @@ data StorageOptions = Sparse
                     | SparseNull
                     | StorageOptions NullStorageOptions
 
+instance Arbitrary StorageOptions where
+  arbitrary = oneof [return Sparse, return SparseNull, StorageOptions <$> arbitrary]
+
 data NullStorageOptions = NotNull | Null
+
+instance Arbitrary NullStorageOptions where
+  arbitrary = elements [NotNull, Null]
 
 isNull :: NullStorageOptions -> Bool
 isNull Null = True
@@ -131,6 +142,12 @@ renderNullStorageOptions Null    = text "NULL"
 -- Row Guid Col (cannot be sparse)
 data UniqueIdentifierOptions = RowGuidCol (Maybe NullStorageOptions)
                              | UniqueIdentifierOptions (Maybe StorageOptions)
+
+instance Arbitrary UniqueIdentifierOptions where
+  arbitrary = oneof [
+      RowGuidCol <$> arbitrary
+    , UniqueIdentifierOptions <$> arbitrary
+    ]
 
 uniqueIdentifiertorageOptions :: UniqueIdentifierOptions -> Maybe StorageOptions
 uniqueIdentifiertorageOptions (UniqueIdentifierOptions x) = x
@@ -241,17 +258,46 @@ data Type = BigInt (Maybe StorageOptions)
           | Geography (Maybe NullStorageOptions) 
           | Geometry  (Maybe NullStorageOptions) 
 
+instance Arbitrary Type where
+  arbitrary = oneof [
+      BigInt <$> arbitrary
+    , Bit <$> arbitrary 
+    , Numeric <$> arbitrary <*> arbitrary 
+    , SmallInt <$> arbitrary 
+    , Decimal <$> arbitrary <*> arbitrary 
+    , SmallMoney <$> arbitrary 
+    , Int <$> arbitrary 
+    , TinyInt <$> arbitrary 
+    , Money <$> arbitrary 
+    , Float <$> arbitrary <*> arbitrary 
+    , Real <$> arbitrary 
+    , Date <$> arbitrary 
+    , DateTimeOffset <$> arbitrary <*> arbitrary 
+    , DateTime2 <$> arbitrary <*> arbitrary 
+    , SmallDateTime <$> arbitrary 
+    , DateTime <$> arbitrary 
+    , Time <$> arbitrary <*> arbitrary 
+    , Char <$> arbitrary <*> arbitrary <*> arbitrary 
+    , VarChar <$> arbitrary <*> arbitrary <*> arbitrary 
+    , Text <$> arbitrary <*> arbitrary
+    , NChar <$> arbitrary <*> arbitrary <*> arbitrary 
+    , NVarChar <$> arbitrary <*> arbitrary <*> arbitrary 
+    , NText <$> arbitrary <*> arbitrary
+    , Binary <$> arbitrary <*> arbitrary 
+    , VarBinary <$> arbitrary <*> arbitrary 
+    , Image <$> arbitrary
+    , Timestamp <$> arbitrary
+    , HierarchyId <$> arbitrary 
+    , UniqueIdentifier <$> arbitrary
+    , SqlVariant <$> arbitrary 
+    , Xml <$> arbitrary 
+    , Geography <$> arbitrary 
+    , Geometry <$>  arbitrary     
+    ]
+
 isTimestamp :: Type -> Bool
 isTimestamp (Timestamp _) = True
 isTimestamp _             = False
-
-derive makeArbitrary ''StorageOptions
-derive makeArbitrary ''Type
-derive makeArbitrary ''Range
-derive makeArbitrary ''NRange
-derive makeArbitrary ''VarBinaryStorage
-derive makeArbitrary ''NullStorageOptions
-derive makeArbitrary ''UniqueIdentifierOptions
 
 collation :: Type -> Maybe Collation
 collation (Char _ mc _)     = mc

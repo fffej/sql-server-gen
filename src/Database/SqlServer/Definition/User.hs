@@ -1,6 +1,3 @@
-{-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE TemplateHaskell #-}
-
 module Database.SqlServer.Definition.User
        (
          User
@@ -14,7 +11,7 @@ import Database.SqlServer.Definition.Login
 
 import Test.QuickCheck
 import Text.PrettyPrint
-import Data.DeriveTH
+import Control.Applicative hiding (empty)
 
 data ForFrom = For | From
 
@@ -23,9 +20,19 @@ data User = CreateUserWithoutLogin RegularIdentifier
           | CreateUserWithCertificate RegularIdentifier ForFrom Certificate
           | CreateUserWithLogin RegularIdentifier ForFrom Login
 
+instance Arbitrary User where
+  arbitrary = do
+    nm <- arbitrary
+    ff <- arbitrary
+    cert <- arbitrary
+    l <- arbitrary
+    cf <- elements [ \n _ _ _ -> CreateUserWithoutLogin n
+                   , \n f t _ -> CreateUserWithCertificate n f t
+                   , \n f _ q -> CreateUserWithLogin n f q ]
+    return (cf nm ff cert l)
 
-derive makeArbitrary ''ForFrom
-derive makeArbitrary ''User
+instance Arbitrary ForFrom where
+  arbitrary = elements [For,From]
 
 renderForFrom :: ForFrom -> Doc
 renderForFrom For = text "FOR"
@@ -73,7 +80,8 @@ data Role = Role
     , authorization :: Maybe User
     }
 
-derive makeArbitrary ''Role
+instance Arbitrary Role where
+  arbitrary = Role <$> arbitrary <*> arbitrary
 
 renderAuthorization :: User -> Doc
 renderAuthorization ud = text "AUTHORIZATION" <+> renderUserName ud

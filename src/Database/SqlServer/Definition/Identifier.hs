@@ -1,7 +1,3 @@
-{-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE GADTs #-}
-
 module Database.SqlServer.Definition.Identifier
        (
          RegularIdentifier
@@ -12,7 +8,6 @@ module Database.SqlServer.Definition.Identifier
        , unwrap
        ) where
 
-import Data.DeriveTH
 import Test.QuickCheck
 import Text.PrettyPrint
 import Control.Monad
@@ -36,7 +31,8 @@ renderRegularIdentifier = text . unwrap
 
 newtype ParameterIdentifier = ParameterIdentifier RegularIdentifier
 
-derive makeArbitrary ''ParameterIdentifier
+instance Arbitrary ParameterIdentifier where
+  arbitrary = liftM ParameterIdentifier arbitrary
 
 renderParameterIdentifier :: ParameterIdentifier -> Doc
 renderParameterIdentifier (ParameterIdentifier p) = text "@" <> renderRegularIdentifier p

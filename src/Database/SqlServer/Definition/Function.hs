@@ -1,7 +1,3 @@
-{-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE GADTs #-}
-
 module Database.SqlServer.Definition.Function
        (
          Function
@@ -13,7 +9,6 @@ import Database.SqlServer.Definition.Value
 import Database.SqlServer.Definition.Entity
 
 import Test.QuickCheck
-import Data.DeriveTH
 import Text.PrettyPrint
 import Data.Maybe (fromJust, isJust)
 import Control.Monad
@@ -21,7 +16,8 @@ import Control.Monad
 data NullOption = ReturnsNullOnNullInput
                 | CalledOnNullInput
 
-derive makeArbitrary ''NullOption
+instance Arbitrary NullOption where
+  arbitrary = elements [ReturnsNullOnNullInput, CalledOnNullInput]
 
 renderNullOption :: NullOption -> Doc
 renderNullOption ReturnsNullOnNullInput = text "RETURNS NULL ON NULL INPUT"
@@ -34,7 +30,8 @@ data FunctionOption = FunctionOption
     , nullOption :: Maybe NullOption
     }
 
-derive makeArbitrary ''FunctionOption
+instance Arbitrary FunctionOption where
+  arbitrary = FunctionOption <$> arbitrary <*> arbitrary <*> arbitrary
 
 areThereAnyOptionsSet :: FunctionOption -> Bool
 areThereAnyOptionsSet f = encryption f || schemaBinding f || isJust (nullOption f)
@@ -63,10 +60,11 @@ data Parameter = Parameter
   , dataType      :: InputType
   }
 
+instance Arbitrary Parameter where
+  arbitrary = Parameter <$> arbitrary <*> arbitrary
+
 renderParameter :: Parameter -> Doc
 renderParameter p = renderParameterIdentifier (parameterName p) <+> renderInputDataType (dataType p) 
-
-derive makeArbitrary ''Parameter
 
 data ReturnType = ReturnType Type SQLValue
 
@@ -91,11 +89,13 @@ data ScalarFunction = ScalarFunction
    , functionOption :: FunctionOption
    }
 
-derive makeArbitrary ''ScalarFunction
-
 data Function = ScalarFunctionC ScalarFunction
 
-derive makeArbitrary ''Function
+instance Arbitrary Function where
+  arbitrary = oneof
+    [
+      ScalarFunctionC <$> (ScalarFunction <$> arbitrary <*> arbitrary <*> arbitrary <*> arbitrary)
+    ]
 
 instance Entity Function where
   name (ScalarFunctionC f) = scalarFunctionName f
