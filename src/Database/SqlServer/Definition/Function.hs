@@ -70,7 +70,7 @@ data ReturnType = ReturnType Type SQLValue
 
 instance Arbitrary ReturnType where
   arbitrary = do
-    t <- arbitrary `suchThat` (\x -> isJust $ value x)
+    t <- arbitrary `suchThat` (isJust . value)
     v <- fromJust $ value t
     return (ReturnType t v)
 

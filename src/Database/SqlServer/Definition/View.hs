@@ -1,6 +1,3 @@
-{-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE TemplateHaskell #-}
-
 module Database.SqlServer.Definition.View
        (
          View
@@ -42,8 +39,8 @@ renderWithOptions v
                 hcat (punctuate comma (filter (not . (== empty)) [enc,vm]))
   where
     noneSet = not (encryption v) && not (viewMetadata v)
-    enc = if (encryption v) then text "ENCRYPTION" else empty
-    vm = if (viewMetadata v) then text "VIEW_METADATA" else empty
+    enc = if encryption v then text "ENCRYPTION" else empty
+    vm = if viewMetadata v then text "VIEW_METADATA" else empty
 
 instance Arbitrary View where
   arbitrary = do
@@ -61,7 +58,7 @@ instance Entity View where
             renderWithOptions v $+$
             text "AS" $+$
             unionSelectStatement v $+$
-            (if (withCheckOption v) then text "WITH CHECK OPTION" else empty) $+$
+            (if withCheckOption v then text "WITH CHECK OPTION" else empty) $+$
             text "GO\n"
 
 instance Show View where

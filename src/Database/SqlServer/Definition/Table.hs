@@ -95,7 +95,7 @@ renderOption True = text "ON"
 renderIndexOption :: IndexOption -> Doc
 renderIndexOption i
   | null vs   = empty
-  | otherwise = text "WITH" <+> (parens $ vcat (punctuate comma vs))
+  | otherwise = text "WITH" <+> parens (vcat (punctuate comma vs))
   where
     vs = filter (/= empty) xs
     xs =
@@ -136,15 +136,15 @@ generateTableConstraint (ColumnDefinitions cd) = case filter (isTypeForIndex . d
     io <- arbitrary `suchThatMaybe` atLeastOneOptionSet
     frequency
       [
-        (0, return Nothing),
-        (100, return $ Just (TableConstraint
+        (10, return Nothing),
+        (90, return $ Just TableConstraint
            {
              constraintName = n
            , indexType = it
            , column = c
            , sortOrder = so
            , indexOption = io
-           }))
+           })
       ]
   
 
@@ -165,8 +165,8 @@ data Table = Table
   }
 
 columnCount :: Table -> Int
-columnCount t = case (columnDefinitions t) of
-                  (ColumnDefinitions xs) -> length xs
+columnCount t = case columnDefinitions t of
+                  ColumnDefinitions xs -> length xs
 
 columnConstraintsSatisfied :: [ColumnDefinition] -> Bool
 columnConstraintsSatisfied xs = length (filter columnIsTimestamp xs) <= 1 && 
