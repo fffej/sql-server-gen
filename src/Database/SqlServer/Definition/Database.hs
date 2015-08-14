@@ -25,11 +25,11 @@ import Test.QuickCheck.Gen
 import Test.QuickCheck.Random
 
 import Text.PrettyPrint
-import Data.DeriveTH
 
 data MasterKey = MasterKey
 
-derive makeArbitrary ''MasterKey
+instance Arbitrary MasterKey where
+  arbitrary = return MasterKey
 
 renderMasterKey :: MasterKey -> Doc
 renderMasterKey _ = text "CREATE MASTER KEY ENCRYPTION BY PASSWORD = 'weKKjwehg252t!!'"
@@ -89,8 +89,48 @@ renderDatabase dd = text "USE master" $+$
   where
     dbName = renderName dd
 
-derive makeArbitrary ''Database
+{-
+    databaseName :: RegularIdentifier
+  , tables :: [Table]
+  , views :: [View]
+  , sequences :: [Sequence]
+  , procedures :: [Procedure]
+  , functions :: [Function]
+  , users :: [User]
+  , roles :: [Role]
+  , fullTextCatalogs :: [FullTextCatalog]
+  , fullTextStopLists :: [FullTextStopList]
+  , credentials :: [Credential]
+  , messages :: [MessageType]
+  , brokerPriorities :: [BrokerPriority]
+  , partitionFunctions :: [PartitionFunction]
+  , logins :: [Login]
+  , contracts :: [Contract]
+  , certificates :: [Certificate]
+  , masterKey :: MasterKey
+-}
 
+instance Arbitrary Database where
+  arbitrary = Database <$>
+    arbitrary <*>
+    arbitrary <*>
+    arbitrary <*>
+    arbitrary <*>
+    arbitrary <*>
+    arbitrary <*>
+    arbitrary <*>
+    arbitrary <*>
+    arbitrary <*>
+    arbitrary <*>
+    arbitrary <*>
+    arbitrary <*>
+    arbitrary <*>
+    arbitrary <*>
+    arbitrary <*>
+    arbitrary <*>
+    arbitrary <*>
+    arbitrary
+    
 generateExamples :: (Show a) => Int -> Gen a -> IO [a]
 generateExamples m a = generate (sequence [resize n a | n <- [0..m] ])
 

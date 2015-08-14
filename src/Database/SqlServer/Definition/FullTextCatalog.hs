@@ -1,6 +1,3 @@
-{-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE TemplateHaskell #-}
-
 module Database.SqlServer.Definition.FullTextCatalog
        (
          FullTextCatalog
@@ -11,7 +8,7 @@ import Database.SqlServer.Definition.Entity
 
 import Test.QuickCheck
 import Text.PrettyPrint
-import Data.DeriveTH
+import Control.Monad
 
 data FullTextCatalog = FullTextCatalog
   {
@@ -22,14 +19,15 @@ data FullTextCatalog = FullTextCatalog
   -- TODO ignore users
   }
 
-derive makeArbitrary ''FullTextCatalog
-
 renderFileGroup :: RegularIdentifier -> Doc
 renderFileGroup n = text "ON FILEGROUP" <+> renderRegularIdentifier n
 
 renderOptions :: Bool -> Doc
 renderOptions True  = text "WITH ACCENT_SENSITIVITY = ON"
 renderOptions False = text "WITH ACCENT_SENSITIVITY = OFF"
+
+instance Arbitrary FullTextCatalog where
+  arbitrary = liftM4 FullTextCatalog arbitrary arbitrary arbitrary arbitrary
 
 instance Entity FullTextCatalog where
   name = catalogName

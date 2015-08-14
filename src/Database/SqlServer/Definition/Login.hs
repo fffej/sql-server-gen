@@ -1,12 +1,9 @@
-{-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE TemplateHaskell #-}
-
 module Database.SqlServer.Definition.Login where
 
 import Database.SqlServer.Definition.Identifier
 import Database.SqlServer.Definition.Entity
 
-import Data.DeriveTH
+import Control.Monad
 import Test.QuickCheck
 import Text.PrettyPrint
 
@@ -17,7 +14,8 @@ data Login = Login
    , mustChange :: Bool 
    }
 
-derive makeArbitrary ''Login
+instance Arbitrary Login where
+  arbitrary = liftM3 Login arbitrary arbitrary arbitrary
 
 renderPassword :: RegularIdentifier -> Doc
 renderPassword s = text "WITH PASSWORD = " <>

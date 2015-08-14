@@ -1,7 +1,3 @@
-{-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE GADTs #-}
-
 module Database.SqlServer.Definition.PartitionFunction
        (
          PartitionFunction
@@ -15,7 +11,6 @@ import Database.SqlServer.Definition.Value
 import Database.SqlServer.Definition.Entity
 
 import Data.List (nub)
-import Data.DeriveTH
 import Text.PrettyPrint
 import Test.QuickCheck
 
@@ -35,7 +30,8 @@ instance Arbitrary InputParameterType where
 
 data Range = Left | Right
 
-derive makeArbitrary ''Range
+instance Arbitrary Range where
+  arbitrary = elements [Left,Right]
 
 renderRange :: Range -> Doc
 renderRange Left = text "LEFT"

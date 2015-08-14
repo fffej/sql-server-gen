@@ -1,6 +1,3 @@
-{-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE TemplateHaskell #-}
-
 module Database.SqlServer.Definition.Table
        (
          Table
@@ -30,7 +27,6 @@ import Database.SqlServer.Definition.DataType (
 import Database.SqlServer.Definition.Collation (renderCollation)
 import Database.SqlServer.Definition.Entity
 
-import Data.DeriveTH
 import Test.QuickCheck
 import Text.PrettyPrint
 import Data.Maybe (isJust)
@@ -52,9 +48,18 @@ newtype ColumnDefinitions = ColumnDefinitions { unpack :: [ColumnDefinition] }
 
 data IndexType = PrimaryKey | Unique
 
+instance Arbitrary IndexType where
+  arbitrary = elements [PrimaryKey, Unique]
+
 data SortOrder = Ascending | Descending
 
+instance Arbitrary SortOrder where
+  arbitrary = elements [Ascending, Descending]
+
 newtype FillFactor = FillFactor Int
+
+instance Arbitrary FillFactor where
+  arbitrary = liftM FillFactor $ choose (1,100)
 
 data IndexOption = IndexOption
   {
@@ -64,14 +69,16 @@ data IndexOption = IndexOption
   , allowRowLocks :: Maybe Bool
   , allowPageLocks :: Maybe Bool
   , indexFillFactor :: Maybe FillFactor
-  }
-  
-instance Arbitrary FillFactor where
-  arbitrary = liftM FillFactor $ choose (1,100)
+  }  
 
-derive makeArbitrary ''IndexType
-derive makeArbitrary ''SortOrder
-derive makeArbitrary ''IndexOption
+instance Arbitrary IndexOption where
+  arbitrary = IndexOption <$>
+    arbitrary <*>
+    arbitrary <*>
+    arbitrary <*>
+    arbitrary <*>
+    arbitrary <*>
+    arbitrary
 
 renderIndexType :: IndexType -> Doc
 renderIndexType PrimaryKey = text "PRIMARY KEY"

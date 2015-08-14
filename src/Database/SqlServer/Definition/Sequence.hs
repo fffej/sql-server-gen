@@ -1,7 +1,3 @@
-{-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE GADTs #-}
-
 module Database.SqlServer.Definition.Sequence
        (
          Sequence
@@ -14,7 +10,6 @@ import Database.SqlServer.Definition.Entity
 
 import Text.PrettyPrint
 import Test.QuickCheck
-import Data.DeriveTH
 import Control.Monad
 import Data.Maybe (fromMaybe)
 
@@ -28,7 +23,9 @@ renderNumericType BigInt = text "AS bigint"
 renderNumericType Decimal = text "AS decimal"
 renderNumericType Numeric = text "AS numeric"
 
-derive makeArbitrary ''NumericType
+instance Arbitrary NumericType where
+  arbitrary = elements [TinyInt,SmallInt,Int,BigInt,Decimal,Numeric]
+
 
 {-
   Rules of sequence definition.

@@ -1,7 +1,3 @@
-{-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE GADTs #-}
-
 module Database.SqlServer.Definition.Credential
        (
          Credential
@@ -12,7 +8,6 @@ import Database.SqlServer.Definition.Entity
 
 import Text.PrettyPrint
 import Test.QuickCheck
-import Data.DeriveTH
 
 newtype Identity = Identity String
 
@@ -34,14 +29,15 @@ instance Arbitrary Secret where
 renderSecret :: Secret -> Doc
 renderSecret (Secret s)= comma <> text "SECRET =" <+> quotes (text s)
 
-data Credential = CredentialDefintion
+data Credential = Credential
    {
      credentialName :: RegularIdentifier
    , identity :: Identity
    , secret :: Maybe Secret
    }
 
-derive makeArbitrary ''Credential
+instance Arbitrary Credential where
+  arbitrary = Credential <$> arbitrary <*> arbitrary <*> arbitrary
 
 instance Entity Credential where
   name = credentialName

@@ -1,7 +1,3 @@
-{-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE GADTs #-}
-
 module Database.SqlServer.Definition.Procedure
        (
          Procedure,
@@ -14,7 +10,6 @@ import Database.SqlServer.Definition.DataType
 import Database.SqlServer.Definition.Entity
 
 import Test.QuickCheck
-import Data.DeriveTH
 import Text.PrettyPrint
 
 data Parameter = Parameter
@@ -24,7 +19,8 @@ data Parameter = Parameter
   , isOutput      :: Bool
   }
 
-derive makeArbitrary ''Parameter
+instance Arbitrary Parameter where
+  arbitrary = Parameter <$> arbitrary <*> arbitrary <*> arbitrary
 
 renderOut :: Bool -> Doc
 renderOut True = text "OUTPUT"
@@ -39,7 +35,8 @@ data Procedure = Procedure
   , parameters    :: [Parameter]
   }
 
-derive makeArbitrary ''Procedure
+instance Arbitrary Procedure where
+  arbitrary = Procedure <$> arbitrary <*> arbitrary
 
 -- Generating arbitrary SQL is perhaps a bit complicated.
 statementBody :: String
