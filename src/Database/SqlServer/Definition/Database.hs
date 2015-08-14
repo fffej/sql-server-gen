@@ -87,27 +87,6 @@ renderDatabase dd = text "USE master" $+$
   where
     dbName = renderName dd
 
-{-
-    databaseName :: RegularIdentifier
-  , tables :: [Table]
-  , views :: [View]
-  , sequences :: [Sequence]
-  , procedures :: [Procedure]
-  , functions :: [Function]
-  , users :: [User]
-  , roles :: [Role]
-  , fullTextCatalogs :: [FullTextCatalog]
-  , fullTextStopLists :: [FullTextStopList]
-  , credentials :: [Credential]
-  , messages :: [MessageType]
-  , brokerPriorities :: [BrokerPriority]
-  , partitionFunctions :: [PartitionFunction]
-  , logins :: [Login]
-  , contracts :: [Contract]
-  , certificates :: [Certificate]
-  , masterKey :: MasterKey
--}
-
 instance Arbitrary Database where
   arbitrary = Database <$>
     arbitrary <*>
