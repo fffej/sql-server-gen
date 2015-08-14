@@ -1,5 +1,3 @@
-{-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE TemplateHaskell #-}
 module Database.SqlServer.Definition.Database where
 
 import Database.SqlServer.Definition.Identifier (RegularIdentifier)
