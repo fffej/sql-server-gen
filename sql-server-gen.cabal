@@ -73,9 +73,7 @@ library
                        Database.SqlServer.Definition.Service,
                        Database.SqlServer.Definition.PartitionFunction,
                        Database.SqlServer.Definition.Entity,
-                       Database.SqlServer.Definition.Value,
-                       Database.SqlServer.Definition.Options
-
+                       Database.SqlServer.Definition.Value
 
   ghc-options:         -Wall -O2 -fwarn-tabs 
   
