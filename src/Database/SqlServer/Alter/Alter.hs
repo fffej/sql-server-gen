@@ -1,4 +1,4 @@
-module Database.SqlServer.Definition.Alter
+module Database.SqlServer.Alter.Alter
        (
          Alter,
          render,

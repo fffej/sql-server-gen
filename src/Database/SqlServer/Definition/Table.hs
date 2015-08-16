@@ -216,23 +216,3 @@ instance Entity Table where
 
 instance Show Table where
   show = show . render
-
-data AlterTable = Identity
-                | AddColumn  ColumnDefinition
-                | DropColumn ColumnDefinition
-
-selectValidColumnForAdd :: Table -> Gen ColumnDefinition
-selectValidColumnForAdd = undefined
-
-selectValidColumnForDrop :: Table -> Gen ColumnDefinition
-selectValidColumnForDrop = undefined
-
-alterTable :: Table -> Gen AlterTable
-alterTable t = oneof
-  [
-    AddColumn <$> (selectValidColumnForAdd t)
-  , DropColumn <$> (selectValidColumnForDrop t)
-  , return Identity
-  ]
-
-
