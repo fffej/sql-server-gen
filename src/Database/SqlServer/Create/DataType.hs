@@ -1,4 +1,4 @@
-module Database.SqlServer.Definition.DataType
+module Database.SqlServer.Create.DataType
        (
          Type
        , renderDataType
@@ -17,8 +17,8 @@ module Database.SqlServer.Definition.DataType
        , isTypeForIndex
        ) where
 
-import Database.SqlServer.Definition.Value hiding (precision,scale)
-import Database.SqlServer.Definition.Collation (Collation)
+import Database.SqlServer.Create.Value hiding (precision,scale)
+import Database.SqlServer.Create.Collation (Collation)
 
 import Text.PrettyPrint
 

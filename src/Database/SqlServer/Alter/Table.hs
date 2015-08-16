@@ -1,6 +1,6 @@
 module Database.SqlServer.Alter.Table where
 
-import Database.SqlServer.Definition.Table
+import Database.SqlServer.Create.Table
 import Test.QuickCheck
 import Database.SqlServer.Alter.Alter
 

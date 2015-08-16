@@ -1,4 +1,4 @@
-module Database.SqlServer.Definition.Identifier
+module Database.SqlServer.Create.Identifier
        (
          RegularIdentifier
        , ArbUUID

@@ -1,4 +1,4 @@
-module Database.SqlServer.Definition.Table
+module Database.SqlServer.Create.Table
        (
          Table
        , Column
@@ -8,8 +8,8 @@ module Database.SqlServer.Definition.Table
        , unpack
        ) where
 
-import Database.SqlServer.Definition.Identifier (RegularIdentifier, renderRegularIdentifier)
-import Database.SqlServer.Definition.DataType (
+import Database.SqlServer.Create.Identifier (RegularIdentifier, renderRegularIdentifier)
+import Database.SqlServer.Create.DataType (
   Type,
   renderDataType,
   collation,
@@ -24,8 +24,8 @@ import Database.SqlServer.Definition.DataType (
   isTypeForIndex
   )
   
-import Database.SqlServer.Definition.Collation (renderCollation)
-import Database.SqlServer.Definition.Entity
+import Database.SqlServer.Create.Collation (renderCollation)
+import Database.SqlServer.Create.Entity
 
 import Test.QuickCheck
 import Text.PrettyPrint hiding (render)

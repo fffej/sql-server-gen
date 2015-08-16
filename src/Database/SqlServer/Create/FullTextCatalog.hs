@@ -1,10 +1,10 @@
-module Database.SqlServer.Definition.FullTextCatalog
+module Database.SqlServer.Create.FullTextCatalog
        (
          FullTextCatalog
        ) where
 
-import Database.SqlServer.Definition.Identifier
-import Database.SqlServer.Definition.Entity
+import Database.SqlServer.Create.Identifier
+import Database.SqlServer.Create.Entity
 
 import Test.QuickCheck
 import Text.PrettyPrint

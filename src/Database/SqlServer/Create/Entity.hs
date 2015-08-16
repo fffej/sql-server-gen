@@ -1,4 +1,4 @@
-module Database.SqlServer.Definition.Entity
+module Database.SqlServer.Create.Entity
        (
          Entity,
          render,
@@ -6,7 +6,7 @@ module Database.SqlServer.Definition.Entity
          renderName
        ) where
 
-import Database.SqlServer.Definition.Identifier
+import Database.SqlServer.Create.Identifier
 
 import Text.PrettyPrint hiding (render)
 

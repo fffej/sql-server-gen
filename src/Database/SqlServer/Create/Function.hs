@@ -1,12 +1,12 @@
-module Database.SqlServer.Definition.Function
+module Database.SqlServer.Create.Function
        (
          Function
        ) where
 
-import Database.SqlServer.Definition.Identifier hiding (unwrap)
-import Database.SqlServer.Definition.DataType
-import Database.SqlServer.Definition.Value
-import Database.SqlServer.Definition.Entity
+import Database.SqlServer.Create.Identifier hiding (unwrap)
+import Database.SqlServer.Create.DataType
+import Database.SqlServer.Create.Value
+import Database.SqlServer.Create.Entity
 
 import Test.QuickCheck
 import Text.PrettyPrint hiding (render)

@@ -1,12 +1,12 @@
-module Database.SqlServer.Definition.Contract
+module Database.SqlServer.Create.Contract
        (
          Contract
        ) where
 
-import Database.SqlServer.Definition.User (User)
-import Database.SqlServer.Definition.MessageType (MessageType)
-import Database.SqlServer.Definition.Identifier hiding (unwrap)
-import Database.SqlServer.Definition.Entity
+import Database.SqlServer.Create.User (User)
+import Database.SqlServer.Create.MessageType (MessageType)
+import Database.SqlServer.Create.Identifier hiding (unwrap)
+import Database.SqlServer.Create.Entity
 
 import Test.QuickCheck
 import Text.PrettyPrint hiding (render)

@@ -1,4 +1,4 @@
-module Database.SqlServer.Definition.Value
+module Database.SqlServer.Create.Value
        (
          SQLValue
        , SQLNumericOptions(..)
@@ -26,7 +26,7 @@ module Database.SqlServer.Definition.Value
        , arbitrarySQLNumeric
        ) where
 
-import Database.SqlServer.Definition.Identifier (ArbUUID)
+import Database.SqlServer.Create.Identifier (ArbUUID)
 
 import Text.PrettyPrint
 import Test.QuickCheck hiding (scale)

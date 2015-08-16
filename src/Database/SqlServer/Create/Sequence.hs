@@ -1,12 +1,12 @@
-module Database.SqlServer.Definition.Sequence
+module Database.SqlServer.Create.Sequence
        (
          Sequence
        ) where
 
 import Prelude hiding (cycle)
 
-import Database.SqlServer.Definition.Identifier (RegularIdentifier, renderRegularIdentifier)
-import Database.SqlServer.Definition.Entity
+import Database.SqlServer.Create.Identifier (RegularIdentifier, renderRegularIdentifier)
+import Database.SqlServer.Create.Entity
 
 import Text.PrettyPrint
 import Test.QuickCheck
