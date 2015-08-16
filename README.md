@@ -20,9 +20,29 @@ Currently supported (at various degrees of completion) are:
 * Contracts
 * Services
 * Broker Priorties
-* Partition Functio
+* Partition Functions
 
 Contributers more than welcome (especially if you know enough Haskell to help me simplify the code!).
+
+# Work in progress
+
+The `Database.SqlServer.Alter` modules contain the beginnings of support for `ALTER` statements.
+
+An example of use from the REPL (`--` indicates comments not to be entered).
+
+    -- Generate a list of tables
+    x <- sample' (arbitrary :: Gen Table)
+
+    -- Let's name the last table as t
+    let t = last x
+
+    -- Generate some changes for the data t
+    y <- sample' (Database.SqlServer.Alter.Table.generateChanges t)
+    
+    -- View the data by just inspecting y
+    y
+
+The goal of this work is to allow you to build an arbitrary database and then an infinite sequence of ALTER statements to permute the database.
 
 # Build instructions
 
