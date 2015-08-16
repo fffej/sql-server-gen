@@ -5,13 +5,13 @@ import Test.QuickCheck
 import Database.SqlServer.Alter.Alter
 
 data AlterTable = Identity
-                | AddColumn  ColumnDefinition
-                | DropColumn ColumnDefinition
+                | AddColumn  Column
+                | DropColumn Column
 
-selectValidColumnForAdd :: Table -> Gen ColumnDefinition
+selectValidColumnForAdd :: Table -> Gen Column
 selectValidColumnForAdd = undefined
 
-selectValidColumnForDrop :: Table -> Gen ColumnDefinition
+selectValidColumnForDrop :: Table -> Gen Column
 selectValidColumnForDrop = undefined
 
 alterTable :: Table -> Gen AlterTable

@@ -27,7 +27,7 @@ unionSelectStatement v = vcat $ punctuate (text " UNION ALL") (map selectN tabs)
 selectN :: Table -> Doc
 selectN t = text "SELECT" <+> hcat (punctuate comma cols) <+> text "FROM" <+> renderName t
   where
-    cols = map (renderRegularIdentifier . columnName) $ unpack (columnDefinitions t)
+    cols = map (renderRegularIdentifier . columnName) $ unpack (columns t)
 
 renderPrerequisites :: View -> Doc
 renderPrerequisites = vcat . map render . tables

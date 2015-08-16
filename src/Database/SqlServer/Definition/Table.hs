@@ -1,10 +1,10 @@
 module Database.SqlServer.Definition.Table
        (
          Table
-       , ColumnDefinition
+       , Column
        , columnName
        , columnCount
-       , columnDefinitions
+       , columns
        , unpack
        ) where
 
@@ -32,19 +32,19 @@ import Text.PrettyPrint hiding (render)
 import Data.Maybe (isJust)
 import Control.Monad
 
-data ColumnDefinition = ColumnDefinition
+data Column = Column
   {
     columnName :: RegularIdentifier
   , dataType   :: Type
   }
 
-instance Arbitrary ColumnDefinition where
+instance Arbitrary Column where
   arbitrary = do
     n <- arbitrary
     t <- arbitrary
-    return $ ColumnDefinition n t    
+    return $ Column n t    
 
-newtype ColumnDefinitions = ColumnDefinitions { unpack :: [ColumnDefinition] }
+newtype Columns = Columns { unpack :: [Column] }
 
 data IndexType = PrimaryKey | Unique
 
@@ -125,8 +125,8 @@ data TableConstraint = TableConstraint
   , indexOption :: Maybe IndexOption
   }
 
-generateTableConstraint :: ColumnDefinitions -> Gen (Maybe TableConstraint)
-generateTableConstraint (ColumnDefinitions cd) = case filter (isTypeForIndex . dataType) cd of
+generateTableConstraint :: Columns -> Gen (Maybe TableConstraint)
+generateTableConstraint (Columns cd) = case filter (isTypeForIndex . dataType) cd of
   [] -> return Nothing
   xs -> do
     n <- arbitrary
@@ -160,15 +160,15 @@ renderTableConstraint t = text "CONSTRAINT" <+>
 data Table = Table
   {
     tableName    :: RegularIdentifier
-  , columnDefinitions :: ColumnDefinitions
+  , columns :: Columns
   , tableConstraint :: Maybe TableConstraint
   }
 
 columnCount :: Table -> Int
-columnCount t = case columnDefinitions t of
-                  ColumnDefinitions xs -> length xs
+columnCount t = case columns t of
+                  Columns xs -> length xs
 
-columnConstraintsSatisfied :: [ColumnDefinition] -> Bool
+columnConstraintsSatisfied :: [Column] -> Bool
 columnConstraintsSatisfied xs = length (filter columnIsTimestamp xs) <= 1 && 
                                 totalColumnSizeBytes <= 8060 &&
                                 length (filter (rowGuidOptions . dataType) xs) <= 1 
@@ -184,18 +184,18 @@ instance Arbitrary Table where
     f <- generateTableConstraint cols
     return $ Table nm cols f
 
-instance Arbitrary ColumnDefinitions where
+instance Arbitrary Columns where
   arbitrary = do
     cols <- listOf1 arbitrary `suchThat` columnConstraintsSatisfied
-    return $ ColumnDefinitions cols
+    return $ Columns cols
 
-renderColumnDefinitions :: ColumnDefinitions -> [Doc]
-renderColumnDefinitions (ColumnDefinitions xs) = cols
+renderColumns :: Columns -> [Doc]
+renderColumns (Columns xs) = cols
   where
-    cols = map renderColumnDefinition xs
+    cols = map renderColumn xs
 
-renderColumnDefinition :: ColumnDefinition -> Doc
-renderColumnDefinition c = columnName' <+> columnType' <+> collation' <+>
+renderColumn :: Column -> Doc
+renderColumn c = columnName' <+> columnType' <+> collation' <+>
                            sparse <+> nullConstraint <+> rowGuidConstraint
   where
     columnName'       = renderRegularIdentifier (columnName c)
@@ -211,7 +211,7 @@ instance Entity Table where
             parens (vcat $ punctuate comma (col ++ con)) $+$
             text "GO"
     where
-      col = renderColumnDefinitions (columnDefinitions t)
+      col = renderColumns (columns t)
       con = maybe [] (\x -> [renderTableConstraint x]) (tableConstraint t)
 
 instance Show Table where
