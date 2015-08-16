@@ -216,3 +216,19 @@ instance Entity Table where
 
 instance Show Table where
   show = show . toDoc
+
+data AlterTable = AddColumn  ColumnDefinition
+                | DropColumn ColumnDefinition
+
+selectValidColumnForAdd :: Table -> Gen ColumnDefinition
+selectValidColumnForAdd = undefined
+
+selectValidColumnForDrop :: Table -> Gen ColumnDefinition
+selectValidColumnForDrop = undefined
+
+alterTable :: Table -> Gen AlterTable
+alterTable t = oneof
+  [
+    AddColumn <$> (selectValidColumnForAdd t)
+  , DropColumn <$> (selectValidColumnForDrop t)
+  ]
