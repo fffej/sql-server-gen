@@ -217,7 +217,8 @@ instance Entity Table where
 instance Show Table where
   show = show . toDoc
 
-data AlterTable = AddColumn  ColumnDefinition
+data AlterTable = Identity
+                | AddColumn  ColumnDefinition
                 | DropColumn ColumnDefinition
 
 selectValidColumnForAdd :: Table -> Gen ColumnDefinition
@@ -231,7 +232,7 @@ alterTable t = oneof
   [
     AddColumn <$> (selectValidColumnForAdd t)
   , DropColumn <$> (selectValidColumnForDrop t)
+  , return Identity
   ]
 
-render :: AlterTable -> Doc
-render = undefined
+
