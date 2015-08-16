@@ -232,3 +232,6 @@ alterTable t = oneof
     AddColumn <$> (selectValidColumnForAdd t)
   , DropColumn <$> (selectValidColumnForDrop t)
   ]
+
+render :: AlterTable -> Doc
+render = undefined
