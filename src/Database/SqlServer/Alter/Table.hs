@@ -59,3 +59,6 @@ instance Alter AlterTable where
 
 instance Show AlterTable where
   show = show . render
+
+generateChanges :: Table -> Gen Doc
+generateChanges t = render <$> alterTable t
