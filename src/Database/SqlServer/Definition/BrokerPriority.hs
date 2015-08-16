@@ -9,7 +9,7 @@ import Database.SqlServer.Definition.Identifier hiding (unwrap)
 import Database.SqlServer.Definition.Entity
 
 import Test.QuickCheck
-import Text.PrettyPrint
+import Text.PrettyPrint hiding (render)
 
 data PriorityLevel = PriorityLevel Int
 
@@ -49,11 +49,11 @@ renderOptions b = vcat $ punctuate comma
   ]
 
 renderPrerequisites :: Entity a => Maybe a -> Doc
-renderPrerequisites = maybe empty toDoc
+renderPrerequisites = maybe empty render
 
 instance Entity BrokerPriority where
   name = priorityName
-  toDoc b = renderPrerequisites (contractName b) $+$
+  render b = renderPrerequisites (contractName b) $+$
             renderPrerequisites (localServiceName b) $+$
             text "GO" $+$
             text "CREATE BROKER PRIORITY" <+> renderName b $+$
@@ -62,4 +62,4 @@ instance Entity BrokerPriority where
             text "GO\n"
 
 instance Show BrokerPriority where
-  show = show . toDoc
+  show = show . render

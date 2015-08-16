@@ -31,7 +31,7 @@ instance Arbitrary FullTextCatalog where
 
 instance Entity FullTextCatalog where
   name = catalogName
-  toDoc ftc = text "CREATE FULLTEXT CATALOG" <+>
+  render ftc = text "CREATE FULLTEXT CATALOG" <+>
               renderName ftc $+$ 
               maybe empty renderFileGroup (filegroup ftc) $+$
               maybe empty renderOptions (accentSensitive ftc) $+$

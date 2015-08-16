@@ -10,7 +10,7 @@ import Database.SqlServer.Definition.Certificate
 import Database.SqlServer.Definition.Login
 
 import Test.QuickCheck
-import Text.PrettyPrint
+import Text.PrettyPrint hiding (render)
 
 data ForFrom = For | From
 
@@ -51,16 +51,16 @@ instance Entity User where
   name (CreateUserWithoutLogin x) = x
   name (CreateUserWithLogin x _ _) = x
   name (CreateUserWithCertificate x _ _) = x
-  toDoc (CreateUserWithoutLogin x) = text "CREATE USER" <+>
+  render (CreateUserWithoutLogin x) = text "CREATE USER" <+>
                                      renderRegularIdentifier x <+>
                                      text "WITHOUT LOGIN"
-  toDoc (CreateUserWithCertificate nm ff cert) = toDoc cert $+$
+  render (CreateUserWithCertificate nm ff cert) = render cert $+$
                                                  text "GO" $+$
                                                  text "CREATE USER" <+>
                                                  renderRegularIdentifier nm <+>
                                                  renderForFrom ff <+>
                                                  renderCertificate cert
-  toDoc (CreateUserWithLogin nm ff lg) = toDoc lg $+$
+  render (CreateUserWithLogin nm ff lg) = render lg $+$
                                          text "GO" $+$
                                          text "CREATE USER" <+>
                                          renderRegularIdentifier nm <+>
@@ -68,7 +68,7 @@ instance Entity User where
                                          renderLogin lg
 
 instance Show User where
-  show = show . toDoc
+  show = show . render
 
 data Role = Role
     {
@@ -84,9 +84,9 @@ renderAuthorization ud = text "AUTHORIZATION" <+> renderUserName ud
 
 instance Entity Role where
   name = roleName
-  toDoc rd = maybe empty toDoc (authorization rd) $+$ text "GO" $+$
+  render rd = maybe empty render (authorization rd) $+$ text "GO" $+$
              text "CREATE ROLE" <+> renderName rd <+> 
              maybe empty renderAuthorization (authorization rd) 
              
 instance Show Role where
-  show = show . toDoc 
+  show = show . render 

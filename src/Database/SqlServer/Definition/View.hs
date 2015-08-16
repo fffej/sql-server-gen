@@ -8,7 +8,7 @@ import Database.SqlServer.Definition.Entity
 import Database.SqlServer.Definition.Table
 
 import Test.QuickCheck
-import Text.PrettyPrint
+import Text.PrettyPrint hiding (render)
 
 data View = View
   {
@@ -30,7 +30,7 @@ selectN t = text "SELECT" <+> hcat (punctuate comma cols) <+> text "FROM" <+> re
     cols = map (renderRegularIdentifier . columnName) $ unpack (columnDefinitions t)
 
 renderPrerequisites :: View -> Doc
-renderPrerequisites = vcat . map toDoc . tables
+renderPrerequisites = vcat . map render . tables
 
 renderWithOptions :: View -> Doc
 renderWithOptions v
@@ -53,7 +53,7 @@ instance Arbitrary View where
 
 instance Entity View where
   name = viewName
-  toDoc v = renderPrerequisites v $+$
+  render v = renderPrerequisites v $+$
             text "CREATE VIEW" <+> renderName v $+$
             renderWithOptions v $+$
             text "AS" $+$
@@ -62,4 +62,4 @@ instance Entity View where
             text "GO\n"
 
 instance Show View where
-  show = show . toDoc
+  show = show . render

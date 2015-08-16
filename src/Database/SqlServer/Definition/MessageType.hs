@@ -8,7 +8,7 @@ import Database.SqlServer.Definition.User (User,Role)
 import Database.SqlServer.Definition.Entity
 
 import Test.QuickCheck
-import Text.PrettyPrint
+import Text.PrettyPrint hiding (render)
 
 data Validation = None
                 | Empty
@@ -29,8 +29,8 @@ instance Arbitrary MessageType where
 
 -- Must be able to eliminate the duplication here
 renderPreRequisites :: Either User Role -> Doc
-renderPreRequisites (Left x)  = toDoc x $+$ text "GO"
-renderPreRequisites (Right x) = toDoc x $+$ text "GO"
+renderPreRequisites (Left x)  = render x $+$ text "GO"
+renderPreRequisites (Right x) = render x $+$ text "GO"
 
 renderAuthorization :: Either User Role -> Doc
 renderAuthorization (Left x)  = text "AUTHORIZATION" <+> renderName x
@@ -43,7 +43,7 @@ renderValidation WellFormedXml = text "VALIDATION = WELL_FORMED_XML"
 
 instance Entity MessageType where
   name = messageTypeName
-  toDoc m = maybe empty renderPreRequisites (authorization m) $+$
+  render m = maybe empty renderPreRequisites (authorization m) $+$
             text "CREATE MESSAGE TYPE" <+> renderName m $+$
             maybe empty renderAuthorization (authorization m) $+$
             maybe empty renderValidation (validation m) $+$

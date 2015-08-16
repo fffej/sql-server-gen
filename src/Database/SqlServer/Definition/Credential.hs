@@ -41,7 +41,7 @@ instance Arbitrary Credential where
 
 instance Entity Credential where
   name = credentialName
-  toDoc s = text "CREATE CREDENTIAL" <+> renderName s <+>
+  render s = text "CREATE CREDENTIAL" <+> renderName s <+>
             text "WITH IDENTITY =" <+> quotes (renderIdentity (identity s)) <+>
             maybe empty renderSecret (secret s) $+$
             text "GO"

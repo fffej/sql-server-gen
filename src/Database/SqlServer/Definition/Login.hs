@@ -5,7 +5,7 @@ import Database.SqlServer.Definition.Entity
 
 import Control.Monad
 import Test.QuickCheck
-import Text.PrettyPrint
+import Text.PrettyPrint hiding (render)
 
 data Login = Login
    {
@@ -27,8 +27,8 @@ renderMustChange True = text "MUST_CHANGE" <> comma <> text "CHECK_EXPIRATION=ON
 
 instance Entity Login where
   name = loginName
-  toDoc a = text "CREATE LOGIN" <+> renderName a $+$
+  render a = text "CREATE LOGIN" <+> renderName a $+$
             renderPassword (password a)  <+> renderMustChange (mustChange a)
             
 instance Show Login where
-  show = show . toDoc 
+  show = show . render 

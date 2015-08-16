@@ -9,7 +9,7 @@ import Database.SqlServer.Definition.Identifier hiding (unwrap)
 import Database.SqlServer.Definition.Entity
 
 import Test.QuickCheck
-import Text.PrettyPrint
+import Text.PrettyPrint hiding (render)
 
 data SentByConstraint = Initiator | Target | Any
 
@@ -51,9 +51,9 @@ renderAuthorization :: User -> Doc
 renderAuthorization n = text "AUTHORIZATION" <+> renderName n
 
 renderPrerequisites :: Contract -> Doc
-renderPrerequisites c = maybe empty toDoc (authorization c) $+$
+renderPrerequisites c = maybe empty render (authorization c) $+$
                         text "GO" $+$
-                        vcat (punctuate (text "\nGO\n") $ map (toDoc . messageType) (messageTypes c)) $+$
+                        vcat (punctuate (text "\nGO\n") $ map (render . messageType) (messageTypes c)) $+$
                         text "GO\n"
 
 -- The service  must have at least one message SENT BY INITIATOR or ANY.
@@ -66,12 +66,12 @@ instance Arbitrary Contract where
 
 instance Entity Contract where
   name = contractName
-  toDoc m = renderPrerequisites m $+$
+  render m = renderPrerequisites m $+$
             text "CREATE CONTRACT" <+> renderName m $+$
             maybe empty renderAuthorization (authorization m) $+$
             parens (vcat $ punctuate comma (map renderMessageType (messageTypes m))) $+$
             text "GO\n"
 
 instance Show Contract where
-  show = show . toDoc
+  show = show . render
             
