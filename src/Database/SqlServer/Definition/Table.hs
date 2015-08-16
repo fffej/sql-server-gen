@@ -28,7 +28,7 @@ import Database.SqlServer.Definition.Collation (renderCollation)
 import Database.SqlServer.Definition.Entity
 
 import Test.QuickCheck
-import Text.PrettyPrint
+import Text.PrettyPrint hiding (render)
 import Data.Maybe (isJust)
 import Control.Monad
 
@@ -207,7 +207,7 @@ renderColumnDefinition c = columnName' <+> columnType' <+> collation' <+>
 
 instance Entity Table where
   name = tableName
-  toDoc t = text "CREATE TABLE" <+> renderName t $$
+  render t = text "CREATE TABLE" <+> renderName t $$
             parens (vcat $ punctuate comma (col ++ con)) $+$
             text "GO"
     where
@@ -215,7 +215,7 @@ instance Entity Table where
       con = maybe [] (\x -> [renderTableConstraint x]) (tableConstraint t)
 
 instance Show Table where
-  show = show . toDoc
+  show = show . render
 
 data AlterTable = Identity
                 | AddColumn  ColumnDefinition

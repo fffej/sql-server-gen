@@ -55,7 +55,7 @@ instance Arbitrary Certificate where
 
 instance Entity Certificate where
   name = certificateName
-  toDoc c = text "CREATE CERTIFICATE" <+> renderName c $+$
+  render c = text "CREATE CERTIFICATE" <+> renderName c $+$
             renderEncryptionByPassword (encryptPassword c) $+$
             hcat (punctuate comma $ filter (/= empty)
                   [ renderSubject (subject c)

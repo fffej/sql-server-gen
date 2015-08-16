@@ -1,17 +1,17 @@
 module Database.SqlServer.Definition.Entity
        (
          Entity,
-         toDoc,
+         render,
          name,
          renderName
        ) where
 
 import Database.SqlServer.Definition.Identifier
 
-import Text.PrettyPrint
+import Text.PrettyPrint hiding (render)
 
 class Entity a where
-  toDoc :: a -> Doc
+  render :: a -> Doc
   name :: a -> RegularIdentifier
   renderName :: a -> Doc
   renderName = renderRegularIdentifier . name

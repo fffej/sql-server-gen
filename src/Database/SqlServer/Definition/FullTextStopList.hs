@@ -7,7 +7,7 @@ import Database.SqlServer.Definition.Identifier
 import Database.SqlServer.Definition.Entity
 
 import Test.QuickCheck
-import Text.PrettyPrint
+import Text.PrettyPrint hiding (render)
 import Control.Monad
 
 data FullTextStopList = FullTextStopList
@@ -24,7 +24,7 @@ instance Arbitrary FullTextStopList where
 
 instance Entity FullTextStopList where
   name = stoplistName
-  toDoc f = maybe empty toDoc (join (sourceStopList f)) $+$
+  render f = maybe empty render (join (sourceStopList f)) $+$
             text "CREATE FULLTEXT STOPLIST" <+>
             renderName f <+>
             maybe (text ";") (\q -> text "FROM" <+>

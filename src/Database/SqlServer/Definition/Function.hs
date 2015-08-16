@@ -9,7 +9,7 @@ import Database.SqlServer.Definition.Value
 import Database.SqlServer.Definition.Entity
 
 import Test.QuickCheck
-import Text.PrettyPrint
+import Text.PrettyPrint hiding (render)
 import Data.Maybe (fromJust, isJust)
 import Control.Monad
 
@@ -99,7 +99,7 @@ instance Arbitrary Function where
 
 instance Entity Function where
   name (ScalarFunctionC f) = scalarFunctionName f
-  toDoc fn@(ScalarFunctionC f) = text "CREATE FUNCTION" <+> renderName fn <+>
+  render fn@(ScalarFunctionC f) = text "CREATE FUNCTION" <+> renderName fn <+>
                               parens (hcat (punctuate comma (map renderParameter (parameters f)))) $+$
                               text "RETURNS" <+> renderReturnType (returnType f) $+$
                               renderFunctionOptions (functionOption f) $+$
@@ -109,4 +109,4 @@ instance Entity Function where
                               text "END" $+$ text "GO\n"
 
 instance Show Function where
-  show f = show (toDoc f)
+  show f = show (render f)

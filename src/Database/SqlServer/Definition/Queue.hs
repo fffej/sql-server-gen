@@ -9,7 +9,7 @@ import Database.SqlServer.Definition.Entity
 
 import Test.QuickCheck
 import Data.Word (Word16)
-import Text.PrettyPrint
+import Text.PrettyPrint hiding (render)
 import Data.Maybe (isJust)
 
 -- TODO username support
@@ -77,7 +77,7 @@ renderExecuteAs Self = text "EXECUTE AS SELF"
 renderExecuteAs Owner = text "EXECUTE AS OWNER"
 
 renderProc :: Activation -> Doc
-renderProc a = toDoc (unwrap $ procedure a)
+renderProc a = render (unwrap $ procedure a)
 
 renderProcedureName :: Procedure -> Doc
 renderProcedureName a = text "PROCEDURE_NAME =" <+> renderRegularIdentifier (procedureName a)
@@ -92,7 +92,7 @@ renderActivation a = text "ACTIVATION(" <+>
 
 instance Entity Queue where
   name = queueName
-  toDoc q = maybe empty renderProc (activation q) $+$
+  render q = maybe empty renderProc (activation q) $+$
             text "CREATE QUEUE" <+> renderRegularIdentifier (queueName q) <+> options $+$ text "GO"
     where
       options

@@ -11,7 +11,7 @@ import Database.SqlServer.Definition.Value
 import Database.SqlServer.Definition.Entity
 
 import Data.List (nub)
-import Text.PrettyPrint
+import Text.PrettyPrint hiding (render)
 import Test.QuickCheck
 
 import Data.Maybe (fromJust)
@@ -61,10 +61,10 @@ instance Arbitrary PartitionFunction where
 
 instance Entity PartitionFunction where
   name = partitionFunctionName
-  toDoc a = text "CREATE PARTITION FUNCTION" <+> renderName a <+> 
+  render a = text "CREATE PARTITION FUNCTION" <+> renderName a <+> 
             parens (renderDataType (unwrap $ inputType a)) $+$
             text "AS RANGE" <+> renderRange (range a) <+> text "FOR VALUES" <+>
             renderValues (boundaryValues a)
   
 instance Show PartitionFunction where
-  show = show . toDoc
+  show = show . render

@@ -22,7 +22,7 @@ import Test.QuickCheck
 import Test.QuickCheck.Gen
 import Test.QuickCheck.Random
 
-import Text.PrettyPrint
+import Text.PrettyPrint hiding (render)
 
 data MasterKey = MasterKey
 
@@ -57,10 +57,10 @@ data Database = Database
 
 instance Entity Database where
   name = databaseName
-  toDoc = renderDatabase
+  render = renderDatabase
 
 renderNamedEntities :: Entity a => [a] -> Doc
-renderNamedEntities xs = vcat (map toDoc xs)
+renderNamedEntities xs = vcat (map render xs)
 
 -- Note that some parts aren't rendered to avoid bloat
 renderDatabase :: Database -> Doc
@@ -115,7 +115,7 @@ saveExamples :: (Show a) => FilePath -> [a] -> IO ()
 saveExamples p xs = writeFile p (unlines $ map show xs)
 
 instance Show Database where
-  show = render . renderDatabase
+  show = show . render
 
 data GenerateOptions = GenerateOptions
   {
