@@ -44,12 +44,11 @@ updateTable xs (Just t) = map (\x -> if name x == name t then t else x) xs
 applyAddColumn :: Database -> Table -> Column -> Database
 applyAddColumn d t c = d { tables = updateTable (tables d) newTable }
   where
-    origTables = tables d
     oldTable = find (\x -> name x == name t) (tables d)
     newTable = fmap (flip addColumn c) oldTable
 
 applyDropColumn :: Database -> Table -> Column -> Database
-applyDropColumn d t c = undefined
+applyDropColumn = undefined
 
 instance Alter AlterTable where
   render (AddColumn t c)  = renderAddColumn t c 
