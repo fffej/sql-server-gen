@@ -2,6 +2,7 @@ module Database.SqlServer.Create.Table
        (
          Table
        , Column
+       , addColumn
        , columnName
        , columnCount
        , columns
@@ -165,6 +166,9 @@ data Table = Table
   , columns :: Columns
   , tableConstraint :: Maybe TableConstraint
   }
+
+addColumn :: Table -> Column -> Table
+addColumn t c = t { columns = Columns (c : unpack (columns t)) }
 
 columnCount :: Table -> Int
 columnCount t = case columns t of
