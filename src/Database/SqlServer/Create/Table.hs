@@ -7,6 +7,7 @@ module Database.SqlServer.Create.Table
        , columns
        , unpack
        , renderColumn
+       , columnConstraintsSatisfied
        ) where
 
 import Database.SqlServer.Create.Identifier (RegularIdentifier, renderRegularIdentifier)
