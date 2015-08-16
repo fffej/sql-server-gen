@@ -1,11 +1,11 @@
-module Database.SqlServer.Definition.View
+module Database.SqlServer.Create.View
        (
          View
        ) where
 
-import Database.SqlServer.Definition.Identifier
-import Database.SqlServer.Definition.Entity
-import Database.SqlServer.Definition.Table
+import Database.SqlServer.Create.Identifier
+import Database.SqlServer.Create.Entity
+import Database.SqlServer.Create.Table
 
 import Test.QuickCheck
 import Text.PrettyPrint hiding (render)
@@ -27,7 +27,7 @@ unionSelectStatement v = vcat $ punctuate (text " UNION ALL") (map selectN tabs)
 selectN :: Table -> Doc
 selectN t = text "SELECT" <+> hcat (punctuate comma cols) <+> text "FROM" <+> renderName t
   where
-    cols = map (renderRegularIdentifier . columnName) $ unpack (columnDefinitions t)
+    cols = map (renderRegularIdentifier . columnName) $ unpack (columns t)
 
 renderPrerequisites :: View -> Doc
 renderPrerequisites = vcat . map render . tables

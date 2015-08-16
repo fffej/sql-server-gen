@@ -1,7 +1,7 @@
-module Database.SqlServer.Definition.Login where
+module Database.SqlServer.Create.Login where
 
-import Database.SqlServer.Definition.Identifier
-import Database.SqlServer.Definition.Entity
+import Database.SqlServer.Create.Identifier
+import Database.SqlServer.Create.Entity
 
 import Control.Monad
 import Test.QuickCheck

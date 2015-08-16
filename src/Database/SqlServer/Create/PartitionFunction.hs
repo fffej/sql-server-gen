@@ -1,14 +1,14 @@
-module Database.SqlServer.Definition.PartitionFunction
+module Database.SqlServer.Create.PartitionFunction
        (
          PartitionFunction
        ) where
 
 import Prelude hiding (Left,Right)
 
-import Database.SqlServer.Definition.Identifier hiding (unwrap)
-import Database.SqlServer.Definition.DataType
-import Database.SqlServer.Definition.Value
-import Database.SqlServer.Definition.Entity
+import Database.SqlServer.Create.Identifier hiding (unwrap)
+import Database.SqlServer.Create.DataType
+import Database.SqlServer.Create.Value
+import Database.SqlServer.Create.Entity
 
 import Data.List (nub)
 import Text.PrettyPrint hiding (render)

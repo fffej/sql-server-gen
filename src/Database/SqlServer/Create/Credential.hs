@@ -1,10 +1,10 @@
-module Database.SqlServer.Definition.Credential
+module Database.SqlServer.Create.Credential
        (
          Credential
        ) where
 
-import Database.SqlServer.Definition.Identifier hiding (unwrap)
-import Database.SqlServer.Definition.Entity
+import Database.SqlServer.Create.Identifier hiding (unwrap)
+import Database.SqlServer.Create.Entity
 
 import Text.PrettyPrint
 import Test.QuickCheck

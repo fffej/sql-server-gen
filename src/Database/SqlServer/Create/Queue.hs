@@ -1,11 +1,11 @@
-module Database.SqlServer.Definition.Queue
+module Database.SqlServer.Create.Queue
        (
          Queue
        ) where
 
-import Database.SqlServer.Definition.Identifier hiding (unwrap)
-import Database.SqlServer.Definition.Procedure
-import Database.SqlServer.Definition.Entity
+import Database.SqlServer.Create.Identifier hiding (unwrap)
+import Database.SqlServer.Create.Procedure
+import Database.SqlServer.Create.Entity
 
 import Test.QuickCheck
 import Data.Word (Word16)

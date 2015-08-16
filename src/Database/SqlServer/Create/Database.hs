@@ -1,22 +1,22 @@
-module Database.SqlServer.Definition.Database where
+module Database.SqlServer.Create.Database where
 
-import Database.SqlServer.Definition.Identifier (RegularIdentifier)
-import Database.SqlServer.Definition.Table (Table)
-import Database.SqlServer.Definition.View (View)
-import Database.SqlServer.Definition.Sequence (Sequence)
-import Database.SqlServer.Definition.Procedure (Procedure)
-import Database.SqlServer.Definition.User (User,Role)
-import Database.SqlServer.Definition.FullTextCatalog (FullTextCatalog)
-import Database.SqlServer.Definition.FullTextStopList (FullTextStopList)
-import Database.SqlServer.Definition.Function (Function)
-import Database.SqlServer.Definition.Credential (Credential)
-import Database.SqlServer.Definition.MessageType (MessageType)
-import Database.SqlServer.Definition.BrokerPriority (BrokerPriority)
-import Database.SqlServer.Definition.PartitionFunction (PartitionFunction)
-import Database.SqlServer.Definition.Contract (Contract)
-import Database.SqlServer.Definition.Login (Login)
-import Database.SqlServer.Definition.Certificate (Certificate)
-import Database.SqlServer.Definition.Entity
+import Database.SqlServer.Create.Identifier (RegularIdentifier)
+import Database.SqlServer.Create.Table (Table)
+import Database.SqlServer.Create.View (View)
+import Database.SqlServer.Create.Sequence (Sequence)
+import Database.SqlServer.Create.Procedure (Procedure)
+import Database.SqlServer.Create.User (User,Role)
+import Database.SqlServer.Create.FullTextCatalog (FullTextCatalog)
+import Database.SqlServer.Create.FullTextStopList (FullTextStopList)
+import Database.SqlServer.Create.Function (Function)
+import Database.SqlServer.Create.Credential (Credential)
+import Database.SqlServer.Create.MessageType (MessageType)
+import Database.SqlServer.Create.BrokerPriority (BrokerPriority)
+import Database.SqlServer.Create.PartitionFunction (PartitionFunction)
+import Database.SqlServer.Create.Contract (Contract)
+import Database.SqlServer.Create.Login (Login)
+import Database.SqlServer.Create.Certificate (Certificate)
+import Database.SqlServer.Create.Entity
 
 import Test.QuickCheck
 import Test.QuickCheck.Gen

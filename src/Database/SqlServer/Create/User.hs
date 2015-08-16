@@ -1,13 +1,13 @@
-module Database.SqlServer.Definition.User
+module Database.SqlServer.Create.User
        (
          User
        , Role
        ) where
 
-import Database.SqlServer.Definition.Identifier
-import Database.SqlServer.Definition.Entity
-import Database.SqlServer.Definition.Certificate
-import Database.SqlServer.Definition.Login
+import Database.SqlServer.Create.Identifier
+import Database.SqlServer.Create.Entity
+import Database.SqlServer.Create.Certificate
+import Database.SqlServer.Create.Login
 
 import Test.QuickCheck
 import Text.PrettyPrint hiding (render)

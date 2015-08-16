@@ -1,11 +1,11 @@
-module Database.SqlServer.Definition.MessageType
+module Database.SqlServer.Create.MessageType
        (
          MessageType
        ) where
 
-import Database.SqlServer.Definition.Identifier hiding (unwrap)
-import Database.SqlServer.Definition.User (User,Role)
-import Database.SqlServer.Definition.Entity
+import Database.SqlServer.Create.Identifier hiding (unwrap)
+import Database.SqlServer.Create.User (User,Role)
+import Database.SqlServer.Create.Entity
 
 import Test.QuickCheck
 import Text.PrettyPrint hiding (render)

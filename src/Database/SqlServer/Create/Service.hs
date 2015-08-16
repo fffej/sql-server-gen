@@ -1,12 +1,12 @@
-module Database.SqlServer.Definition.Service
+module Database.SqlServer.Create.Service
        (
          Service
        ) where
 
-import Database.SqlServer.Definition.Queue (Queue)
-import Database.SqlServer.Definition.Contract (Contract)
-import Database.SqlServer.Definition.Identifier hiding (unwrap)
-import Database.SqlServer.Definition.Entity
+import Database.SqlServer.Create.Queue (Queue)
+import Database.SqlServer.Create.Contract (Contract)
+import Database.SqlServer.Create.Identifier hiding (unwrap)
+import Database.SqlServer.Create.Entity
 
 import Test.QuickCheck 
 import Text.PrettyPrint hiding (render)

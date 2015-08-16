@@ -1,13 +1,13 @@
-module Database.SqlServer.Definition.Procedure
+module Database.SqlServer.Create.Procedure
        (
          Procedure,
          parameters,
          procedureName
        ) where
 
-import Database.SqlServer.Definition.Identifier hiding (unwrap)
-import Database.SqlServer.Definition.DataType
-import Database.SqlServer.Definition.Entity
+import Database.SqlServer.Create.Identifier hiding (unwrap)
+import Database.SqlServer.Create.DataType
+import Database.SqlServer.Create.Entity
 
 import Test.QuickCheck
 import Text.PrettyPrint

@@ -1,12 +1,12 @@
-module Database.SqlServer.Definition.BrokerPriority
+module Database.SqlServer.Create.BrokerPriority
        (
          BrokerPriority
        ) where
 
-import Database.SqlServer.Definition.Service (Service)
-import Database.SqlServer.Definition.Contract (Contract)
-import Database.SqlServer.Definition.Identifier hiding (unwrap)
-import Database.SqlServer.Definition.Entity
+import Database.SqlServer.Create.Service (Service)
+import Database.SqlServer.Create.Contract (Contract)
+import Database.SqlServer.Create.Identifier hiding (unwrap)
+import Database.SqlServer.Create.Entity
 
 import Test.QuickCheck
 import Text.PrettyPrint hiding (render)
