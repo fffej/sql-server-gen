@@ -1,8 +1,5 @@
 module Database.SqlServer.Generator where
 
-{-
-  We do redundant imports here so it's all in scope
--}
 import Database.SqlServer.Create.Identifier (RegularIdentifier)
 import Database.SqlServer.Create.Table (Table)
 import Database.SqlServer.Create.View (View)
@@ -25,8 +22,15 @@ import Test.QuickCheck
 import Test.QuickCheck.Gen
 import Test.QuickCheck.Random
 
-import Data.List
 import System.Random
+
+-- GHC doesn't flag warnings on things beginning _
+_redundantImport :: (
+  RegularIdentifier, Login, Certificate, Contract, PartitionFunction,
+  MessageType, BrokerPriority, Credential, Function, FullTextStopList,
+  FullTextCatalog, User, Role, Sequence, Table, View, Procedure
+  )
+_redundantImport = undefined
 
 saveExamples :: (Show a) => FilePath -> [a] -> IO ()
 saveExamples p xs = writeFile p (unlines $ map show xs)

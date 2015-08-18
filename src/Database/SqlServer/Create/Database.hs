@@ -19,9 +19,6 @@ import Database.SqlServer.Create.Certificate (Certificate)
 import Database.SqlServer.Create.Entity
 
 import Test.QuickCheck
-import Test.QuickCheck.Gen
-import Test.QuickCheck.Random
-
 import Text.PrettyPrint hiding (render)
 
 data MasterKey = MasterKey
