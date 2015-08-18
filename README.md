@@ -74,16 +74,17 @@ A `Database` is the top level container, generating a uniquely named database wi
     instance Entity Function
       -- Defined at src\Database\SqlServer\Definition\Function.hs:100:10
 
-Using `generateExamples` and `saveExamples` you can have an interactive session to target particular SQL Server object types.  For example.
-
-    > generateExamples 10 (arbitrary :: Gen Table) >>= saveExamples "foo.sql"
-
-Will create a file called `foo.sql` containing 100 tables of increasing complexity.  Note it will overwrite existing files without warning.  It will also create required dependant objects, for example creating Views will create the tables they depend on.
-
-If you want more control, then you can use `generateEntity`
+If you want more control, then you can use `generateEntity` to generate single files.
 
     > generateEntity (GenerateOptions { size = 10, seed = 22 }) :: User
     
+If you want to generate an infinite list of tables for your own nefarious purposes then you can use `generateEntities`
+
+    > let tables = generateEntities (GenerateOptions 1 10) :: [Table]
+    > let first10 = take 10 tables
+    > saveExamples "myFilename" first10
+
+
 # Usage
 
 There's a command line interface you can use too, which will generate arbitrary database definitions.  You might use this to build automated performance tests or soak tests.  Run the following from the command line:
