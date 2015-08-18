@@ -3,7 +3,8 @@ module Main where
 
 import System.Console.CmdArgs
 
-import qualified Database.SqlServer.Create.Database as D
+import qualified Database.SqlServer.Generator as D
+import Database.SqlServer.Create.Database
 
 data Arguments = Arguments
     {
@@ -38,5 +39,5 @@ main :: IO ()
 main = do
   a <- cmdArgs defaultArgs
   putStrLn (header a)
-  print $ (D.generateEntity (convert a) :: D.Database)
+  print $ (D.generateEntity (convert a) :: Database)
   return ()

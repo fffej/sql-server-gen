@@ -51,7 +51,8 @@ cabal-version:       >=1.10
 
 library
   -- Modules exported by the library.
-  exposed-modules:     Database.SqlServer.Create.Database,
+  exposed-modules:     Database.SqlServer.Generator
+                       Database.SqlServer.Create.Database,
                        Database.SqlServer.Create.Sequence,
                        Database.SqlServer.Create.Identifier,
                        Database.SqlServer.Create.Procedure,
