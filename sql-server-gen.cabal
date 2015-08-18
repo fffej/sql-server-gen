@@ -51,8 +51,7 @@ cabal-version:       >=1.10
 
 library
   -- Modules exported by the library.
-  exposed-modules:     Database.SqlServer.Generator
-                       Database.SqlServer.Create.Database,
+  exposed-modules:     Database.SqlServer.Create.Database,
                        Database.SqlServer.Create.Sequence,
                        Database.SqlServer.Create.Identifier,
                        Database.SqlServer.Create.Procedure,
@@ -76,7 +75,8 @@ library
                        Database.SqlServer.Create.Entity,
                        Database.SqlServer.Create.Value,
                        Database.SqlServer.Alter.Alter,
-                       Database.SqlServer.Alter.Table
+                       Database.SqlServer.Alter.Table,
+                       Database.SqlServer.Generator
 
 
   ghc-options:         -Wall -O2 -fwarn-tabs 
