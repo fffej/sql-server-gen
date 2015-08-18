@@ -22,6 +22,8 @@ import Test.QuickCheck
 import Test.QuickCheck.Gen
 import Test.QuickCheck.Random
 
+import System.Random
+
 generateExamples :: (Show a) => Int -> Gen a -> IO [a]
 generateExamples m a = generate (sequence [resize n a | n <- [0..m] ])
 
@@ -36,4 +38,9 @@ data GenerateOptions = GenerateOptions
 
 generateEntity :: (Arbitrary a, Entity a) => GenerateOptions -> a
 generateEntity go = unGen arbitrary (mkQCGen (seed go)) (size go)
+
+generateEntities :: (Arbitrary a, Entity a) => GenerateOptions -> [a]
+generateEntities go = map (\x -> generateEntity (go { seed = x })) (randoms g)
+  where
+    g = mkQCGen (seed go)
 
