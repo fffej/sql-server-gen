@@ -19,9 +19,6 @@ import Database.SqlServer.Create.Certificate (Certificate)
 import Database.SqlServer.Create.Entity
 
 import Test.QuickCheck
-import Test.QuickCheck.Gen
-import Test.QuickCheck.Random
-
 import Text.PrettyPrint hiding (render)
 
 data MasterKey = MasterKey
@@ -108,20 +105,5 @@ instance Arbitrary Database where
     arbitrary <*>
     arbitrary
     
-generateExamples :: (Show a) => Int -> Gen a -> IO [a]
-generateExamples m a = generate (sequence [resize n a | n <- [0..m] ])
-
-saveExamples :: (Show a) => FilePath -> [a] -> IO ()
-saveExamples p xs = writeFile p (unlines $ map show xs)
-
 instance Show Database where
   show = show . render
-
-data GenerateOptions = GenerateOptions
-  {
-    size :: Int
-  , seed :: Int
-  }
-
-generateEntity :: (Arbitrary a, Entity a) => GenerateOptions -> a
-generateEntity go = unGen arbitrary (mkQCGen (seed go)) (size go)
