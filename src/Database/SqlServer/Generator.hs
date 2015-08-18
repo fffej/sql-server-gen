@@ -1,5 +1,8 @@
 module Database.SqlServer.Generator where
 
+{-
+  We do redundant imports here so it's all in scope
+-}
 import Database.SqlServer.Create.Identifier (RegularIdentifier)
 import Database.SqlServer.Create.Table (Table)
 import Database.SqlServer.Create.View (View)
@@ -22,10 +25,8 @@ import Test.QuickCheck
 import Test.QuickCheck.Gen
 import Test.QuickCheck.Random
 
+import Data.List
 import System.Random
-
-generateExamples :: (Show a) => Int -> Gen a -> IO [a]
-generateExamples m a = generate (sequence [resize n a | n <- [0..m] ])
 
 saveExamples :: (Show a) => FilePath -> [a] -> IO ()
 saveExamples p xs = writeFile p (unlines $ map show xs)
