@@ -26,15 +26,15 @@ alterTable :: Table -> Gen AlterTable
 alterTable t = oneof
   [
     AddColumn t  <$> arbitrary
-  , DropColumn t <$> (selectValidColumnForDrop t)
+  , DropColumn t <$> selectValidColumnForDrop t
   ]
 
 renderAddColumn :: Table -> Column -> Doc
-renderAddColumn t c = text "ALTER TABLE" <+> (renderName t) <+> text "ADD" <+> (renderColumn c) $+$
+renderAddColumn t c = text "ALTER TABLE" <+> renderName t <+> text "ADD" <+> renderColumn c $+$
                       text "GO\n"
 
 renderDropColumn :: Table -> Column -> Doc
-renderDropColumn t c = text "ALTER TABLE" <+> (renderName t) <+> text "DROP" <+> (renderRegularIdentifier (columnName c)) $+$
+renderDropColumn t c = text "ALTER TABLE" <+> renderName t <+> text "DROP" <+> renderRegularIdentifier (columnName c) $+$
                        text "GO\n"
 
 updateTable :: [Table] -> Maybe Table -> [Table]
@@ -45,7 +45,7 @@ applyAddColumn :: Database -> Table -> Column -> Database
 applyAddColumn d t c = d { tables = updateTable (tables d) newTable }
   where
     oldTable = find (\x -> name x == name t) (tables d)
-    newTable = fmap (flip addColumn c) oldTable
+    newTable = fmap (`addColumn` c) oldTable
 
 applyDropColumn :: Database -> Table -> Column -> Database
 applyDropColumn = undefined
