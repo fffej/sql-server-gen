@@ -42,6 +42,9 @@ An example of use from the REPL (`--` indicates comments not to be entered).
     -- View the data by just inspecting y
     y
 
+    -- Write the alter statements out to a file
+    writeFile "AlterTable.sql" (show y)
+
 The goal of this work is to allow you to build an arbitrary database and then an infinite sequence of ALTER statements to permute the database.
 
 # Build instructions
