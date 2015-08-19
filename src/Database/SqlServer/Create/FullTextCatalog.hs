@@ -23,7 +23,7 @@ renderFileGroup :: RegularIdentifier -> Doc
 renderFileGroup n = text "ON FILEGROUP" <+> renderRegularIdentifier n
 
 renderOptions :: Bool -> Doc
-renderOptions True  = text "WITH ACCENT_SENSITIVITY = ON"
+renderOptions True = text "WITH ACCENT_SENSITIVITY = ON"
 renderOptions False = text "WITH ACCENT_SENSITIVITY = OFF"
 
 instance Arbitrary FullTextCatalog where
@@ -32,7 +32,7 @@ instance Arbitrary FullTextCatalog where
 instance Entity FullTextCatalog where
   name = catalogName
   render ftc = text "CREATE FULLTEXT CATALOG" <+>
-              renderName ftc $+$ 
+              renderName ftc $+$
               maybe empty renderFileGroup (filegroup ftc) $+$
               maybe empty renderOptions (accentSensitive ftc) $+$
               if asDefault ftc then text "AS DEFAULT" else empty $+$

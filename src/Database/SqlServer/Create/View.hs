@@ -25,7 +25,9 @@ unionSelectStatement v = vcat $ punctuate (text " UNION ALL") (map selectN tabs)
     tabs = tables v
 
 selectN :: Table -> Doc
-selectN t = text "SELECT" <+> hcat (punctuate comma cols) <+> text "FROM" <+> renderName t
+selectN t = text "SELECT" <+>
+            hcat (punctuate comma cols) <+>
+            text "FROM" <+> renderName t
   where
     cols = map (renderRegularIdentifier . columnName) $ unpack (columns t)
 
@@ -36,7 +38,7 @@ renderWithOptions :: View -> Doc
 renderWithOptions v
   | noneSet = empty
   | otherwise = text "WITH" <+>
-                hcat (punctuate comma (filter (not . (== empty)) [enc,vm]))
+                hcat (punctuate comma (filter (not . (== empty)) [enc, vm]))
   where
     noneSet = not (encryption v) && not (viewMetadata v)
     enc = if encryption v then text "ENCRYPTION" else empty

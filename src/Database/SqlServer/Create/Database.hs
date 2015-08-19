@@ -5,7 +5,7 @@ import Database.SqlServer.Create.Table (Table)
 import Database.SqlServer.Create.View (View)
 import Database.SqlServer.Create.Sequence (Sequence)
 import Database.SqlServer.Create.Procedure (Procedure)
-import Database.SqlServer.Create.User (User,Role)
+import Database.SqlServer.Create.User (User, Role)
 import Database.SqlServer.Create.FullTextCatalog (FullTextCatalog)
 import Database.SqlServer.Create.FullTextStopList (FullTextStopList)
 import Database.SqlServer.Create.Function (Function)
@@ -27,9 +27,10 @@ instance Arbitrary MasterKey where
   arbitrary = return MasterKey
 
 renderMasterKey :: MasterKey -> Doc
-renderMasterKey _ = text "CREATE MASTER KEY ENCRYPTION BY PASSWORD = 'weKKjwehg252t!!'"
-           $+$  text "GO"
-                        
+renderMasterKey _ =
+  text "CREATE MASTER KEY ENCRYPTION BY PASSWORD = 'weKKjwehg252t!!'" $+$
+  text "GO"
+
 data Database = Database
   {
     databaseName :: RegularIdentifier
@@ -104,6 +105,6 @@ instance Arbitrary Database where
     arbitrary <*>
     arbitrary <*>
     arbitrary
-    
+
 instance Show Database where
   show = show . render

@@ -16,4 +16,4 @@ renderCollation :: Collation -> Doc
 renderCollation (Collation x) = text "COLLATE" <+> text x
 
 collations :: [Collation]
-collations = map Collation  ["SQL_Latin1_General_CP1_CI_AS"]
+collations = map Collation ["SQL_Latin1_General_CP1_CI_AS"]

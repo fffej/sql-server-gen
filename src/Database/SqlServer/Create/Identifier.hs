@@ -2,7 +2,7 @@ module Database.SqlServer.Create.Identifier
        (
          RegularIdentifier
        , ArbUUID
-       , ParameterIdentifier        
+       , ParameterIdentifier
        , renderRegularIdentifier
        , renderParameterIdentifier
        , unwrap
@@ -14,12 +14,12 @@ import Control.Monad
 import Data.UUID
 import Data.UUID.Util
 
-newtype ArbUUID = ArbUUID { unpck :: UUID } deriving (Eq,Ord)
+newtype ArbUUID = ArbUUID { unpck :: UUID } deriving (Eq, Ord)
 
 instance Show ArbUUID where
   show (ArbUUID x) = show x
 
-newtype RegularIdentifier = RegularIdentifier ArbUUID deriving (Eq,Ord)
+newtype RegularIdentifier = RegularIdentifier ArbUUID deriving (Eq, Ord)
 
 unwrap :: RegularIdentifier -> String
 unwrap (RegularIdentifier x) = "UUID_" ++ xstr
@@ -27,7 +27,7 @@ unwrap (RegularIdentifier x) = "UUID_" ++ xstr
     xstr = filter (/= '-') (toString $ unpck x)
 
 renderRegularIdentifier :: RegularIdentifier -> Doc
-renderRegularIdentifier = text . unwrap 
+renderRegularIdentifier = text . unwrap
 
 newtype ParameterIdentifier = ParameterIdentifier RegularIdentifier
 
@@ -35,21 +35,22 @@ instance Arbitrary ParameterIdentifier where
   arbitrary = liftM ParameterIdentifier arbitrary
 
 renderParameterIdentifier :: ParameterIdentifier -> Doc
-renderParameterIdentifier (ParameterIdentifier p) = text "@" <> renderRegularIdentifier p
+renderParameterIdentifier (ParameterIdentifier p) = text "@" <>
+                                                    renderRegularIdentifier p
 
 instance Arbitrary ArbUUID where
   arbitrary = do
-    tl <- choose(minBound,maxBound)
-    tm <- choose(minBound,maxBound)
-    th <- choose(minBound,maxBound)
-    cshr <- choose(minBound,maxBound)
-    csl <- choose(minBound,maxBound)
-    n0 <- choose(minBound,maxBound)
-    n1 <- choose(minBound,maxBound)
-    n2 <- choose(minBound,maxBound)
-    n3 <- choose(minBound,maxBound)
-    n4 <- choose(minBound,maxBound)
-    n5 <- choose(minBound,maxBound)
+    tl <- choose (minBound, maxBound)
+    tm <- choose (minBound, maxBound)
+    th <- choose (minBound, maxBound)
+    cshr <- choose (minBound, maxBound)
+    csl <- choose (minBound, maxBound)
+    n0 <- choose (minBound, maxBound)
+    n1 <- choose (minBound, maxBound)
+    n2 <- choose (minBound, maxBound)
+    n3 <- choose (minBound, maxBound)
+    n4 <- choose (minBound, maxBound)
+    n5 <- choose (minBound, maxBound)
     let unpackedUUID = UnpackedUUID {
           time_low = tl
         , time_mid = tm
@@ -62,7 +63,7 @@ instance Arbitrary ArbUUID where
         , node_3 = n3
         , node_4 = n4
         , node_5 = n5
-        } 
+        }
     return $ ArbUUID (pack unpackedUUID)
 
 instance Arbitrary RegularIdentifier where

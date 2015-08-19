@@ -28,7 +28,7 @@ instance Arbitrary User where
     ]
 
 instance Arbitrary ForFrom where
-  arbitrary = elements [For,From]
+  arbitrary = elements [For, From]
 
 renderForFrom :: ForFrom -> Doc
 renderForFrom For = text "FOR"
@@ -85,8 +85,8 @@ renderAuthorization ud = text "AUTHORIZATION" <+> renderUserName ud
 instance Entity Role where
   name = roleName
   render rd = maybe empty render (authorization rd) $+$ text "GO" $+$
-             text "CREATE ROLE" <+> renderName rd <+> 
-             maybe empty renderAuthorization (authorization rd) 
-             
+             text "CREATE ROLE" <+> renderName rd <+>
+             maybe empty renderAuthorization (authorization rd)
+
 instance Show Role where
-  show = show . render 
+  show = show . render

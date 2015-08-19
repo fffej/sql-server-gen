@@ -8,12 +8,14 @@ import Database.SqlServer.Create.Contract (Contract)
 import Database.SqlServer.Create.Identifier hiding (unwrap)
 import Database.SqlServer.Create.Entity
 
-import Test.QuickCheck 
+import Test.QuickCheck
 import Text.PrettyPrint hiding (render)
 
--- An entity of type service cannot be owned by
--- a role, a group, or by principals mapped to
--- certificates or asymmetric keys.
+{-
+ An entity of type service cannot be owned by
+ a role, a group, or by principals mapped to
+ certificates or asymmetric keys.
+-}
 data Service = Service
     {
       serviceName :: RegularIdentifier
@@ -31,9 +33,10 @@ renderContracts xs = parens (vcat $ punctuate comma (map renderName xs)) $+$
                      text "GO\n"
 
 renderPreRequisites :: Service -> Doc
-renderPreRequisites s = render (queue s) $+$
-                        vcat (punctuate (text "GO") (map render (contracts s))) $+$
-                        text "GO\n"
+renderPreRequisites s =
+  render (queue s) $+$
+  vcat (punctuate (text "GO") (map render (contracts s))) $+$
+  text "GO\n"
 
 instance Entity Service where
   name = serviceName
@@ -41,7 +44,7 @@ instance Entity Service where
             text "CREATE SERVICE" <+> renderName s $+$
             text "ON QUEUE" <+> renderName (queue s) $+$
             renderContracts (contracts s) $+$
-            text "GO\n" 
+            text "GO\n"
 
 instance Show Service where
   show = show . render

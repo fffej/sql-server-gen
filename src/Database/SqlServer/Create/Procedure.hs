@@ -15,8 +15,8 @@ import Text.PrettyPrint
 data Parameter = Parameter
   {
     parameterName :: ParameterIdentifier
-  , dataType      :: Type
-  , isOutput      :: Bool
+  , dataType :: Type
+  , isOutput :: Bool
   }
 
 instance Arbitrary Parameter where
@@ -27,12 +27,13 @@ renderOut True = text "OUTPUT"
 renderOut False = empty
 
 renderParameter :: Parameter -> Doc
-renderParameter p = renderParameterIdentifier (parameterName p) <+> renderDataType (dataType p) <+> renderOut (isOutput p)
+renderParameter p = renderParameterIdentifier (parameterName p) <+>
+                    renderDataType (dataType p) <+> renderOut (isOutput p)
 
 data Procedure = Procedure
   {
     procedureName :: RegularIdentifier
-  , parameters    :: [Parameter]
+  , parameters :: [Parameter]
   }
 
 instance Arbitrary Procedure where
@@ -44,8 +45,9 @@ statementBody = "select 1\n"
 
 instance Entity Procedure where
   name = procedureName
-  render p = text "CREATE PROCEDURE" <+> renderName p $+$
-                              hcat (punctuate comma (map renderParameter (parameters p))) <+> text "AS" $+$
-                              text statementBody $+$
-                              text "GO"
-                              
+  render p = text "CREATE PROCEDURE" <+>
+             renderName p $+$
+             hcat (punctuate comma (map renderParameter (parameters p))) <+>
+             text "AS" $+$
+             text statementBody $+$
+             text "GO"

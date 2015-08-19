@@ -17,13 +17,13 @@ module Database.SqlServer.Create.DataType
        , isTypeForIndex
        ) where
 
-import Database.SqlServer.Create.Value hiding (precision,scale)
+import Database.SqlServer.Create.Value hiding (precision, scale)
 import Database.SqlServer.Create.Collation (Collation)
 
 import Text.PrettyPrint
 
 import Test.QuickCheck hiding (scale)
-import Control.Monad 
+import Control.Monad
 import Data.Maybe (fromMaybe)
 
 -- Size of arbitrary data (>= 1 && <= 8000)
@@ -36,7 +36,7 @@ fixedRangeStorage :: FixedRange -> Int
 fixedRangeStorage (FixedRange n) = n * 8
 
 instance Arbitrary FixedRange where
-  arbitrary = liftM FixedRange (choose (1,8000))
+  arbitrary = liftM FixedRange (choose (1, 8000))
 
 newtype NFixedRange = NFixedRange Int
 
@@ -47,7 +47,7 @@ nfixedRangeStorage :: NFixedRange -> Int
 nfixedRangeStorage (NFixedRange n) = n * 8 * 2
 
 instance Arbitrary NFixedRange where
-  arbitrary = liftM NFixedRange (choose (1,4000))
+  arbitrary = liftM NFixedRange (choose (1, 4000))
 
 -- See for example https://msdn.microsoft.com/en-us/library/ms176089.aspx
 data Range = Sized FixedRange
@@ -62,7 +62,7 @@ rangeSize (Sized (FixedRange n)) = n
 
 rangeStorageSize :: Range -> Int
 rangeStorageSize (Sized x) = fixedRangeStorage x
-rangeStorageSize _         = 0 
+rangeStorageSize _ = 0
 
 renderRange :: Range -> Doc
 renderRange Max = text "(max)"
@@ -80,7 +80,7 @@ nRangeSize (NSized (NFixedRange n)) = n
 
 nRangeStorageSize :: NRange -> Int
 nRangeStorageSize (NSized x) = nfixedRangeStorage x
-nRangeStorageSize _          = 0
+nRangeStorageSize _ = 0
 
 renderNRange :: NRange -> Doc
 renderNRange NMax = text "(max)"
@@ -91,25 +91,35 @@ data VarBinaryStorage = SizedRange Range
                       | MaxFileStream
 
 instance Arbitrary VarBinaryStorage where
-  arbitrary = oneof [SizedRange <$> arbitrary, return MaxNoFileStream, return MaxFileStream]
+  arbitrary = oneof [
+      SizedRange <$> arbitrary
+    , return MaxNoFileStream
+    , return MaxFileStream
+    ]
 
 renderVarBinaryStorage :: VarBinaryStorage -> Doc
-renderVarBinaryStorage (SizedRange r)   = renderRange r
-renderVarBinaryStorage MaxFileStream    = text "(max)"
-renderVarBinaryStorage MaxNoFileStream  = text "(max)"
+renderVarBinaryStorage (SizedRange r) = renderRange r
+renderVarBinaryStorage MaxFileStream = text "(max)"
+renderVarBinaryStorage MaxNoFileStream = text "(max)"
 
 varBinarySize :: VarBinaryStorage -> Int
 varBinarySize (SizedRange r) = rangeStorageSize r
-varBinarySize _              = 0 
+varBinarySize _ = 0
 
-{- A sparse column must be nullable and cannot have the ROWGUIDCOL, IDENTITY, or FILESTREAM properties.
-   A sparse column cannot be of the following data types: text, ntext, image, geometry, geography, or user-defined type. -}
+{- A sparse column must be nullable and cannot have the ROWGUIDCOL
+   IDENTITY, or FILESTREAM properties.
+   A sparse column cannot be of the following data types:
+   text, ntext, image, geometry, geography, or user-defined type. -}
 data StorageOptions = Sparse
                     | SparseNull
                     | StorageOptions NullStorageOptions
 
 instance Arbitrary StorageOptions where
-  arbitrary = oneof [return Sparse, return SparseNull, StorageOptions <$> arbitrary]
+  arbitrary = oneof [
+      return Sparse
+    , return SparseNull
+    , StorageOptions <$> arbitrary
+    ]
 
 data NullStorageOptions = NotNull | Null
 
@@ -127,18 +137,18 @@ isSparse _ = False
 
 nullStorageFromStorageOptions :: StorageOptions -> Maybe NullStorageOptions
 nullStorageFromStorageOptions (StorageOptions x) = Just x
-nullStorageFromStorageOptions _                  = Nothing
+nullStorageFromStorageOptions _ = Nothing
 
 renderSparse :: StorageOptions -> Doc
 renderSparse Sparse = text "SPARSE"
-renderSparse _      = empty
+renderSparse _ = empty
 
-renderNullConstraint ::  NullStorageOptions -> Doc
+renderNullConstraint :: NullStorageOptions -> Doc
 renderNullConstraint = renderNullStorageOptions
 
 renderNullStorageOptions :: NullStorageOptions -> Doc
 renderNullStorageOptions NotNull = text "NOT NULL"
-renderNullStorageOptions Null    = text "NULL"
+renderNullStorageOptions Null = text "NULL"
 
 -- Row Guid Col (cannot be sparse)
 data UniqueIdentifierOptions = RowGuidCol (Maybe NullStorageOptions)
@@ -156,62 +166,63 @@ uniqueIdentifiertorageOptions (RowGuidCol x) = fmap StorageOptions x
 
 isRowGuidCol :: UniqueIdentifierOptions -> Bool
 isRowGuidCol (RowGuidCol _) = True
-isRowGuidCol _              = False
+isRowGuidCol _ = False
 
 renderRowGuidConstraint :: Bool -> Doc
-renderRowGuidConstraint True  = text "ROWGUIDCOL"
+renderRowGuidConstraint True = text "ROWGUIDCOL"
 renderRowGuidConstraint False = empty
 
 data NumericStorage = NumericStorage
                       {
                         precision :: Int
-                      , scale :: Maybe Int 
+                      , scale :: Maybe Int
                       }
 
 numericStorage :: Maybe NumericStorage -> SQLNumericOptions
 numericStorage ns = SQLNumericOptions p s
   where
-    (p,s) =  maybe (18,0) (\n -> (precision n,fromMaybe 0 (scale n))) ns
+    (p, s) = maybe (18, 0) (\ n -> (precision n, fromMaybe 0 (scale n))) ns
 
-{- The scale must be less than or equal to the precision -}
-instance Arbitrary NumericStorage where                      
+-- The scale must be less than or equal to the precision
+instance Arbitrary NumericStorage where
   arbitrary = do
-    p <- choose(1,38)
-    s <- elements (Nothing : map Just [1..p])
+    p <- choose (1, 38)
+    s <- elements (Nothing : map Just [1 .. p])
     return $ NumericStorage p s
 
 renderNumericStorage :: NumericStorage -> Doc
 renderNumericStorage ns = lparen <> int (precision ns) <> scale' <> rparen
   where
-    scale' = maybe empty (\x -> comma <+> int x) (scale ns)
+    scale' = maybe empty (\ x -> comma <+> int x) (scale ns)
 
 renderFractionalSecondsPrecision :: FractionalSecondsPrecision -> Doc
-renderFractionalSecondsPrecision (FractionalSecondsPrecision n) = lparen <> int n <> rparen
+renderFractionalSecondsPrecision (FractionalSecondsPrecision n) =
+  lparen <> int n <> rparen
 
 -- https://msdn.microsoft.com/en-us/library/bb677335.aspx
 datetime2StorageSize :: FractionalSecondsPrecision -> Int
 datetime2StorageSize (FractionalSecondsPrecision p)
-  | p < 3            = 6 * 8
+  | p < 3 = 6 * 8
   | p == 3 || p == 4 = 7 * 8
-  | otherwise        = 8 * 8
+  | otherwise = 8 * 8
 
 dateTimeOffsetStorageSize :: FractionalSecondsPrecision -> Int
 dateTimeOffsetStorageSize (FractionalSecondsPrecision n)
-  | n < 3     = 8 * 8
-  | n < 5     = 9 * 8
+  | n < 3 = 8 * 8
+  | n < 5 = 9 * 8
   | otherwise = 10 * 8
 
 timeStorageSize :: FractionalSecondsPrecision -> Int
 timeStorageSize (FractionalSecondsPrecision n)
-  | n < 3     = 3 * 8
-  | n < 5     = 4 * 8
+  | n < 3 = 3 * 8
+  | n < 5 = 4 * 8
   | otherwise = 5 * 8
 
 data PrecisionStorage = PrecisionStorage Int
 
 instance Arbitrary PrecisionStorage where
   arbitrary = do
-    p <- choose(1,53)
+    p <- choose (1, 53)
     return (PrecisionStorage p)
 
 renderPrecisionStorage :: PrecisionStorage -> Doc
@@ -221,126 +232,132 @@ data FractionalSecondsPrecision = FractionalSecondsPrecision Int
 
 instance Arbitrary FractionalSecondsPrecision where
   arbitrary = do
-    p <- choose (0,7)
+    p <- choose (0, 7)
     return (FractionalSecondsPrecision p)
 
 -- https://msdn.microsoft.com/en-us/library/ms187752.aspx
-data Type = BigInt (Maybe StorageOptions) 
-          | Bit (Maybe StorageOptions) 
-          | Numeric (Maybe StorageOptions) (Maybe NumericStorage) 
-          | SmallInt (Maybe StorageOptions) 
-          | Decimal (Maybe StorageOptions) (Maybe NumericStorage) 
-          | SmallMoney (Maybe StorageOptions) 
-          | Int (Maybe StorageOptions) 
-          | TinyInt (Maybe StorageOptions) 
-          | Money (Maybe StorageOptions) 
-          | Float (Maybe StorageOptions) (Maybe PrecisionStorage) 
-          | Real (Maybe StorageOptions) 
-          | Date (Maybe StorageOptions) 
-          | DateTimeOffset (Maybe StorageOptions) (Maybe FractionalSecondsPrecision) 
-          | DateTime2 (Maybe StorageOptions) (Maybe FractionalSecondsPrecision) 
-          | SmallDateTime (Maybe StorageOptions) 
-          | DateTime (Maybe StorageOptions) 
-          | Time (Maybe StorageOptions) (Maybe FractionalSecondsPrecision) 
-          | Char (Maybe FixedRange) (Maybe Collation) (Maybe StorageOptions) 
-          | VarChar Range (Maybe Collation) (Maybe StorageOptions) 
+data Type = BigInt (Maybe StorageOptions)
+          | Bit (Maybe StorageOptions)
+          | Numeric (Maybe StorageOptions) (Maybe NumericStorage)
+          | SmallInt (Maybe StorageOptions)
+          | Decimal (Maybe StorageOptions) (Maybe NumericStorage)
+          | SmallMoney (Maybe StorageOptions)
+          | Int (Maybe StorageOptions)
+          | TinyInt (Maybe StorageOptions)
+          | Money (Maybe StorageOptions)
+          | Float (Maybe StorageOptions) (Maybe PrecisionStorage)
+          | Real (Maybe StorageOptions)
+          | Date (Maybe StorageOptions)
+          | DateTimeOffset
+              (Maybe StorageOptions)
+              (Maybe FractionalSecondsPrecision)
+          | DateTime2 (Maybe StorageOptions) (Maybe FractionalSecondsPrecision)
+          | SmallDateTime (Maybe StorageOptions)
+          | DateTime (Maybe StorageOptions)
+          | Time (Maybe StorageOptions) (Maybe FractionalSecondsPrecision)
+          | Char (Maybe FixedRange) (Maybe Collation) (Maybe StorageOptions)
+          | VarChar Range (Maybe Collation) (Maybe StorageOptions)
           | Text (Maybe Collation) (Maybe NullStorageOptions)
-          | NChar (Maybe NFixedRange) (Maybe Collation) (Maybe StorageOptions) 
-          | NVarChar (Maybe NRange) (Maybe Collation) (Maybe StorageOptions) 
+          | NChar (Maybe NFixedRange) (Maybe Collation) (Maybe StorageOptions)
+          | NVarChar (Maybe NRange) (Maybe Collation) (Maybe StorageOptions)
           | NText (Maybe Collation) (Maybe NullStorageOptions)
-          | Binary (Maybe FixedRange) (Maybe StorageOptions) 
-          | VarBinary (Maybe VarBinaryStorage) (Maybe StorageOptions) 
+          | Binary (Maybe FixedRange) (Maybe StorageOptions)
+          | VarBinary (Maybe VarBinaryStorage) (Maybe StorageOptions)
           | Image (Maybe NullStorageOptions)
           | Timestamp (Maybe NullStorageOptions)
-          | HierarchyId (Maybe StorageOptions) 
-          | UniqueIdentifier (Maybe UniqueIdentifierOptions) 
-          | SqlVariant (Maybe StorageOptions) 
-          | Xml (Maybe StorageOptions) 
-          | Geography (Maybe NullStorageOptions) 
-          | Geometry  (Maybe NullStorageOptions) 
+          | HierarchyId (Maybe StorageOptions)
+          | UniqueIdentifier (Maybe UniqueIdentifierOptions)
+          | SqlVariant (Maybe StorageOptions)
+          | Xml (Maybe StorageOptions)
+          | Geography (Maybe NullStorageOptions)
+          | Geometry (Maybe NullStorageOptions)
 
 instance Arbitrary Type where
   arbitrary = oneof [
       BigInt <$> arbitrary
-    , Bit <$> arbitrary 
-    , Numeric <$> arbitrary <*> arbitrary 
-    , SmallInt <$> arbitrary 
-    , Decimal <$> arbitrary <*> arbitrary 
-    , SmallMoney <$> arbitrary 
-    , Int <$> arbitrary 
-    , TinyInt <$> arbitrary 
-    , Money <$> arbitrary 
-    , Float <$> arbitrary <*> arbitrary 
-    , Real <$> arbitrary 
-    , Date <$> arbitrary 
-    , DateTimeOffset <$> arbitrary <*> arbitrary 
-    , DateTime2 <$> arbitrary <*> arbitrary 
-    , SmallDateTime <$> arbitrary 
-    , DateTime <$> arbitrary 
-    , Time <$> arbitrary <*> arbitrary 
-    , Char <$> arbitrary <*> arbitrary <*> arbitrary 
-    , VarChar <$> arbitrary <*> arbitrary <*> arbitrary 
+    , Bit <$> arbitrary
+    , Numeric <$> arbitrary <*> arbitrary
+    , SmallInt <$> arbitrary
+    , Decimal <$> arbitrary <*> arbitrary
+    , SmallMoney <$> arbitrary
+    , Int <$> arbitrary
+    , TinyInt <$> arbitrary
+    , Money <$> arbitrary
+    , Float <$> arbitrary <*> arbitrary
+    , Real <$> arbitrary
+    , Date <$> arbitrary
+    , DateTimeOffset <$> arbitrary <*> arbitrary
+    , DateTime2 <$> arbitrary <*> arbitrary
+    , SmallDateTime <$> arbitrary
+    , DateTime <$> arbitrary
+    , Time <$> arbitrary <*> arbitrary
+    , Char <$> arbitrary <*> arbitrary <*> arbitrary
+    , VarChar <$> arbitrary <*> arbitrary <*> arbitrary
     , Text <$> arbitrary <*> arbitrary
-    , NChar <$> arbitrary <*> arbitrary <*> arbitrary 
-    , NVarChar <$> arbitrary <*> arbitrary <*> arbitrary 
+    , NChar <$> arbitrary <*> arbitrary <*> arbitrary
+    , NVarChar <$> arbitrary <*> arbitrary <*> arbitrary
     , NText <$> arbitrary <*> arbitrary
-    , Binary <$> arbitrary <*> arbitrary 
-    , VarBinary <$> arbitrary <*> arbitrary 
+    , Binary <$> arbitrary <*> arbitrary
+    , VarBinary <$> arbitrary <*> arbitrary
     , Image <$> arbitrary
     , Timestamp <$> arbitrary
-    , HierarchyId <$> arbitrary 
+    , HierarchyId <$> arbitrary
     , UniqueIdentifier <$> arbitrary
-    , SqlVariant <$> arbitrary 
-    , Xml <$> arbitrary 
-    , Geography <$> arbitrary 
-    , Geometry <$>  arbitrary     
+    , SqlVariant <$> arbitrary
+    , Xml <$> arbitrary
+    , Geography <$> arbitrary
+    , Geometry <$> arbitrary
     ]
 
 isTimestamp :: Type -> Bool
 isTimestamp (Timestamp _) = True
-isTimestamp _             = False
+isTimestamp _ = False
 
 collation :: Type -> Maybe Collation
-collation (Char _ mc _)     = mc
-collation (VarChar _ mc _)  = mc
-collation (Text mc _)         = mc
-collation (NChar _ mc _)    = mc
+collation (Char _ mc _) = mc
+collation (VarChar _ mc _) = mc
+collation (Text mc _) = mc
+collation (NChar _ mc _) = mc
 collation (NVarChar _ mc _) = mc
-collation (NText mc _)        = mc
-collation _                   = Nothing
+collation (NText mc _) = mc
+collation _ = Nothing
 
 numericStorageSize :: NumericStorage -> Int
-numericStorageSize x 
+numericStorageSize x
   | precision x <= 9 = 5 * 8
-  | precision x <= 19 = 9 * 8 
+  | precision x <= 19 = 9 * 8
   | precision x <= 28 = 13 * 8
   | precision x <= 38 = 17 * 8
-  | otherwise   = error $ "Failed to calculate numeric storage size (" ++ show (precision x) ++ ")"
+  | otherwise = error em
+  where
+    em = "Failed to calculate numeric storage size (" ++
+         show (precision x) ++
+         ")"
 
 precisionStorageSize :: PrecisionStorage -> Int
 precisionStorageSize (PrecisionStorage x)
   | x <= 24 = 4 * 8
-  | x<= 53 = 8 * 8
-  | otherwise = error $ "Failed to calculate precision storage size (" ++ show x ++ ")"
+  | x <= 53 = 8 * 8
+  | otherwise = error em
+  where
+    em = "Failed to calculate precision storage size (" ++ show x ++ ")"
 
--- storage size in bits
--- Based on http://dba.stackexchange.com/questions/66471/script-to-estimate-row-sizes-for-any-table
--- and MSDN documentation
+-- Storage size in bits
 storageSize :: Type -> Int
 storageSize BigInt {} = 8 * 8
-storageSize Int {}  = 4 * 8
+storageSize Int {} = 4 * 8
 storageSize SmallInt {} = 2 * 8
 storageSize TinyInt {} = 1 * 8
-storageSize Bit {}    = 1
+storageSize Bit {} = 1
 storageSize SmallMoney {} = 4 * 8
 storageSize Money {} = 8 * 8
-storageSize (Numeric _ ns) = maybe (9 * 8) numericStorageSize ns -- default precision is 18
-storageSize (Decimal _ ns) = maybe (9 * 8) numericStorageSize ns -- default precision is 18
-storageSize (Float _ ps) = maybe (8 * 8) precisionStorageSize ps -- default precision is 53
+storageSize (Numeric _ ns) = maybe (9 * 8) numericStorageSize ns
+storageSize (Decimal _ ns) = maybe (9 * 8) numericStorageSize ns
+storageSize (Float _ ps) = maybe (8 * 8) precisionStorageSize ps
 storageSize Real {} = 4 * 8
 storageSize Date {} = 3 * 8
 storageSize DateTime {} = 8 * 8
-storageSize (DateTime2 _ p) = maybe (8 * 8) datetime2StorageSize p -- default is 8 bytes
+storageSize (DateTime2 _ p) = maybe (8 * 8) datetime2StorageSize p
 storageSize (DateTimeOffset _ p) = maybe (10 * 8) dateTimeOffsetStorageSize p
 storageSize (SmallDateTime _) = 4 * 8
 storageSize (Time _ p) = maybe (5 * 8) timeStorageSize p
@@ -349,7 +366,7 @@ storageSize (NChar fr _ _) = maybe 8 nfixedRangeStorage fr
 storageSize (Binary p _) = maybe (1 * 8) fixedRangeStorage p
 storageSize (UniqueIdentifier _) = 16 * 8
 storageSize (VarBinary r _) = maybe (1 * 8) varBinarySize r
-storageSize (VarChar r _ _) = rangeStorageSize r 
+storageSize (VarChar r _ _) = rangeStorageSize r
 storageSize (NVarChar r _ _) = maybe (1 * 8) nRangeStorageSize r
 storageSize Text {} = 0 -- assumption
 storageSize NText {} = 0 -- assumption
@@ -366,7 +383,7 @@ nullOptions t = maybe Nothing nullStorageFromStorageOptions (storageOptions t)
 
 rowGuidOptions :: Type -> Bool
 rowGuidOptions (UniqueIdentifier a) = maybe False isRowGuidCol a
-rowGuidOptions _                      = False
+rowGuidOptions _ = False
 
 storageOptions :: Type -> Maybe StorageOptions
 storageOptions (BigInt s) = s
@@ -386,14 +403,15 @@ storageOptions (DateTime2 s _) = s
 storageOptions (SmallDateTime s) = s
 storageOptions (DateTime s) = s
 storageOptions (Time s _) = s
-storageOptions (Char _ _ s)  = s
+storageOptions (Char _ _ s) = s
 storageOptions (VarChar _ _ s) = s
 storageOptions (NChar _ _ s) = s
 storageOptions (NVarChar _ _ s) = s
-storageOptions (Binary _ s)  = s 
+storageOptions (Binary _ s) = s
 storageOptions (VarBinary _ s) = s
 storageOptions (HierarchyId s) = s
-storageOptions (UniqueIdentifier s) = maybe Nothing uniqueIdentifiertorageOptions s
+storageOptions (UniqueIdentifier s) =
+  maybe Nothing uniqueIdentifiertorageOptions s
 storageOptions (SqlVariant s) = s
 storageOptions (Xml s) = s
 storageOptions (Timestamp _) = Nothing
@@ -406,29 +424,38 @@ storageOptions (Geometry _) = Nothing
 renderDataType :: Type -> Doc
 renderDataType BigInt {} = text "bigint"
 renderDataType Bit {} = text "bit"
-renderDataType (Numeric _ ns) = text "numeric" <> maybe empty renderNumericStorage ns
+renderDataType (Numeric _ ns) =
+  text "numeric" <> maybe empty renderNumericStorage ns
 renderDataType SmallInt {} = text "smallint"
-renderDataType (Decimal _ ns) = text "decimal" <> maybe empty renderNumericStorage ns
-renderDataType SmallMoney {}= text "smallmoney"
+renderDataType (Decimal _ ns) =
+  text "decimal" <> maybe empty renderNumericStorage ns
+renderDataType SmallMoney {} = text "smallmoney"
 renderDataType Int {} = text "int"
 renderDataType (TinyInt _) = text "tinyint"
 renderDataType (Money _) = text "money"
-renderDataType (Float _ ps ) = text "float" <> maybe empty renderPrecisionStorage ps
+renderDataType (Float _ ps ) =
+  text "float" <> maybe empty renderPrecisionStorage ps
 renderDataType (Real _) = text "real"
 renderDataType (Date _) = text "date"
-renderDataType (DateTimeOffset _ p) = text "datetimeoffset" <> maybe empty renderFractionalSecondsPrecision p
-renderDataType (DateTime2 _ p) = text "datetime2" <> maybe empty renderFractionalSecondsPrecision p
+renderDataType (DateTimeOffset _ p) =
+  text "datetimeoffset" <> maybe empty renderFractionalSecondsPrecision p
+renderDataType (DateTime2 _ p) =
+  text "datetime2" <> maybe empty renderFractionalSecondsPrecision p
 renderDataType SmallDateTime {} = text "smalldatetime"
 renderDataType DateTime {} = text "datetime"
-renderDataType (Time _ p)= text "time" <> maybe empty renderFractionalSecondsPrecision p
-renderDataType (Char fixedRange _ _)  = text "char" <> maybe empty renderFixedRange fixedRange
+renderDataType (Time _ p) =
+  text "time" <> maybe empty renderFractionalSecondsPrecision p
+renderDataType (Char fixedRange _ _) =
+  text "char" <> maybe empty renderFixedRange fixedRange
 renderDataType (VarChar range _ _) = text "varchar" <> renderRange range
 renderDataType (Text _ _) = text "text"
 renderDataType (NChar p _ _) = text "nchar" <> maybe empty renderNFixedRange p
 renderDataType (NVarChar p _ _) = text "nvarchar" <> maybe empty renderNRange p
 renderDataType NText {} = text "ntext"
-renderDataType (Binary fixedRange _)  = text "binary" <> maybe empty renderFixedRange fixedRange
-renderDataType (VarBinary range _) = text "varbinary" <> maybe empty renderVarBinaryStorage range
+renderDataType (Binary fixedRange _) =
+  text "binary" <> maybe empty renderFixedRange fixedRange
+renderDataType (VarBinary range _) =
+  text "varbinary" <> maybe empty renderVarBinaryStorage range
 renderDataType Image {} = text "image"
 renderDataType Timestamp {} = text "timestamp"
 renderDataType HierarchyId {} = text "hierarchyid"
@@ -436,11 +463,11 @@ renderDataType UniqueIdentifier {} = text "uniqueidentifier"
 renderDataType SqlVariant {} = text "sql_variant"
 renderDataType Xml {} = text "xml"
 renderDataType Geography {} = text "geography"
-renderDataType Geometry {} =  text "geometry"
+renderDataType Geometry {} = text "geometry"
 
 {-
-  All data types are valid for use as partitioning columns, except text, 
-  ntext, image, xml, timestamp, varchar(max), nvarchar(max), varbinary(max), 
+  All data types are valid for use as partitioning columns, except text,
+  ntext, image, xml, timestamp, varchar(max), nvarchar(max), varbinary(max),
   alias data types, or CLR user-defined data types.
 -}
 isSupportedTypeForPartitionFunction :: Type -> Bool
@@ -468,9 +495,9 @@ isTypeForIndex Geography {} = False
 isTypeForIndex Geometry {} = False
 isTypeForIndex Text {} = False
 isTypeForIndex NText {} = False
-isTypeForIndex t = maybe True (not . isNull) (nullOptions t) &&  -- can not be null
-                   maybe True (not . isSparse) (storageOptions t) && -- can not be sparse
-                   storageSize t < 900 -- index key size cannot exceed 900 bytes 
+isTypeForIndex t = maybe True (not . isNull) (nullOptions t) &&
+                   maybe True (not . isSparse) (storageOptions t) &&
+                   storageSize t < 900
 
 value :: Type -> Maybe (Gen SQLValue)
 value BigInt {} = Just arbitrarySQLBigInt
@@ -478,7 +505,7 @@ value Bit {} = Just arbitrarySQLBit
 value (Numeric _ n) = Just $ arbitrarySQLNumeric (numericStorage n)
 value (Decimal _ n) = Just $ arbitrarySQLNumeric (numericStorage n)
 value SmallInt {} = Just arbitrarySQLSmallInt
-value SmallMoney {}= Just arbitrarySQLSmallMoney
+value SmallMoney {} = Just arbitrarySQLSmallMoney
 value Int {} = Just arbitrarySQLInt
 value TinyInt {} = Just arbitrarySQLTinyInt
 value Money {} = Just arbitrarySQLMoney
@@ -490,13 +517,15 @@ value DateTime2 {} = Just arbitrarySQLDateTime
 value SmallDateTime {} = Just arbitrarySQLSmallDateTime
 value DateTime {} = Just arbitrarySQLDateTime
 value Time {} = Just arbitrarySQLTime
-value (Char n _ _) = Just $ arbitrarySQLString (maybe 1 (\(FixedRange r) -> r) n)
+value (Char n _ _) =
+  Just $ arbitrarySQLString (maybe 1 (\ (FixedRange r) -> r) n)
 value (VarChar n _ _) = Just $ arbitrarySQLString (rangeSize n)
 value Text {} = Nothing
-value (NChar n _ _) = Just $ arbitrarySQLString (maybe 1 (\(NFixedRange r) -> r) n)
+value (NChar n _ _) =
+  Just $ arbitrarySQLString (maybe 1 (\ (NFixedRange r) -> r) n)
 value (NVarChar n _ _) = Just $ arbitrarySQLString (maybe 1 nRangeSize n)
 value NText {} = Nothing
-value Binary {}  = Just arbitrarySQLBinary
+value Binary {} = Just arbitrarySQLBinary
 value VarBinary {} = Just arbitrarySQLBinary
 value Image {} = Nothing
 value Timestamp {} = Nothing
@@ -506,4 +535,3 @@ value SqlVariant {} = Just arbitrarySQLVariant
 value Xml {} = Just arbitrarySQLXml
 value Geography {} = Just arbitrarySQLGeography
 value Geometry {} = Just arbitrarySQLGeometry
-

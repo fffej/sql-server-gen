@@ -1,11 +1,11 @@
 module Database.SqlServer.Create.Value
        (
          SQLValue
-       , SQLNumericOptions(..)
+       , SQLNumericOptions (..)
        , renderValue
        , arbitrarySQLBigInt -- I realize this is smelly
        , arbitrarySQLInt -- I can't think of a better way
-       , arbitrarySQLSmallInt -- `suchThat` isOfAppropriateType could take forever?
+       , arbitrarySQLSmallInt
        , arbitrarySQLTinyInt
        , arbitrarySQLBinary
        , arbitrarySQLBit
@@ -51,7 +51,7 @@ data SQLValue = SQLBigInt Int64
               | SQLTinyInt Word8
               | SQLBinary Integer
               | SQLBit (Maybe Bool)
-              | SQLSmallMoney Int32                
+              | SQLSmallMoney Int32
               | SQLMoney Int64
               | SQLDate Day
               | SQLDateTime UTCTime
@@ -60,7 +60,7 @@ data SQLValue = SQLBigInt Int64
               | SQLGeography String
               | SQLGeometry String
               | SQLString String
-              | SQLFloat Float 
+              | SQLFloat Float
               | SQLHierarchyID String
               | SQLVariant Variant
               | SQLXml String
@@ -102,33 +102,33 @@ arbitrarySQLMoney = liftM SQLMoney arbitrary
 
 arbitrarySQLDate :: Gen SQLValue
 arbitrarySQLDate = do
-    y <- choose (0,9999)
-    m <- choose (1,12)
-    d <- choose (1,31)
+    y <- choose (0, 9999)
+    m <- choose (1, 12)
+    d <- choose (1, 31)
     return $ SQLDate (fromGregorian y m d) -- clipping handled by time package
 
 dateBetween :: Integer -> Integer -> Gen Day
 dateBetween startYear endYear = do
-  y <- choose (startYear,endYear)
-  m <- choose (1,12)
-  d <- choose (1,31)
+  y <- choose (startYear, endYear)
+  m <- choose (1, 12)
+  d <- choose (1, 31)
   return (fromGregorian y m d)
 
 arbitrarySQLDateTime :: Gen SQLValue
 arbitrarySQLDateTime = do
   day <- dateBetween 1753 9999
-  datetime <- choose (0,86400)
+  datetime <- choose (0, 86400)
   return (SQLDateTime (UTCTime day (secondsToDiffTime datetime)))
 
 arbitrarySQLSmallDateTime :: Gen SQLValue
 arbitrarySQLSmallDateTime = do
   day <- dateBetween 1900 2078
-  datetime <- choose (0,86400)
+  datetime <- choose (0, 86400)
   return (SQLSmallDateTime (UTCTime day (secondsToDiffTime datetime)))
 
 arbitrarySQLTime :: Gen SQLValue
 arbitrarySQLTime = do
-  time <- choose (0,86400)
+  time <- choose (0, 86400)
   return (SQLTime (secondsToDiffTime time))
 
 arbitrarySQLGeography :: Gen SQLValue
@@ -137,7 +137,11 @@ arbitrarySQLGeography = do
   b <- choose (- 90, 90) :: Gen Float
   c <- choose (- 90, 90) :: Gen Float
   d <- choose (- 90, 90) :: Gen Float
-  return $ SQLGeography ("LINESTRING(" ++ show a ++ " " ++ show b ++ "," ++ show c ++ " " ++ show d ++ ")")
+  return $ SQLGeography ("LINESTRING(" ++
+                         show a ++ " " ++
+                         show b ++ "," ++
+                         show c ++ " " ++
+                         show d ++ ")")
 
 -- Deliberate duplication so I can customize this
 arbitrarySQLGeometry :: Gen SQLValue
@@ -146,7 +150,11 @@ arbitrarySQLGeometry = do
   b <- arbitrary :: Gen Float
   c <- arbitrary :: Gen Float
   d <- arbitrary :: Gen Float
-  return $ SQLGeometry ("LINESTRING(" ++ show a ++ " " ++ show b ++ "," ++ show c ++ " " ++ show d ++ ")")
+  return $ SQLGeometry ("LINESTRING(" ++
+                        show a ++ " " ++
+                        show b ++ "," ++
+                        show c ++ " " ++
+                        show d ++ ")")
 
 arbitrarySQLString :: Int -> Gen SQLValue
 arbitrarySQLString n = do
@@ -156,9 +164,9 @@ arbitrarySQLString n = do
 arbitrarySQLNumeric :: SQLNumericOptions -> Gen SQLValue
 arbitrarySQLNumeric no = do
   let s = scale no
-  xs <- replicateM s (choose (0,9))
+  xs <- replicateM s (choose (0, 9))
   b <- arbitrary
-  let num = foldl (\x y -> y + x * 10) 0 xs
+  let num = foldl (\ x y -> y + x * 10) 0 xs
   return (SQLNumeric (if b then num else (- num)) no)
 
 arbitrarySQLFloat :: Gen SQLValue
@@ -166,10 +174,17 @@ arbitrarySQLFloat = liftM SQLFloat arbitrary
 
 -- Just pick one of the examples from MSDN
 arbitrarySQLHierarchyID :: Gen SQLValue
-arbitrarySQLHierarchyID = liftM SQLHierarchyID $ elements ["/","/1/","/0.3.-7/","/1/3/","/0.1/0.2/"]
+arbitrarySQLHierarchyID = liftM SQLHierarchyID $
+                          elements [
+                              "/"
+                            , "/1/"
+                            , "/0.3.-7/"
+                            , "/1/3/"
+                            , "/0.1/0.2/"
+                            ]
 
 arbitrarySQLUniqueIdentifier :: Gen SQLValue
-arbitrarySQLUniqueIdentifier  = liftM SQLUniqueIdentifier arbitrary
+arbitrarySQLUniqueIdentifier = liftM SQLUniqueIdentifier arbitrary
 
 arbitrarySQLVariant :: Gen SQLValue
 arbitrarySQLVariant = do
@@ -190,7 +205,7 @@ renderNumeric no n = double num
 divideBy10000 :: Integer -> String
 divideBy10000 n
   | length s < 5 = s
-  | otherwise    = take (len - 4) s ++ "." ++ drop (len - 4) s
+  | otherwise = take (len - 4) s ++ "." ++ drop (len - 4) s
   where
     s = show n
     len = length s
@@ -202,15 +217,15 @@ renderValue (SQLGeography x) = quotes $ text x
 renderValue (SQLGeometry x) = quotes $ text x
 renderValue (SQLDateTime s) = quotes $ text (formatISO8601Millis s)
 renderValue (SQLSmallDateTime s) = quotes $ text (formatISO8601Millis s)
-renderValue (SQLTime t) =  quotes $ text (show $ timeToTimeOfDay t)
+renderValue (SQLTime t) = quotes $ text (show $ timeToTimeOfDay t)
 renderValue (SQLFloat f) = float f
 renderValue (SQLHierarchyID x) = quotes $ text x
-renderValue (SQLUniqueIdentifier s) = (quotes . text  . show) s
+renderValue (SQLUniqueIdentifier s) = (quotes . text . show) s
 renderValue (SQLVariant s) = variantToDoc s
 renderValue (SQLXml s) = quotes $ text s
 renderValue (SQLSmallMoney s) = text (divideBy10000 $ fromIntegral s)
 renderValue (SQLMoney s) = text (divideBy10000 $ fromIntegral s)
-renderValue (SQLBit b) = maybe (text "NULL") (\x -> int (if x then 1 else  0)) b
+renderValue (SQLBit b) = maybe (text "NULL") (\ x -> int (if x then 1 else 0)) b
 renderValue (SQLBinary s) = integer s
 renderValue (SQLTinyInt s) = (text . show) s
 renderValue (SQLSmallInt s) = (text . show) s

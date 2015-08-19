@@ -23,23 +23,28 @@ data Certificate = Certificate
   }
 
 renderEncryptionByPassword :: RegularIdentifier -> Doc
-renderEncryptionByPassword s = text "ENCRYPTION BY PASSWORD = '" <> renderRegularIdentifier s <> text "'"
+renderEncryptionByPassword s = text "ENCRYPTION BY PASSWORD = '"
+                               <> renderRegularIdentifier s <> text "'"
 
 renderSubject :: RegularIdentifier -> Doc
-renderSubject s = text "WITH SUBJECT = '" <> renderRegularIdentifier s <> text "'"
+renderSubject s = text "WITH SUBJECT = '" <>
+                  renderRegularIdentifier s <> text "'"
 
 renderExpiryDate :: Day -> Doc
-renderExpiryDate d = text "EXPIRY_DATE = '" <> text (filter (/= '-') (show d))  <> text "'"
+renderExpiryDate d = text "EXPIRY_DATE = '" <>
+                     text (filter (/= '-') (show d)) <> text "'"
 
 renderStartDate :: Day -> Doc
-renderStartDate d = text "START_DATE = '" <> text (filter (/= '-') (show d)) <> text "'"
+renderStartDate d = text "START_DATE = '" <>
+                    text (filter (/= '-') (show d)) <> text "'"
 
 instance Arbitrary Certificate where
   arbitrary = do
     certName <- arbitrary
     afbd <- arbitrary
-    eDay <- liftM3 fromGregorian (elements [2016..3000]) (choose(1,12)) (choose(1,31))
-    x <- choose(- 1000,- 1)
+    eDay <- liftM3 fromGregorian
+            (elements [2016 .. 3000]) (choose (1, 12)) (choose (1, 31))
+    x <- choose (- 1000, - 1)
     ex <- elements [Just eDay, Nothing]
     str <- elements [Just (addDays x eDay), Nothing]
     ep <- arbitrary
@@ -61,4 +66,3 @@ instance Entity Certificate where
                   [ renderSubject (subject c)
                   , maybe empty renderExpiryDate (expiryDate c)
                   , maybe empty renderStartDate (startDate c)])
-  

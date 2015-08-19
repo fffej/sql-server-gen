@@ -34,16 +34,20 @@ instance Arbitrary FunctionOption where
   arbitrary = FunctionOption <$> arbitrary <*> arbitrary <*> arbitrary
 
 areThereAnyOptionsSet :: FunctionOption -> Bool
-areThereAnyOptionsSet f = encryption f || schemaBinding f || isJust (nullOption f)
+areThereAnyOptionsSet f = encryption f ||
+                          schemaBinding f ||
+                          isJust (nullOption f)
 
 renderFunctionOptions :: FunctionOption -> Doc
 renderFunctionOptions f
   | not (areThereAnyOptionsSet f) = empty
   | otherwise = text "WITH" <+>
                 vcat (punctuate comma
-                  (filter (/= empty) [ if encryption f then text "ENCRYPTION" else empty
-                                     , if schemaBinding f then text "SCHEMABINDING" else empty
-                                     , maybe empty renderNullOption (nullOption f) ]))
+                  (filter (/= empty) [ enc, sch, nul ]))
+  where
+    enc = if encryption f then text "ENCRYPTION" else empty
+    sch = if schemaBinding f then text "SCHEMABINDING" else empty
+    nul = maybe empty renderNullOption (nullOption f)
 
 newtype InputType = InputType Type
 
@@ -57,14 +61,15 @@ renderInputDataType (InputType t) = renderDataType t
 data Parameter = Parameter
   {
     parameterName :: ParameterIdentifier
-  , dataType      :: InputType
+  , dataType :: InputType
   }
 
 instance Arbitrary Parameter where
   arbitrary = Parameter <$> arbitrary <*> arbitrary
 
 renderParameter :: Parameter -> Doc
-renderParameter p = renderParameterIdentifier (parameterName p) <+> renderInputDataType (dataType p) 
+renderParameter p = renderParameterIdentifier (parameterName p) <+>
+                    renderInputDataType (dataType p)
 
 data ReturnType = ReturnType Type SQLValue
 
@@ -94,19 +99,24 @@ data Function = ScalarFunctionC ScalarFunction
 instance Arbitrary Function where
   arbitrary = oneof
     [
-      ScalarFunctionC <$> (ScalarFunction <$> arbitrary <*> arbitrary <*> arbitrary <*> arbitrary)
+      ScalarFunctionC <$>
+      (ScalarFunction <$> arbitrary <*> arbitrary <*> arbitrary <*> arbitrary)
     ]
 
 instance Entity Function where
   name (ScalarFunctionC f) = scalarFunctionName f
   render fn@(ScalarFunctionC f) = text "CREATE FUNCTION" <+> renderName fn <+>
-                              parens (hcat (punctuate comma (map renderParameter (parameters f)))) $+$
-                              text "RETURNS" <+> renderReturnType (returnType f) $+$
+                              parens (hcat (punctuate comma params)) $+$
+                              text "RETURNS" <+>
+                              renderReturnType (returnType f) $+$
                               renderFunctionOptions (functionOption f) $+$
                               text "AS" $+$
                               text "BEGIN" $+$
-                              text "RETURN" <+> renderReturnValue (returnType f) $+$
+                              text "RETURN" <+>
+                              renderReturnValue (returnType f) $+$
                               text "END" $+$ text "GO\n"
+    where
+      params = map renderParameter (parameters f)
 
 instance Show Function where
   show f = show (render f)

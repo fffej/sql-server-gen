@@ -27,7 +27,7 @@ instance Arbitrary Secret where
     return (Secret s)
 
 renderSecret :: Secret -> Doc
-renderSecret (Secret s)= comma <> text "SECRET =" <+> quotes (text s)
+renderSecret (Secret s) = comma <> text "SECRET =" <+> quotes (text s)
 
 data Credential = Credential
    {

@@ -26,10 +26,10 @@ instance Arbitrary ZeroParamProc where
 
 data Activation = Activation
     {
-      maxQueueReaders  ::  Word16
+      maxQueueReaders :: Word16
     , executeAs :: ExecuteAs
     , procedure :: ZeroParamProc
-    } 
+    }
 
 data Queue = Queue
     {
@@ -41,28 +41,33 @@ data Queue = Queue
     }
 
 instance Arbitrary ExecuteAs where
-  arbitrary = elements [Self,Owner]
+  arbitrary = elements [Self, Owner]
 
 instance Arbitrary Queue where
-  arbitrary = Queue <$> arbitrary <*> arbitrary <*> arbitrary <*> arbitrary <*> arbitrary
+  arbitrary = Queue <$>
+              arbitrary <*>
+              arbitrary <*>
+              arbitrary <*>
+              arbitrary <*>
+              arbitrary
 
 instance Arbitrary Activation where
   arbitrary = do
-    r <- choose (0,32767)
+    r <- choose (0, 32767)
     x <- arbitrary
     y <- arbitrary
     return $ Activation r x y
 
 anySpecified :: Queue -> Bool
 anySpecified q = isJust (queueStatus q) || isJust (retention q) ||
-                 isJust (activation q)  || isJust (poisonMessageHandling q)
+                 isJust (activation q) || isJust (poisonMessageHandling q)
 
 renderStatus :: Bool -> Doc
-renderStatus True  = text "STATUS = ON"
+renderStatus True = text "STATUS = ON"
 renderStatus False = text "STATUS = OFF"
 
 renderRetention :: Bool -> Doc
-renderRetention True  = text "RETENTION = ON"
+renderRetention True = text "RETENTION = ON"
 renderRetention False = text "RETENTION = OFF"
 
 renderPoisonMessageHandling :: Bool -> Doc
@@ -80,12 +85,13 @@ renderProc :: Activation -> Doc
 renderProc a = render (unwrap $ procedure a)
 
 renderProcedureName :: Procedure -> Doc
-renderProcedureName a = text "PROCEDURE_NAME =" <+> renderRegularIdentifier (procedureName a)
+renderProcedureName a = text "PROCEDURE_NAME =" <+>
+                        renderRegularIdentifier (procedureName a)
 
 renderActivation :: Activation -> Doc
 renderActivation a = text "ACTIVATION(" <+>
                      hcat (punctuate comma $ filter (/= empty)
-                           [ renderMaxQueueReaders (maxQueueReaders a) 
+                           [ renderMaxQueueReaders (maxQueueReaders a)
                            , renderExecuteAs (executeAs a)
                            , renderProcedureName (unwrap $ procedure a)
                            ]) <+> text ")"
@@ -93,14 +99,16 @@ renderActivation a = text "ACTIVATION(" <+>
 instance Entity Queue where
   name = queueName
   render q = maybe empty renderProc (activation q) $+$
-            text "CREATE QUEUE" <+> renderRegularIdentifier (queueName q) <+> options $+$ text "GO"
+            text "CREATE QUEUE" <+> renderRegularIdentifier (queueName q) <+>
+            options $+$ text "GO"
     where
       options
         | not $ anySpecified q = empty
-        | otherwise       = text "WITH" <+>
-                            hcat (punctuate comma $ filter (/= empty)
-                                  [ maybe empty renderStatus (queueStatus q) 
-                                  , maybe empty renderRetention (retention q)
-                                  , maybe empty renderActivation (activation q)
-                                  , maybe empty renderPoisonMessageHandling (poisonMessageHandling q)])
-  
+        | otherwise =
+          text "WITH" <+>
+          hcat (punctuate comma $ filter (/= empty)
+                [ maybe empty renderStatus (queueStatus q)
+                , maybe empty renderRetention (retention q)
+                , maybe empty renderActivation (activation q)
+                , maybe empty renderPoisonMessageHandling
+                  (poisonMessageHandling q)])
