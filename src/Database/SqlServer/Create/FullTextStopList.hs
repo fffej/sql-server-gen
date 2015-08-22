@@ -31,7 +31,7 @@ instance Entity FullTextStopList where
                                      systop q <>
                                      text "GO\n") (sourceStopList f)
     where
-      systop q =
+      systop =
         maybe
         (text "SYSTEM STOPLIST;\n")
-        (\ x -> renderRegularIdentifier (stoplistName x) <> text ";\n") q
+        (\ x -> renderRegularIdentifier (stoplistName x) <> text ";\n")
