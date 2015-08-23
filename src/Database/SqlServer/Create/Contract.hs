@@ -52,7 +52,7 @@ renderAuthorization n = text "AUTHORIZATION" <+> renderName n
 
 renderPrerequisites :: Contract -> Doc
 renderPrerequisites c = maybe empty render (authorization c) $+$
-                        map (render . messageType) (messageTypes c)) $+$
+                        map (render . messageType) (messageTypes c) $+$
                         text "GO\n"
 
 -- The service must have at least one message SENT BY INITIATOR or ANY.
