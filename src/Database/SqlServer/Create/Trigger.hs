@@ -37,9 +37,8 @@ instance Arbitrary Options where
               (nub <$> listOf1 arbitrary)
 
 renderOptions :: Options -> Doc
-renderOptions (Options m s) 
-  | otherwise = modifier m <+>
-                vcat (punctuate comma (map display s))
+renderOptions (Options m s) =
+  modifier m <+> vcat (punctuate comma (map display s))
   where
     display Insert = text "INSERT"
     display Update = text "UPDATE"
@@ -95,9 +94,7 @@ validViewOrTable (Left _) = True
 validViewOrTable (Right v) = not (withCheckOption v)
 
 validTrigger :: Trigger -> Bool
-validTrigger t = if isRight (on t) -- A view
-                 then isInsteadOf (options t)
-                 else True
+validTrigger t = not (isRight (on t)) || isInsteadOf (options t)
 
 renderDmlTriggerOption :: DmlTriggerOption -> Doc
 renderDmlTriggerOption Encryption = text "WITH ENCRYPTION"
