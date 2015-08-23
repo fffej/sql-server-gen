@@ -1,6 +1,7 @@
 module Database.SqlServer.Create.View
        (
          View
+       , withCheckOption
        ) where
 
 import Database.SqlServer.Create.Identifier
