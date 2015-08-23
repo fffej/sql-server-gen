@@ -9,9 +9,9 @@ import Database.SqlServer.Create.Identifier (RegularIdentifier)
 import Database.SqlServer.Create.Entity
 import Database.SqlServer.Create.Table
 import Database.SqlServer.Create.View
+import Data.List (nub)
 import Text.PrettyPrint hiding (render)
 import Test.QuickCheck
-import qualified Data.Set as S
 import Data.Either (isRight)
 
 data Option = Insert
@@ -29,18 +29,17 @@ instance Arbitrary OptionModifier where
 instance Arbitrary Option where
   arbitrary = elements [Insert, Update, Delete]
 
-data Options = Options OptionModifier (S.Set Option)
+data Options = Options OptionModifier [Option]
 
 instance Arbitrary Options where
   arbitrary = Options <$>
               arbitrary <*>
-              (S.fromList <$> sublistOf [Insert, Update, Delete])
+              (nub <$> listOf1 arbitrary)
 
 renderOptions :: Options -> Doc
 renderOptions (Options m s) 
-  | S.null s = empty
   | otherwise = modifier m <+>
-                vcat (punctuate comma (map display $ S.toList s))
+                vcat (punctuate comma (map display s))
   where
     display Insert = text "INSERT"
     display Update = text "UPDATE"
