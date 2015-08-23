@@ -17,6 +17,7 @@ import Database.SqlServer.Create.Contract (Contract)
 import Database.SqlServer.Create.Login (Login)
 import Database.SqlServer.Create.Certificate (Certificate)
 import Database.SqlServer.Create.Trigger (Trigger)
+import Database.SqlServer.Create.Database (Database)
 import Database.SqlServer.Create.Entity
 
 import Test.QuickCheck
@@ -30,7 +31,7 @@ _redundantImport :: (
   RegularIdentifier, Login, Certificate, Contract, PartitionFunction,
   MessageType, BrokerPriority, Credential, Function, FullTextStopList,
   FullTextCatalog, User, Role, Sequence, Table, View, Procedure,
-  Trigger
+  Trigger, Database
   )
 _redundantImport = undefined
 
