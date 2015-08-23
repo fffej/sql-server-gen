@@ -100,7 +100,7 @@ instance Entity Queue where
   name = queueName
   render q = maybe empty renderProc (activation q) $+$
             text "CREATE QUEUE" <+> renderRegularIdentifier (queueName q) <+>
-            options $+$ text "GO"
+            options $+$ text "GO\n"
     where
       options
         | not $ anySpecified q = empty

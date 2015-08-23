@@ -50,4 +50,4 @@ instance Entity Procedure where
              hcat (punctuate comma (map renderParameter (parameters p))) <+>
              text "AS" $+$
              text statementBody $+$
-             text "GO"
+             text "GO\n"

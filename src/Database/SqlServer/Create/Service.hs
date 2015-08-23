@@ -35,8 +35,7 @@ renderContracts xs = parens (vcat $ punctuate comma (map renderName xs)) $+$
 renderPreRequisites :: Service -> Doc
 renderPreRequisites s =
   render (queue s) $+$
-  vcat (punctuate (text "GO") (map render (contracts s))) $+$
-  text "GO\n"
+  vcat (map render (contracts s))
 
 instance Entity Service where
   name = serviceName

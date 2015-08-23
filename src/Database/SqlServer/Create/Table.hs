@@ -228,7 +228,7 @@ instance Entity Table where
   name = tableName
   render t = text "CREATE TABLE" <+> renderName t $$
             parens (vcat $ punctuate comma (col ++ con)) $+$
-            text "GO"
+            text "GO\n"
     where
       col = renderColumns (columns t)
       con = maybe [] (\ x -> [renderTableConstraint x]) (tableConstraint t)

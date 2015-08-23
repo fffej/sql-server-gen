@@ -29,8 +29,8 @@ instance Arbitrary MessageType where
 
 -- Must be able to eliminate the duplication here
 renderPreRequisites :: Either User Role -> Doc
-renderPreRequisites (Left x) = render x $+$ text "GO"
-renderPreRequisites (Right x) = render x $+$ text "GO"
+renderPreRequisites (Left x) = render x
+renderPreRequisites (Right x) = render x
 
 renderAuthorization :: Either User Role -> Doc
 renderAuthorization (Left x) = text "AUTHORIZATION" <+> renderName x

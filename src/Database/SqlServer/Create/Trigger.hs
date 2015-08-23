@@ -88,7 +88,7 @@ instance Entity Trigger where
     maybe empty renderOptions (options t) $+$
     (if notForReplication t then text "NOT FOR REPLICATION" else empty) $+$
     text "AS" <+> text "SELECT 1;" $+$
-    text "GO"
+    text "GO\n"
              
 instance Show Trigger where
   show = show . render
