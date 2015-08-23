@@ -60,7 +60,6 @@ instance Entity BrokerPriority where
   name = priorityName
   render b = renderPrerequisites (contractName b) $+$
             renderPrerequisites (localServiceName b) $+$
-            text "GO" $+$
             text "CREATE BROKER PRIORITY" <+> renderName b $+$
             text "FOR CONVERSATION" $+$
             text "SET" <+> parens (renderOptions b) <> text ";" $+$

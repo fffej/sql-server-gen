@@ -44,4 +44,4 @@ instance Entity Credential where
   render s = text "CREATE CREDENTIAL" <+> renderName s <+>
             text "WITH IDENTITY =" <+> quotes (renderIdentity (identity s)) <+>
             maybe empty renderSecret (secret s) $+$
-            text "GO"
+            text "GO\n"

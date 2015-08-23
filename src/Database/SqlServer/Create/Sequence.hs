@@ -61,7 +61,7 @@ instance Entity Sequence where
              dataType $+$ startWith' $+$ incrementBy' $+$
              minValue' $+$ maxValue' $+$
              cycle' $+$ cache' $+$
-             text "GO"
+             text "GO\n"
     where
       dataType = maybe empty renderNumericType (sequenceType s)
       startWith' = maybe empty (\ x -> text "START WITH" <+> integer x)

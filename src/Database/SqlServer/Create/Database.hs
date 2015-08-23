@@ -80,8 +80,7 @@ renderDatabase dd = text "USE master" $+$
                     renderNamedEntities (credentials dd) $+$
                     renderNamedEntities (messages dd) $+$
                     renderNamedEntities (brokerPriorities dd) $+$
-                    renderNamedEntities (partitionFunctions dd) $+$
-                    text "GO"
+                    renderNamedEntities (partitionFunctions dd)
   where
     dbName = renderName dd
 

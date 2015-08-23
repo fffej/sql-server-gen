@@ -65,4 +65,5 @@ instance Entity Certificate where
             hcat (punctuate comma $ filter (/= empty)
                   [ renderSubject (subject c)
                   , maybe empty renderExpiryDate (expiryDate c)
-                  , maybe empty renderStartDate (startDate c)])
+                  , maybe empty renderStartDate (startDate c)]) $+$
+            text "GO\n"
