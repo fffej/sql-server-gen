@@ -69,12 +69,12 @@ data DmlTriggerOption = Encryption
 instance Arbitrary DmlTriggerOption where
   arbitrary = oneof [return Encryption, TableExecuteAs <$> arbitrary]
 
--- Currently only considering table/view triggers
--- Only "INSTEAD OF" triggers are valid on views
--- Views can not have the CHECK_OPTION
+{- Currently only considering table/view triggers
+   Only "INSTEAD OF" triggers are valid on views
+   Views can not have the CHECK_OPTION -}
 data Trigger = Trigger
   {
-    triggerName :: RegularIdentifier 
+    triggerName :: RegularIdentifier
   , on :: Either Table View
   , dmlTriggerOption :: Maybe DmlTriggerOption
   , options :: Options
@@ -98,7 +98,7 @@ validTrigger t = not (isRight (on t)) || isInsteadOf (options t)
 
 renderDmlTriggerOption :: DmlTriggerOption -> Doc
 renderDmlTriggerOption Encryption = text "WITH ENCRYPTION"
-renderDmlTriggerOption (TableExecuteAs x) = 
+renderDmlTriggerOption (TableExecuteAs x) =
   text "WITH EXECUTE AS" <+> renderExecuteAs x
 
 instance Entity Trigger where
@@ -112,6 +112,6 @@ instance Entity Trigger where
     (if notForReplication t then text "NOT FOR REPLICATION" else empty) $+$
     text "AS" <+> text "SELECT 1;" $+$
     text "GO\n"
-             
+
 instance Show Trigger where
   show = show . render
