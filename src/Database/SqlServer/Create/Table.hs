@@ -9,6 +9,7 @@ module Database.SqlServer.Create.Table
        , unpack
        , renderColumn
        , columnConstraintsSatisfied
+       , dataType
        ) where
 
 import Database.SqlServer.Create.Identifier (
