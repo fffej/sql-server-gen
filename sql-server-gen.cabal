@@ -76,6 +76,7 @@ library
                        Database.SqlServer.Create.Entity,
                        Database.SqlServer.Create.Trigger,
                        Database.SqlServer.Create.Value,
+                       Database.SqlServer.Create.SecurityPolicy,
                        Database.SqlServer.Alter.Alter,
                        Database.SqlServer.Alter.Table
 

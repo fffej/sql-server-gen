@@ -9,12 +9,14 @@ module Database.SqlServer.Create.DataType
        , storageSize
        , renderRowGuidConstraint
        , isRowGuidCol
+       , isSqlVariant
        , nullOptions
        , renderNullConstraint
        , isTimestamp
        , isSupportedTypeForPartitionFunction
        , value
        , isTypeForIndex
+       , isImage
        ) where
 
 import Database.SqlServer.Create.Value hiding (precision, scale)
@@ -312,6 +314,14 @@ instance Arbitrary Type where
 isTimestamp :: Type -> Bool
 isTimestamp (Timestamp _) = True
 isTimestamp _ = False
+
+isImage :: Type -> Bool
+isImage Image {} = True
+isImage _ = False
+
+isSqlVariant :: Type -> Bool
+isSqlVariant SqlVariant {} = True
+isSqlVariant _ = False
 
 collation :: Type -> Maybe Collation
 collation (Char _ mc _) = mc
