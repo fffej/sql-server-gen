@@ -10,7 +10,7 @@ import Database.SqlServer.Create.DataType
 import Database.SqlServer.Create.Entity
 
 import Test.QuickCheck
-import Text.PrettyPrint
+import Text.PrettyPrint hiding (render)
 
 data Parameter = Parameter
   {
@@ -51,3 +51,6 @@ instance Entity Procedure where
              text "AS" $+$
              text statementBody $+$
              text "GO\n"
+
+instance Show Procedure where
+  show = show . render
