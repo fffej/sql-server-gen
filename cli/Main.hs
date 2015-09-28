@@ -5,11 +5,13 @@ import System.Console.CmdArgs
 
 import qualified Database.SqlServer.Generator as D
 import Database.SqlServer.Create.Database
+import Data.List.Split
 
 data Arguments = Arguments
     {
       seed :: Int
     , size :: Int
+    , excludeTypes :: String
     } deriving (Show,Data,Typeable)
 
 msg :: [String]
@@ -17,16 +19,23 @@ msg =  ["More details on the github repo at " ++
         " https://github.com/fffej/sql-server-gen"]
 
 defaultArgs :: Arguments
-defaultArgs = Arguments 
+defaultArgs = Arguments
     {
       seed = def &= help "Seed for random number generator" &= name "s"
     , size = 100 &= help "Size of database (optional)" &= opt (500 :: Int) &= name "n"
+    , excludeTypes = "*" &= help "List of object types to exclude comma seperated" &= name "e"
     } &= summary "SQL Server Schema Generator"
       &= help "Generate arbitrary SQL Server databases"
       &= details msg
 
 convert :: Arguments -> D.GenerateOptions
 convert a = D.GenerateOptions { D.seed = seed a, D.size = size a }
+
+parseRenderOptions :: String -> RenderOptions
+parseRenderOptions xs = foldl setFlag defaultRenderOptions (splitOn "," xs)
+
+setFlag :: RenderOptions -> String -> RenderOptions
+setFlag = undefined
 
 header :: Arguments -> String
 header a = unlines 

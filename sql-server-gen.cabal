@@ -126,6 +126,5 @@ executable cli
   build-depends:        base >=4.8 && <4.9,
                         sql-server-gen,
                         transformers >= 0.4.2.0,
-                        cmdargs >= 0.10.13
-
-                        
+                        cmdargs >= 0.10.13,
+                        split >= 0.2.2
