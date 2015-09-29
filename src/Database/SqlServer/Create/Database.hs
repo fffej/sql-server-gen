@@ -35,10 +35,22 @@ data RenderOptions = RenderOptions
   {
     showTables :: Bool
   , showViews :: Bool
+  , showSequences :: Bool
+  , showProcedures :: Bool
+  , showFunctions :: Bool
+  , showUsers :: Bool
+  , showRoles :: Bool
+  , showFullTextCatalog :: Bool
+  , showFullTextStopList :: Bool
+  , showCredential :: Bool
+  , showMessageType :: Bool
+  , showBrokerPriority :: Bool
+  , showPartitionFunction :: Bool
   } deriving (Show)
 
 defaultRenderOptions :: RenderOptions
-defaultRenderOptions = RenderOptions True True
+defaultRenderOptions = RenderOptions
+  True True True True True True True True True True True True True
 
 data Database = Database
   {

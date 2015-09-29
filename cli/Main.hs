@@ -44,6 +44,17 @@ setFlag ro s =
   case s of
     "T" -> ro {showTables = False}
     "V" -> ro {showViews = False}
+    "S" -> ro {showSequences = False}
+    "P" -> ro {showProcedures = False}
+    "F" -> ro {showFunctions  = False}
+    "U" -> ro {showUsers = False}
+    "R" -> ro {showRoles = False}
+    "FTC" -> ro {showFullTextCatalog = False}
+    "FTS" -> ro {showFullTextStopList = False}
+    "CRED" -> ro {showCredential = False}
+    "M" -> ro {showMessageType = False}
+    "B" -> ro {showBrokerPriority = False}
+    "PF" -> ro {showPartitionFunction = False}
     _   -> ro
 
 header :: Arguments -> String
