@@ -29,7 +29,12 @@ defaultArgs = Arguments
       &= details msg
 
 convert :: Arguments -> D.GenerateOptions
-convert a = D.GenerateOptions { D.seed = seed a, D.size = size a }
+convert a = D.GenerateOptions
+    {
+      D.seed = seed a
+    , D.size = size a
+    , D.excludeTypes = parseRenderOptions $ excludeTypes a
+    }
 
 parseRenderOptions :: String -> RenderOptions
 parseRenderOptions xs = foldl setFlag defaultRenderOptions (splitOn "," xs)
