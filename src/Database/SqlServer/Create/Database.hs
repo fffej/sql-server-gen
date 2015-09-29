@@ -35,10 +35,22 @@ data RenderOptions = RenderOptions
   {
     showTables :: Bool
   , showViews :: Bool
+  , showSequences :: Bool
+  , showProcedures :: Bool
+  , showFunctions :: Bool
+  , showUsers :: Bool
+  , showRoles :: Bool
+  , showFullTextCatalog :: Bool
+  , showFullTextStopList :: Bool
+  , showCredential :: Bool
+  , showMessageType :: Bool
+  , showBrokerPriority :: Bool
+  , showPartitionFunction :: Bool
   } deriving (Show)
 
 defaultRenderOptions :: RenderOptions
-defaultRenderOptions = RenderOptions True True
+defaultRenderOptions = RenderOptions
+  True True True True True True True True True True True True True
 
 data Database = Database
   {
@@ -85,17 +97,17 @@ renderDatabase ro dd =
   renderMasterKey (masterKey dd) $+$
   renderEntitiesIf (showTables ro) (tables dd) $+$
   renderEntitiesIf (showViews ro) (views dd) $+$
-  renderEntitiesIf True (sequences dd) $+$
-  renderEntitiesIf True (procedures dd) $+$
-  renderEntitiesIf True (functions dd) $+$
-  renderEntitiesIf True (users dd) $+$
-  renderEntitiesIf True (roles dd) $+$
-  renderEntitiesIf True (fullTextCatalogs dd) $+$
-  renderEntitiesIf True (fullTextStopLists dd) $+$
-  renderEntitiesIf True (credentials dd) $+$
-  renderEntitiesIf True (messages dd) $+$
-  renderEntitiesIf True (brokerPriorities dd) $+$
-  renderEntitiesIf True (partitionFunctions dd)
+  renderEntitiesIf (showSequences ro) (sequences dd) $+$
+  renderEntitiesIf (showProcedures ro) (procedures dd) $+$
+  renderEntitiesIf (showFunctions ro) (functions dd) $+$
+  renderEntitiesIf (showUsers ro) (users dd) $+$
+  renderEntitiesIf (showRoles ro) (roles dd) $+$
+  renderEntitiesIf (showFullTextCatalog ro) (fullTextCatalogs dd) $+$
+  renderEntitiesIf (showFullTextStopList ro) (fullTextStopLists dd) $+$
+  renderEntitiesIf (showCredential ro) (credentials dd) $+$
+  renderEntitiesIf (showMessageType ro) (messages dd) $+$
+  renderEntitiesIf (showBrokerPriority ro) (brokerPriorities dd) $+$
+  renderEntitiesIf (showPartitionFunction ro) (partitionFunctions dd)
   where
     dbName = renderName dd
 
