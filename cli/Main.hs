@@ -35,7 +35,11 @@ parseRenderOptions :: String -> RenderOptions
 parseRenderOptions xs = foldl setFlag defaultRenderOptions (splitOn "," xs)
 
 setFlag :: RenderOptions -> String -> RenderOptions
-setFlag = undefined
+setFlag ro s =
+  case s of
+    "T" -> ro {showTables = False}
+    "V" -> ro {showViews = False}
+    _   -> ro
 
 header :: Arguments -> String
 header a = unlines 
