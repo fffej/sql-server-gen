@@ -67,6 +67,7 @@ header a = unlines
 main :: IO ()
 main = do
   a <- cmdArgs defaultArgs
+  let renderOptions = parseRenderOptions (excludeTypes a)
   putStrLn (header a)
-  print $ (D.generateEntity (convert a) :: Database)
+  print $ (renderDatabase renderOptions (D.generateEntity (convert a)))
   return ()
