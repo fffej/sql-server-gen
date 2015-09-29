@@ -18,7 +18,7 @@ import Database.SqlServer.Create.Login (Login)
 import Database.SqlServer.Create.Certificate (Certificate)
 import Database.SqlServer.Create.Trigger (Trigger)
 import Database.SqlServer.Create.SecurityPolicy (SecurityPolicy)
-import Database.SqlServer.Create.Database (Database)
+import Database.SqlServer.Create.Database (Database, RenderOptions)
 import Database.SqlServer.Create.Entity
 
 import Test.QuickCheck
@@ -43,6 +43,7 @@ data GenerateOptions = GenerateOptions
   {
     size :: Int
   , seed :: Int
+  , excludeTypes :: RenderOptions
   }
 
 generateEntity :: (Arbitrary a, Entity a) => GenerateOptions -> a

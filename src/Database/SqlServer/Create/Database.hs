@@ -31,6 +31,27 @@ renderMasterKey _ =
   text "CREATE MASTER KEY ENCRYPTION BY PASSWORD = 'weKKjwehg252t!!'" $+$
   text "GO"
 
+data RenderOptions = RenderOptions
+  {
+    showTables :: Bool
+  , showViews :: Bool
+  , showSequences :: Bool
+  , showProcedures :: Bool
+  , showFunctions :: Bool
+  , showUsers :: Bool
+  , showRoles :: Bool
+  , showFullTextCatalog :: Bool
+  , showFullTextStopList :: Bool
+  , showCredential :: Bool
+  , showMessageType :: Bool
+  , showBrokerPriority :: Bool
+  , showPartitionFunction :: Bool
+  } deriving (Show)
+
+defaultRenderOptions :: RenderOptions
+defaultRenderOptions = RenderOptions
+  True True True True True True True True True True True True True
+
 data Database = Database
   {
     databaseName :: RegularIdentifier
@@ -55,32 +76,38 @@ data Database = Database
 
 instance Entity Database where
   name = databaseName
-  render = renderDatabase
+  render = renderDatabase defaultRenderOptions
 
+-- Todo rename to renderentities
 renderNamedEntities :: Entity a => [a] -> Doc
 renderNamedEntities xs = vcat (map render xs)
 
+renderEntitiesIf :: Entity a => Bool -> [a] -> Doc
+renderEntitiesIf False _ = empty
+renderEntitiesIf True xs = renderNamedEntities xs
+
 -- Note that some parts aren't rendered to avoid bloat
-renderDatabase :: Database -> Doc
-renderDatabase dd = text "USE master" $+$
-                    text "GO" $+$
-                    text "CREATE DATABASE" <+> dbName $+$
-                    text "GO" $+$
-                    text "USE" <+> dbName $+$
-                    renderMasterKey (masterKey dd) $+$
-                    renderNamedEntities (tables dd) $+$
-                    renderNamedEntities (views dd) $+$
-                    renderNamedEntities (sequences dd) $+$
-                    renderNamedEntities (procedures dd) $+$
-                    renderNamedEntities (functions dd) $+$
-                    renderNamedEntities (users dd) $+$
-                    renderNamedEntities (roles dd) $+$
-                    renderNamedEntities (fullTextCatalogs dd) $+$
-                    renderNamedEntities (fullTextStopLists dd) $+$
-                    renderNamedEntities (credentials dd) $+$
-                    renderNamedEntities (messages dd) $+$
-                    renderNamedEntities (brokerPriorities dd) $+$
-                    renderNamedEntities (partitionFunctions dd)
+renderDatabase :: RenderOptions -> Database -> Doc
+renderDatabase ro dd =
+  text "USE master" $+$
+  text "GO" $+$
+  text "CREATE DATABASE" <+> dbName $+$
+  text "GO" $+$
+  text "USE" <+> dbName $+$
+  renderMasterKey (masterKey dd) $+$
+  renderEntitiesIf (showTables ro) (tables dd) $+$
+  renderEntitiesIf (showViews ro) (views dd) $+$
+  renderEntitiesIf (showSequences ro) (sequences dd) $+$
+  renderEntitiesIf (showProcedures ro) (procedures dd) $+$
+  renderEntitiesIf (showFunctions ro) (functions dd) $+$
+  renderEntitiesIf (showUsers ro) (users dd) $+$
+  renderEntitiesIf (showRoles ro) (roles dd) $+$
+  renderEntitiesIf (showFullTextCatalog ro) (fullTextCatalogs dd) $+$
+  renderEntitiesIf (showFullTextStopList ro) (fullTextStopLists dd) $+$
+  renderEntitiesIf (showCredential ro) (credentials dd) $+$
+  renderEntitiesIf (showMessageType ro) (messages dd) $+$
+  renderEntitiesIf (showBrokerPriority ro) (brokerPriorities dd) $+$
+  renderEntitiesIf (showPartitionFunction ro) (partitionFunctions dd)
   where
     dbName = renderName dd
 
