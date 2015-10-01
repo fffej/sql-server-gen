@@ -11,7 +11,7 @@ data Login = Login
    {
      loginName :: RegularIdentifier
    , password :: RegularIdentifier
-   , mustChange :: Bool 
+   , mustChange :: Bool
    }
 
 instance Arbitrary Login where
@@ -23,12 +23,13 @@ renderPassword s = text "WITH PASSWORD = " <>
 
 renderMustChange :: Bool -> Doc
 renderMustChange False = empty
-renderMustChange True = text "MUST_CHANGE" <> comma <> text "CHECK_EXPIRATION=ON"
+renderMustChange True = text "MUST_CHANGE" <> comma <>
+                        text "CHECK_EXPIRATION=ON"
 
 instance Entity Login where
   name = loginName
   render a = text "CREATE LOGIN" <+> renderName a $+$
-            renderPassword (password a)  <+> renderMustChange (mustChange a)
-            
+             renderPassword (password a) <+> renderMustChange (mustChange a)
+
 instance Show Login where
-  show = show . render 
+  show = show . render

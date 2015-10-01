@@ -4,7 +4,9 @@ The goal of this package is to generate arbitrary SQL Server databases (in the f
 
 Currently supported (at various degrees of completion) are:
 * Tables (including unique, primary key constraints and index options)
+* Row level security (with a fixed TVF for security).
 * Views (currently only very basic support)
+* Triggers (currently only triggers from tables / views)
 * Sequences
 * Procedures
 * Functions
@@ -23,6 +25,8 @@ Currently supported (at various degrees of completion) are:
 * Partition Functions
 
 Contributers more than welcome (especially if you know enough Haskell to help me simplify the code!).
+
+See Contributing.md for more information!
 
 # Work in progress
 

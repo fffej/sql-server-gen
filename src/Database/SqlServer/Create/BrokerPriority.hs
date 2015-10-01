@@ -15,7 +15,7 @@ data PriorityLevel = PriorityLevel Int
 
 instance Arbitrary PriorityLevel where
   arbitrary = do
-    x <- choose (1,10)
+    x <- choose (1, 10)
     return (PriorityLevel x)
 
 data BrokerPriority = BrokerPriority
@@ -28,7 +28,12 @@ data BrokerPriority = BrokerPriority
   }
 
 instance Arbitrary BrokerPriority where
-  arbitrary = BrokerPriority <$> arbitrary <*> arbitrary <*> arbitrary <*> arbitrary <*> arbitrary
+  arbitrary = BrokerPriority <$>
+              arbitrary <*>
+              arbitrary <*>
+              arbitrary <*>
+              arbitrary <*>
+              arbitrary
 
 renderMaybeOrAny :: Maybe RegularIdentifier -> Doc
 renderMaybeOrAny = maybe (text "ANY") (quotes . renderRegularIdentifier)
@@ -37,7 +42,7 @@ renderName' :: Entity a => Maybe a -> Doc
 renderName' = maybe (text "ANY") renderName
 
 renderPriorityLevel :: Maybe PriorityLevel -> Doc
-renderPriorityLevel = maybe (text "DEFAULT") (\(PriorityLevel z) -> int z)
+renderPriorityLevel = maybe (text "DEFAULT") (\ (PriorityLevel z) -> int z)
 
 renderOptions :: BrokerPriority -> Doc
 renderOptions b = vcat $ punctuate comma
@@ -55,7 +60,6 @@ instance Entity BrokerPriority where
   name = priorityName
   render b = renderPrerequisites (contractName b) $+$
             renderPrerequisites (localServiceName b) $+$
-            text "GO" $+$
             text "CREATE BROKER PRIORITY" <+> renderName b $+$
             text "FOR CONVERSATION" $+$
             text "SET" <+> parens (renderOptions b) <> text ";" $+$

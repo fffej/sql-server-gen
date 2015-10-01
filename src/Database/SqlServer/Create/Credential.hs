@@ -27,7 +27,7 @@ instance Arbitrary Secret where
     return (Secret s)
 
 renderSecret :: Secret -> Doc
-renderSecret (Secret s)= comma <> text "SECRET =" <+> quotes (text s)
+renderSecret (Secret s) = comma <> text "SECRET =" <+> quotes (text s)
 
 data Credential = Credential
    {
@@ -44,4 +44,4 @@ instance Entity Credential where
   render s = text "CREATE CREDENTIAL" <+> renderName s <+>
             text "WITH IDENTITY =" <+> quotes (renderIdentity (identity s)) <+>
             maybe empty renderSecret (secret s) $+$
-            text "GO"
+            text "GO\n"
