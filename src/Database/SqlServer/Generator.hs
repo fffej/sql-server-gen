@@ -37,7 +37,7 @@ _redundantImport :: (
 _redundantImport = undefined
 
 saveExamples :: (Show a) => FilePath -> [a] -> IO ()
-saveExamples p xs = writeFile p (unlines $ map show xs)
+saveExamples p xs = writeFile p $ unlines $ map show xs
 
 data GenerateOptions = GenerateOptions
   {
