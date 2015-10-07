@@ -83,11 +83,11 @@ A `Database` is the top level container, generating a uniquely named database wi
 
 If you want more control, then you can use `generateEntity` to generate single files.
 
-    > generateEntity (GenerateOptions { size = 10, seed = 22 }) :: User
-    
+    > generateEntity (defaultGenerateOptions { size = 10, seed = 22 }) :: User
+
 If you want to generate an infinite list of tables for your own nefarious purposes then you can use `generateEntities`
 
-    > let tables = generateEntities (GenerateOptions 1 10) :: [Table]
+    > let tables = generateEntities (defaultGenerateOptions { size = 1, seed = 10} ) :: [Table]
     > let first10 = take 10 tables
     > writeFile "myFilename" $ asScript first10
 
