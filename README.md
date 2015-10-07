@@ -47,7 +47,7 @@ An example of use from the REPL (`--` indicates comments not to be entered).
     y
 
     -- Write the alter statements out to a file
-    writeFile "AlterTable.sql" (show y)
+    writeFile "AlterTable.sql" $ asScript y
 
 The goal of this work is to allow you to build an arbitrary database and then an infinite sequence of ALTER statements to permute the database.
 
@@ -89,7 +89,7 @@ If you want to generate an infinite list of tables for your own nefarious purpos
 
     > let tables = generateEntities (GenerateOptions 1 10) :: [Table]
     > let first10 = take 10 tables
-    > saveExamples "myFilename" first10
+    > writeFile "myFilename" $ asScript first10
 
 
 # Usage
