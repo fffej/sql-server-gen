@@ -46,11 +46,11 @@ data GenerateOptions = GenerateOptions
   , excludeTypes :: RenderOptions
   }
 
-defaultGenerateOptions :: GenerateOptions
-defaultGenerateOptions = GenerateOptions
+defaultGenerateOptions :: Int -> Int -> GenerateOptions
+defaultGenerateOptions size' seed' = GenerateOptions
   {
-    size = undefined
-  , seed = undefined
+    size = size'
+  , seed = seed'
   , excludeTypes = defaultRenderOptions
   }
 
