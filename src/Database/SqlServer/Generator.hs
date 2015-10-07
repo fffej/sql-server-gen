@@ -18,7 +18,7 @@ import Database.SqlServer.Create.Login (Login)
 import Database.SqlServer.Create.Certificate (Certificate)
 import Database.SqlServer.Create.Trigger (Trigger)
 import Database.SqlServer.Create.SecurityPolicy (SecurityPolicy)
-import Database.SqlServer.Create.Database (Database, RenderOptions)
+import Database.SqlServer.Create.Database (Database, RenderOptions, defaultRenderOptions)
 import Database.SqlServer.Create.Entity
 
 import Test.QuickCheck
@@ -36,14 +36,22 @@ _redundantImport :: (
   )
 _redundantImport = undefined
 
-saveExamples :: (Show a) => FilePath -> [a] -> IO ()
-saveExamples p xs = writeFile p (unlines $ map show xs)
+asScript :: (Show a) => [a] -> String
+asScript a = unlines $ map show a
 
 data GenerateOptions = GenerateOptions
   {
     size :: Int
   , seed :: Int
   , excludeTypes :: RenderOptions
+  }
+
+defaultGenerateOptions :: Int -> Int -> GenerateOptions
+defaultGenerateOptions size' seed' = GenerateOptions
+  {
+    size = size'
+  , seed = seed'
+  , excludeTypes = defaultRenderOptions
   }
 
 generateEntity :: (Arbitrary a, Entity a) => GenerateOptions -> a
