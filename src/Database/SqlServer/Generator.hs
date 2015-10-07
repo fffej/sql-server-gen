@@ -36,8 +36,8 @@ _redundantImport :: (
   )
 _redundantImport = undefined
 
-saveExamples :: (Show a) => FilePath -> [a] -> IO ()
-saveExamples p xs = writeFile p $ unlines $ map show xs
+asScript :: (Show a) => [a] -> String
+asScript a = unlines $ map show a
 
 data GenerateOptions = GenerateOptions
   {
