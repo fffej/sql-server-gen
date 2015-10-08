@@ -63,7 +63,8 @@ instance Entity PartitionFunction where
   render a = text "CREATE PARTITION FUNCTION" <+> renderName a <+>
             parens (renderDataType (unwrap $ inputType a)) $+$
             text "AS RANGE" <+> renderRange (range a) <+> text "FOR VALUES" <+>
-            renderValues (boundaryValues a)
+            renderValues (boundaryValues a) $+$
+            text "GO\n"
 
 instance Show PartitionFunction where
   show = show . render
