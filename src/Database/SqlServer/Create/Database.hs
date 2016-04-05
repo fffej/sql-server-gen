@@ -87,7 +87,6 @@ renderEntitiesIf :: Entity a => Bool -> [a] -> Doc
 renderEntitiesIf False _ = empty
 renderEntitiesIf True xs = renderNamedEntities xs
 
--- Note that some parts aren't rendered to avoid bloat
 renderDatabase :: RenderOptions -> Database -> Doc
 renderDatabase ro dd =
   text "USE master" $+$
@@ -96,19 +95,19 @@ renderDatabase ro dd =
   text "GO" $+$
   text "USE" <+> dbName $+$
   renderMasterKey (masterKey dd) $+$
-  renderEntitiesIf (showTables ro) (tables dd) $+$
-  renderEntitiesIf (showViews ro) (views dd) $+$
-  renderEntitiesIf (showSequences ro) (sequences dd) $+$
-  renderEntitiesIf (showProcedures ro) (procedures dd) $+$
-  renderEntitiesIf (showFunctions ro) (functions dd) $+$
-  renderEntitiesIf (showUsers ro) (users dd) $+$
-  renderEntitiesIf (showRoles ro) (roles dd) $+$
-  renderEntitiesIf (showFullTextCatalog ro) (fullTextCatalogs dd) $+$
-  renderEntitiesIf (showFullTextStopList ro) (fullTextStopLists dd) $+$
-  renderEntitiesIf (showCredential ro) (credentials dd) $+$
-  renderEntitiesIf (showMessageType ro) (messages dd) $+$
-  renderEntitiesIf (showBrokerPriority ro) (brokerPriorities dd) $+$
-  renderEntitiesIf (showPartitionFunction ro) (partitionFunctions dd)
+  renderEntitiesIf (showTables ro) (take n $ tables dd) $+$
+  renderEntitiesIf (showViews ro) (take n $ views dd) $+$
+  renderEntitiesIf (showSequences ro) (take n $ sequences dd) $+$
+  renderEntitiesIf (showProcedures ro) (take n $ procedures dd) $+$
+  renderEntitiesIf (showFunctions ro) (take n $ functions dd) $+$
+  renderEntitiesIf (showUsers ro) (take n $ users dd) $+$
+  renderEntitiesIf (showRoles ro) (take n $ roles dd) $+$
+  renderEntitiesIf (showFullTextCatalog ro) (take n $ fullTextCatalogs dd) $+$
+  renderEntitiesIf (showFullTextStopList ro) (take n $ fullTextStopLists dd) $+$
+  renderEntitiesIf (showCredential ro) (take n $ credentials dd) $+$
+  renderEntitiesIf (showMessageType ro) (take n $ messages dd) $+$
+  renderEntitiesIf (showBrokerPriority ro) (take n $ brokerPriorities dd) $+$
+  renderEntitiesIf (showPartitionFunction ro) (take n $ partitionFunctions dd)
   where
     dbName = renderName dd
     n = objectsPerType ro
@@ -116,22 +115,22 @@ renderDatabase ro dd =
 instance Arbitrary Database where
   arbitrary = Database <$>
     arbitrary <*>
-    arbitrary <*>
-    arbitrary <*>
-    arbitrary <*>
-    arbitrary <*>
-    arbitrary <*>
-    arbitrary <*>
-    arbitrary <*>
-    arbitrary <*>
-    arbitrary <*>
-    arbitrary <*>
-    arbitrary <*>
-    arbitrary <*>
-    arbitrary <*>
-    arbitrary <*>
-    arbitrary <*>
-    arbitrary <*>
+    infiniteListOf arbitrary <*>
+    infiniteListOf arbitrary <*>
+    infiniteListOf arbitrary <*>
+    infiniteListOf arbitrary <*>
+    infiniteListOf arbitrary <*>
+    infiniteListOf arbitrary <*>
+    infiniteListOf arbitrary <*>
+    infiniteListOf arbitrary <*>
+    infiniteListOf arbitrary <*>
+    infiniteListOf arbitrary <*>
+    infiniteListOf arbitrary <*>
+    infiniteListOf arbitrary <*>
+    infiniteListOf arbitrary <*>
+    infiniteListOf arbitrary <*>
+    infiniteListOf arbitrary <*>
+    infiniteListOf arbitrary <*>
     arbitrary
 
 instance Show Database where
