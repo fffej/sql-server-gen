@@ -46,11 +46,12 @@ data RenderOptions = RenderOptions
   , showMessageType :: Bool
   , showBrokerPriority :: Bool
   , showPartitionFunction :: Bool
+  , objectsPerType :: Int
   } deriving (Show)
 
 defaultRenderOptions :: RenderOptions
 defaultRenderOptions = RenderOptions
-  True True True True True True True True True True True True True
+  True True True True True True True True True True True True True 10000000
 
 data Database = Database
   {
@@ -110,6 +111,7 @@ renderDatabase ro dd =
   renderEntitiesIf (showPartitionFunction ro) (partitionFunctions dd)
   where
     dbName = renderName dd
+    n = objectsPerType ro
 
 instance Arbitrary Database where
   arbitrary = Database <$>
