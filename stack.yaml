@@ -1,5 +1,5 @@
 flags: {}
 packages:
 - '.'
-extra-deps: []
+extra-deps: [iso8601-time-0.1.4]
 resolver: nightly-2015-06-21

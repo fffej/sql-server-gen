@@ -41,21 +41,23 @@ asScript a = unlines $ map show a
 
 data GenerateOptions = GenerateOptions
   {
-    size :: Int
+    complexity :: Int
+  , approximateObjectsPerType :: Int
   , seed :: Int
   , excludeTypes :: RenderOptions
   }
 
-defaultGenerateOptions :: Int -> Int -> GenerateOptions
-defaultGenerateOptions size' seed' = GenerateOptions
+defaultGenerateOptions :: Int -> Int -> Int -> GenerateOptions
+defaultGenerateOptions complexity' seed' approximateObjectsPerType' = GenerateOptions
   {
-    size = size'
+    complexity = complexity'
+  , approximateObjectsPerType = approximateObjectsPerType'
   , seed = seed'
   , excludeTypes = defaultRenderOptions
   }
 
 generateEntity :: (Arbitrary a, Entity a) => GenerateOptions -> a
-generateEntity go = unGen arbitrary (mkQCGen (seed go)) (size go)
+generateEntity go = unGen arbitrary (mkQCGen (seed go)) (complexity go)
 
 generateEntities :: (Arbitrary a, Entity a) => GenerateOptions -> [a]
 generateEntities go = map (\ x -> generateEntity (go { seed = x })) (randoms g)
